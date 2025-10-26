@@ -1,2 +1,0 @@
-# mini-drive
-cyber project
