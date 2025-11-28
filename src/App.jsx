@@ -1,5 +1,5 @@
 import './App.css'
-import SearchBar from './components/searchBar/searchBar.jsx'
+import SearchBar from './components/topBar/searchBar/searchBar.jsx'
 
 function App() {
   return (
