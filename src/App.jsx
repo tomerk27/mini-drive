@@ -1,10 +1,11 @@
 import './App.css'
-import SearchBar from './components/topBar/searchBar/searchBar.jsx'
+import FileUploaderComponent from './components/fileUploader.jsx'
+//import TopBar from './components/topBar/topBar.jsx'
 
 function App() {
   return (
     <>
-      <SearchBar />
+      <FileUploaderComponent />
     </>
   )
 }

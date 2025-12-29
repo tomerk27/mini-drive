@@ -27,4 +27,4 @@ const SearchBar = memo(() => {
   );
 });
 
-export default SearchBar
+export default SearchBar;
