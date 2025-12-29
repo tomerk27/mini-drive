@@ -19,16 +19,14 @@ export const useFilesUploader = () => {
         if(inputRef.current){
             inputRef.current.value = null;
         }
-
-        const updatedList = [...allUploadedFiles, ...files]
-        console.log(updatedList);
-
+        
         setFiles([])
     };
 
     return { 
         inputRef, 
         handleFileChange, 
-        uploadFiles
+        uploadFiles,
+        allUploadedFiles
     };
 };

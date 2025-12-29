@@ -1,20 +1,14 @@
-import { useFilesUploader } from "../hooks/files.js";
-const FileUploaderComponent = () => {
-    const {
-        inputRef, 
-        handleFileChange, 
-        uploadFiles
-    } = useFilesUploader()
+const FileUploaderComponent = ({ onUpload, onChange, inputRef }) => {
     return (
-        <>
+        <div className="uploader-container">
             <input
                 type="file"
                 multiple
-                onChange={handleFileChange}
+                onChange={onChange}
                 ref={inputRef}
             />
-            <button onClick={uploadFiles}>Upload</button>
-        </>
+            <button onClick={onUpload}>Upload</button>
+        </div>
     );
 };
 

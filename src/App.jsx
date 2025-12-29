@@ -1,11 +1,12 @@
 import './App.css'
-import FileUploaderComponent from './components/fileUploader.jsx'
+import MainPage from './pages/mainPage'
+import FileItem from './components/fileItem/fileItem'
 //import TopBar from './components/topBar/topBar.jsx'
 
 function App() {
   return (
     <>
-      <FileUploaderComponent />
+      <MainPage />
     </>
   )
 }
