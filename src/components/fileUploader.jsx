@@ -1,13 +1,17 @@
-const FileUploaderComponent = ({ onUpload, onChange, inputRef }) => {
+import useFilesUploader from "../hooks/useFilesUploader";
+
+const FileUploaderComponent = () => {
+    const {inputRef, handleFilesUpload, uploadFiles} = useFilesUploader()
+
     return (
         <div className="uploader-container">
             <input
                 type="file"
                 multiple
-                onChange={onChange}
+                onChange={handleFilesUpload}
                 ref={inputRef}
             />
-            <button onClick={onUpload}>Upload</button>
+            <button onClick={uploadFiles}>Upload</button>
         </div>
     );
 };

@@ -1,32 +1,31 @@
 import { useState, useRef } from "react";
 import { filesUploaderApi } from "../api/fileApi";
 
-export const useFilesUploader = () => {
+const useFilesUploader = () => {
     const [files, setFiles] = useState(null);
-    const [allUploadedFiles, setAllUploadedFiles] = useState([]);
     const inputRef = useRef(null);
     
-    const handleFileChange = (event) => {
+    const handleFilesUpload = (event) => {
         setFiles(Array.from(event.target.files));
     };
 
     const uploadFiles = async () => {
         if(!files) return;
 
-        setAllUploadedFiles(prev => [...prev, ...files]);
         await filesUploaderApi(files);
 
         if(inputRef.current){
             inputRef.current.value = null;
         }
         
-        setFiles([])
+        setFiles([]);
     };
 
     return { 
         inputRef, 
-        handleFileChange, 
+        handleFilesUpload, 
         uploadFiles,
-        allUploadedFiles
     };
 };
+
+export default useFilesUploader;
