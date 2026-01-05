@@ -7,7 +7,7 @@ class FileItem extends Item {
         this.type = type;
     }
 
-
+    
 }
 
 export default FileItem;

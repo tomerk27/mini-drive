@@ -16,8 +16,20 @@ class FolderItem extends Item {
         this.children = this.children.filter(item => item.id !== itemId);
 
         if(initialLength === this.children.length) {
-            console.warn('Item ${itemId} not found in ${this.name}');
+            console.warn(`Item ${itemId} not found in ${this.name}`);
         }
+    }
+
+    updatePath(path) {
+        this.path = path;
+        this.children.array.forEach((child) => {
+            if (child instanceof FolderItem){
+                child.updatePath(this.path + child.name + '/');
+            }
+            else {
+                child.updatePath(this.path + child.name + child.type);
+            }
+        });
     }
 }
 
