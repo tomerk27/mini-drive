@@ -1,24 +1,16 @@
-export const filesUploaderApi = async (filesArray) => {
-    const formData = new FormData();
+export const filesUploaderApi = async (formData) => {
+    if (formData)
+        console.log('it like that just for now')
 
-    filesArray.forEach(file => {
-        formData.append("file", file);
-    });
-
-    //try {
     //    const response = await fetch("/upload", {
     //        body: formData,
     //        method: "POST",
     //    });
 //
     //    if (!response.ok) {
-    //        throw new Error('Server error: ${response.status}');
+    //        throw new Error(`Server error: ${response.status}`);
     //    }
 //
     //    return await response.json();
-    //}
-    //catch (error) {
-    //    console.error('API error:', error)
-    //    throw error
     //}
 };

@@ -1,6 +1,11 @@
 import './fileItem'
 import fileIcon from "../../assets/icons/fileIcon.svg";
+
 const FileItem = ({fileName}) => {
+    const FileInfo = () => {
+
+    };
+
     return (
         <div className='file-card'>
             <img src={fileIcon} alt='file' className='fileIcon' />
@@ -8,7 +13,7 @@ const FileItem = ({fileName}) => {
                 {fileName}
             </span>
         </div>
-    )
+    );
     
 };
 
