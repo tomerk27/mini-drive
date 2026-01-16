@@ -22,33 +22,42 @@
 - Encryption Libraries: [TBD - To Be Decided]
 
 4. PROJECT STRUCTURE (Client Side - /src)
-  /api
-    - fileApi.js (File-related server calls)
-    - folderApi.js (Folder-related server calls)
-  /assets/icons
-    - (SVG and JSX icons)
-  /components
-    /fileItem
-      - FileItem.jsx (Main view component)
-      - FileActionMenu.jsx (Menu view component)
-      - FileIcon.jsx (Icon logic)
-      - useFileActionMenu.js (Menu logic/state)
-    /filesGrid
-      - filesGrid.jsx (Grid layout container)
-    /topBar
-      /searchBar
-        - searchBar.jsx, searchBar.css
-      - topBar.jsx
-    - fileUploader.jsx (Upload component)
-  /hooks
-    - useFilesUploader.js (Logic for file selection & FormData)
-    - useFolder.js
-  /models
-    - fileItem.js
-    - folderItem.js
-    - Item.js (Class/Data structure definitions)
-  /pages
-    - mainPage.jsx
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── public
+│   └── vite.svg
+├── README.md
+├── src
+│   ├── api
+│   │   ├── fileApi.js
+│   │   └── folderApi.js
+│   ├── App.jsx
+│   ├── components
+│   │   ├── filesGrid
+│   │   │   └── filesGrid.jsx
+│   │   ├── fileUploader.jsx
+│   │   ├── item
+│   │   │   ├── actionMenu.jsx
+│   │   │   ├── item.jsx
+│   │   │   └── itemIcon.jsx
+│   │   └── topBar
+│   │       ├── searchBar
+│   │       │   └── searchBar.jsx
+│   │       └── topBar.jsx
+│   ├── hooks
+│   │   ├── useFilesUploader.js
+│   │   ├── useFolder.js
+│   │   └── useItemActionMenu.js
+│   ├── main.jsx
+│   ├── models
+│   │   ├── fileItem.js
+│   │   ├── folderItem.js
+│   │   └── item.js
+│   └── pages
+│       └── mainPage.jsx
+└── vite.config.js
 
 5. KEY CODE SNIPPETS
 - Upload Logic: `useFilesUploader` hook uses `FormData` to prepare files for the API.
