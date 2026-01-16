@@ -1,6 +1,6 @@
 export const filesUploaderApi = async (formData) => {
     if (formData)
-        console.log('it like that just for now')
+        console.log('it like that just for now', formData.get("file"))
 
     //    const response = await fetch("/upload", {
     //        body: formData,
