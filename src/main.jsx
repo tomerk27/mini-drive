@@ -6,7 +6,6 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import './index.css';
 import App from './App.jsx';
 
 const theme = createTheme({
