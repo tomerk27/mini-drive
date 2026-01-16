@@ -1,13 +1,12 @@
 //import FilesGrid from "../components/filesGrid/filesGrid";
 import FileUploaderComponent from "../components/fileUploader";
+import Item from "../components/item/item";
 
 const MainPage = () => {
     return (
         <div className="main-page">
-            <h1>My Drive</h1>
-
             <FileUploaderComponent />
-            
+            <Item fileName={'tomer'} fileType={'jpg'} />    
         </div>
     );
 };
