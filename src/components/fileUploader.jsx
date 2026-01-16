@@ -1,17 +1,40 @@
+import Button from '@mui/material/Button';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import { styled } from '@mui/material/styles';
 import useFilesUploader from "../hooks/useFilesUploader";
 
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
+
 const FileUploaderComponent = () => {
-    const {inputRef, handleFilesUpload, uploadFiles} = useFilesUploader()
+    const { inputRef, uploadFiles } = useFilesUploader();
 
     return (
         <div className="uploader-container">
-            <input
-                type="file"
-                multiple
-                onChange={handleFilesUpload}
-                ref={inputRef}
-            />
-            <button onClick={uploadFiles}>Upload</button>
+            <Button
+                component="label"
+                role={undefined}
+                variant="contained"
+                tabIndex={-1}
+                startIcon={<CloudUploadIcon />}
+            >
+                Upload files
+                <VisuallyHiddenInput
+                    type="file"
+                    onChange={uploadFiles}
+                    ref={inputRef}
+                    multiple
+                />
+            </Button>
         </div>
     );
 };
