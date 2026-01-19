@@ -22,3 +22,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual Environment
+venv/
+.venv/
+
+# Environment Variables (Secrets)
+.env
+
+# VS Code Settings (Optional - some teams keep this, some ignore)
+.vscode/
+
+# MacOS junk
+.DS_Store
