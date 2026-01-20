@@ -16,49 +16,54 @@
 
 3. TECH STACK (Backend & Data)
 - Server Framework: Python FastAPI
-- Database: MongoDB
+- Database: MongoDB Atlas (Cloud)
+- Database Driver: Motor (Async MongoDB driver)
+- Environment Management: python-dotenv
 - Architecture: Client <-> Main Server (FastAPI) <-> Database Server (MongoDB)
-- Authentication: [TBD - To Be Decided]
-- Encryption Libraries: [TBD - To Be Decided]
+- Authentication: [TBD]
+- Encryption Libraries: [TBD]
 
 4. PROJECT STRUCTURE (Client Side - /src)
-├── eslint.config.js
-├── index.html
-├── package-lock.json
-├── package.json
-├── public
-│   └── vite.svg
+├── client
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   └── vite.svg
+│   ├── src
+│   │   ├── api
+│   │   │   ├── fileApi.js
+│   │   │   └── folderApi.js
+│   │   ├── App.jsx
+│   │   ├── components
+│   │   │   ├── filesGrid
+│   │   │   │   └── filesGrid.jsx
+│   │   │   ├── fileUploader.jsx
+│   │   │   ├── item
+│   │   │   │   ├── actionMenu.jsx
+│   │   │   │   ├── item.jsx
+│   │   │   │   └── itemIcon.jsx
+│   │   │   └── topBar
+│   │   │       ├── searchBar
+│   │   │       │   └── searchBar.jsx
+│   │   │       └── topBar.jsx
+│   │   ├── hooks
+│   │   │   ├── useFilesUploader.js
+│   │   │   ├── useFolder.js
+│   │   │   └── useItemActionMenu.js
+│   │   ├── main.jsx
+│   │   ├── models
+│   │   │   ├── fileItem.js
+│   │   │   ├── folderItem.js
+│   │   │   └── item.js
+│   │   └── pages
+│   │       └── mainPage.jsx
+│   └── vite.config.js
 ├── README.md
-├── src
-│   ├── api
-│   │   ├── fileApi.js
-│   │   └── folderApi.js
-│   ├── App.jsx
-│   ├── components
-│   │   ├── filesGrid
-│   │   │   └── filesGrid.jsx
-│   │   ├── fileUploader.jsx
-│   │   ├── item
-│   │   │   ├── actionMenu.jsx
-│   │   │   ├── item.jsx
-│   │   │   └── itemIcon.jsx
-│   │   └── topBar
-│   │       ├── searchBar
-│   │       │   └── searchBar.jsx
-│   │       └── topBar.jsx
-│   ├── hooks
-│   │   ├── useFilesUploader.js
-│   │   ├── useFolder.js
-│   │   └── useItemActionMenu.js
-│   ├── main.jsx
-│   ├── models
-│   │   ├── fileItem.js
-│   │   ├── folderItem.js
-│   │   └── item.js
-│   └── pages
-│       └── mainPage.jsx
-└── vite.config.js
-
+└── server
+    └── main.py
+    
 5. KEY CODE SNIPPETS
 - Upload Logic: `useFilesUploader` hook uses `FormData` to prepare files for the API.
 - Data Models: The project uses specific classes (Item.js) to structure file/folder data.
@@ -71,10 +76,16 @@
     - Authentication & Authorization: Robust user identity management.
     - Data Encryption: (Optional/If time permits).
 
-7. CURRENT STATUS
-- Infrastructure: React Frontend structure defined.
-- Active Task: Initializing Backend (FastAPI) and establishing Database Connection.
-- Next Step: Creating the basic FastAPI entry point and connecting to MongoDB.
+7. CURRENT STATUS & ROADMAP
+- [x] Initialize Project Structure (Client/Server)
+- [x] Client: Setup React + Vite environment
+- [x] Server: Setup FastAPI environment
+- [x] Server: Configure Virtual Environment (venv) & Dependencies
+- [ ] **Database: Connect to MongoDB Atlas** 🚧 (In Progress)
+- [ ] Server: Create User Model & Authentication
+- [ ] Client: Build Login/Register pages
+- [ ] Core: Implement File Upload logic
+- [ ] Core: Implement File Download logic
 
 8. ARCHITECTURE & CODING STANDARDS
 - Philosophy: Clean Code & High Modularity.
@@ -82,3 +93,19 @@
 - State Management: STRICT SEPARATION. All state (useState, useEffect) and logic must be extracted to Custom Hooks. Components should remain purely presentational (View only).
 - Accessibility: Do NOT use ARIA attributes (keep JSX clean and focused on core logic).
 - Structure: Keep related files (JSX, CSS/Styles, Sub-components, Hooks) grouped in feature folders.
+
+9. HOW TO RUN (DEVELOPMENT)
+
+A. Server Side (Python):
+1. Navigate to server: `cd server`
+2. Activate venv: `source venv/bin/activate` (Mac/Linux) or `venv\Scripts\activate` (Windows)
+3. Install dependencies: `pip install -r requirements.txt`
+4. Setup Env: Create `.env` file with `MONGO_URI`.
+5. Run: `uvicorn main:app --reload`
+   > Server runs on: http://127.0.0.1:8000
+
+B. Client Side (React):
+1. Navigate to client: `cd client`
+2. Install packages: `npm install`
+3. Run: `npm run dev`
+   > Client runs on: http://localhost:5173 (usually)
