@@ -18,14 +18,13 @@
 - Server Framework: Python FastAPI
 - Database: MongoDB Atlas (Cloud)
 - Database Driver: Motor (Async MongoDB driver)
-- Data Validation: Pydantic (Schemas)
-- Security & Hashing: Passlib (Bcrypt)
+- Data Validation: Pydantic (Schemas) + email-validator
+- Security & Hashing: Passlib + Bcrypt (Secure Password Hashing)
 - Environment Management: python-dotenv
 - Architecture: Client <-> Main Server (FastAPI) <-> Database Server (MongoDB)
 - Authentication: JSON based (UserCreate Schema)
-- Encryption Libraries: Passlib (for password hashing)
 
-4. PROJECT STRUCTURE (Client Side - /src)
+4. PROJECT STRUCTURE
 .
 ├── client
 │   ├── eslint.config.js
@@ -65,30 +64,40 @@
 │   └── vite.config.js
 ├── README.md
 └── server
-    ├── .env                  <-- New: Environment variables
     ├── app
-    │   ├── database.py       <-- Implemented: MongoDB Connection
+    │   ├── core
+    │   ├── database.py
     │   ├── models
-    │   │   └── user.py       <-- Implemented: DB Model (Internal)
+    │   │   └── user.py
+    │   ├── routes
+    │   │   └── auth.py
     │   ├── schemas
-    │   │   └── user.py       <-- Implemented: Pydantic Schemas (Input/Output)
-    │   └── main.py
+    │   │   └── user.py
+    │   ├── services
+    │   │   └── auth_service.py
+    │   └── utils
+    │       └── security.py
     ├── main.py
     └── requirements.txt
-    
+
 5. KEY CODE SNIPPETS
 - Upload Logic: `useFilesUploader` hook uses `FormData` to prepare files for the API.
 - Data Models: The project uses specific classes (Item.js) to structure file/folder data.
 - Backend Architecture: Separation of Concerns (Schemas for API I/O, Models for DB storage).
+- **Auth Service:** `auth_service.py` handles business logic (user creation checks), separating routes from database operations.
+- **Security Utils:** `security.py` manages password hashing and verification using `passlib` context.
 
-6. SECURITY FEATURES (Cyber Focus - Planned)
+6. SECURITY FEATURES (Cyber Focus)
 * Currently implemented:
-    - Separation of Input (Schema) vs Storage (Model) to prevent data pollution.
-    - Environment variable protection for DB Credentials (.env).
+    - **Separation of Concerns:** Input (Schema) vs Storage (Model) to prevent data pollution.
+    - **Environment Protection:** DB Credentials stored securely in `.env`.
+    - **Password Hashing:** Passwords are never stored in plain text; using Bcrypt for strong hashing.
+    - **Input Validation:** Strict typing and email validation using Pydantic.
+    - **Duplicate Prevention:** Logic to prevent registering with existing email/username.
 * Planned Features:
     - Access Control (ACL): Sharing mechanism with read/write permissions for other users.
     - Secure File Upload: Magic number validation, file renaming to prevent execution.
-    - Authentication & Authorization: Robust user identity management (JWT).
+    - Authentication & Authorization: JWT Implementation for Login.
 
 7. CURRENT STATUS & ROADMAP
 - [x] Initialize Project Structure (Client/Server)
@@ -98,7 +107,9 @@
 - [x] **Database: Connect to MongoDB Atlas (Async/Motor)**
 - [x] **Server: Create User DB Model (models/user.py)**
 - [x] **Server: Create User Schemas (schemas/user.py)**
-- [ ] Server: Implement Authentication Logic (Router/Service/Repo)
+- [x] **Server: Implement Registration Logic (Route/Service/Repo)**
+- [x] **Server: Implement Password Hashing (Bcrypt)**
+- [ ] Server: Implement Login Logic (JWT Token generation)
 - [ ] Client: Build Login/Register pages
 - [ ] Core: Implement File Upload logic
 
@@ -108,6 +119,7 @@
 - Backend Pattern: 
     - **Schemas:** Define what the API receives and returns (Validation).
     - **Models:** Define what is stored in MongoDB.
+    - **Services:** Business logic (hashing, checks).
     - **Database:** Centralized async connection.
 - State Management: STRICT SEPARATION. All state (useState, useEffect) and logic must be extracted to Custom Hooks.
 
@@ -117,13 +129,14 @@ A. Server Side (Python):
 1. Navigate to server: `cd server`
 2. Activate venv: `source venv/bin/activate` (Mac/Linux) or `venv\Scripts\activate` (Windows)
 3. Install dependencies: `pip install -r requirements.txt`
-   *(Ensure `motor`, `python-dotenv`, `pydantic[email]`, `passlib[bcrypt]` are included)*
-4. Setup Env: Create `.env` file
+   *(Crucial packages: `fastapi`, `uvicorn`, `motor`, `python-dotenv`, `pydantic[email]`, `passlib`, `bcrypt==3.2.0`)*
+4. Setup Env: Create `.env` file with `MONGO_URL` and `DB_NAME`.
 5. Run: `uvicorn main:app --reload`
 > Server runs on: http://127.0.0.1:8000
+> API Docs (Swagger): http://127.0.0.1:8000/docs
 
 B. Client Side (React):
 1. Navigate to client: `cd client`
 2. Install packages: `npm install`
 3. Run: `npm run dev`
-> Client runs on: http://localhost:5173 (usually)
+> Client runs on: http://localhost:5173
