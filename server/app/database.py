@@ -4,15 +4,14 @@ import os
 
 load_dotenv()
 
-MONGO_URL = os.getenv("MONGO_URL")
-DB_NAME = os.getenv("DB_NAME")
+MONGO_URI = os.getenv("MONGO_URI")
 
-if not MONGO_URL: 
+if not MONGO_URI: 
     raise ValueError("No MONGO_URL found in .env file")
 
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URL)
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 
-db = client[DB_NAME]
+db = client.get_default_database()
 
 def get_users_collection():
     return db["users"]
