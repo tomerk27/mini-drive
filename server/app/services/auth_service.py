@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import UserCreate, UserResponse, UserLogin
 from app.database import get_users_collection
-from app.utils.security import get_password_hash
+from app.utils.security import get_password_hash, verify_password, create_access_token, TOKEM_TYPE
 from app.models.user import User
 
 async def register_new_user(user_data: UserCreate):
@@ -28,3 +28,28 @@ async def register_new_user(user_data: UserCreate):
     user_in_db.id = str(result.inserted_id)
 
     return UserResponse.model_validate(user_in_db)
+
+async def login_user(user_data: UserLogin):
+    users_collection = get_users_collection()
+
+    user_doc = await users_collection.find_one({"email": user_data.email})
+
+    if not user_doc: 
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is not existing in the system"
+        )
+    
+    correct_password = verify_password(user_data.password, user_doc["hashed_password"])
+
+    if not correct_password:
+         raise HTTPException(
+             status_code=status.HTTP_401_UNAUTHORIZED,
+             detail="Incorrect email or password",
+             headers={"WWW-Authenticate": "Bearer"}
+         )
+    else:
+        return {
+            "access_token": create_access_token(data= {"sub": user_doc["email"]}),
+            "token_type": TOKEM_TYPE
+        }
