@@ -20,48 +20,21 @@
 - Database Driver: Motor (Async MongoDB driver)
 - Data Validation: Pydantic (Schemas) + email-validator
 - Security & Hashing: Passlib + Bcrypt (Secure Password Hashing)
+- **Token Management: python-jose (JWT generation & validation)**
 - Environment Management: python-dotenv
 - Architecture: Client <-> Main Server (FastAPI) <-> Database Server (MongoDB)
-- Authentication: JSON based (UserCreate Schema)
+- Authentication: JSON based (UserCreate Schema) + **Bearer Token (JWT)**
 
 4. PROJECT STRUCTURE
 .
 ├── client
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── public
-│   │   └── vite.svg
 │   ├── src
 │   │   ├── api
-│   │   │   ├── fileApi.js
-│   │   │   └── folderApi.js
-│   │   ├── App.jsx
 │   │   ├── components
-│   │   │   ├── filesGrid
-│   │   │   │   └── filesGrid.jsx
-│   │   │   ├── fileUploader.jsx
-│   │   │   ├── item
-│   │   │   │   ├── actionMenu.jsx
-│   │   │   │   ├── item.jsx
-│   │   │   │   └── itemIcon.jsx
-│   │   │   └── topBar
-│   │   │       ├── searchBar
-│   │   │       │   └── searchBar.jsx
-│   │   │       └── topBar.jsx
 │   │   ├── hooks
-│   │   │   ├── useFilesUploader.js
-│   │   │   ├── useFolder.js
-│   │   │   └── useItemActionMenu.js
-│   │   ├── main.jsx
 │   │   ├── models
-│   │   │   ├── fileItem.js
-│   │   │   ├── folderItem.js
-│   │   │   └── item.js
 │   │   └── pages
-│   │       └── mainPage.jsx
-│   └── vite.config.js
+│   └── ...
 ├── README.md
 └── server
     ├── app
@@ -70,13 +43,13 @@
     │   ├── models
     │   │   └── user.py
     │   ├── routes
-    │   │   └── auth.py
+    │   │   └── auth.py       <-- Handles /register and /login endpoints
     │   ├── schemas
-    │   │   └── user.py
+    │   │   └── user.py       <-- Includes UserLogin and Token schemas
     │   ├── services
-    │   │   └── auth_service.py
+    │   │   └── auth_service.py <-- Business logic for auth & user retrieval
     │   └── utils
-    │       └── security.py
+    │       └── security.py   <-- JWT creation & Password verification
     ├── main.py
     └── requirements.txt
 
@@ -84,32 +57,30 @@
 - Upload Logic: `useFilesUploader` hook uses `FormData` to prepare files for the API.
 - Data Models: The project uses specific classes (Item.js) to structure file/folder data.
 - Backend Architecture: Separation of Concerns (Schemas for API I/O, Models for DB storage).
-- **Auth Service:** `auth_service.py` handles business logic (user creation checks), separating routes from database operations.
-- **Security Utils:** `security.py` manages password hashing and verification using `passlib` context.
 
 6. SECURITY FEATURES (Cyber Focus)
 * Currently implemented:
     - **Separation of Concerns:** Input (Schema) vs Storage (Model) to prevent data pollution.
-    - **Environment Protection:** DB Credentials stored securely in `.env`.
+    - **Environment Protection:** DB Credentials and SECRET_KEY stored securely in `.env`.
     - **Password Hashing:** Passwords are never stored in plain text; using Bcrypt for strong hashing.
     - **Input Validation:** Strict typing and email validation using Pydantic.
-    - **Duplicate Prevention:** Logic to prevent registering with existing email/username.
+    - **JWT Authentication:** Secure stateless authentication using signed JSON Web Tokens.
 * Planned Features:
     - Access Control (ACL): Sharing mechanism with read/write permissions for other users.
     - Secure File Upload: Magic number validation, file renaming to prevent execution.
-    - Authentication & Authorization: JWT Implementation for Login.
+    - Middleware: Protect routes using JWT validation.
 
 7. CURRENT STATUS & ROADMAP
 - [x] Initialize Project Structure (Client/Server)
 - [x] Client: Setup React + Vite environment
 - [x] Server: Setup FastAPI environment
 - [x] Server: Configure Virtual Environment (venv) & Dependencies
-- [x] **Database: Connect to MongoDB Atlas (Async/Motor)**
-- [x] **Server: Create User DB Model (models/user.py)**
-- [x] **Server: Create User Schemas (schemas/user.py)**
-- [x] **Server: Implement Registration Logic (Route/Service/Repo)**
-- [x] **Server: Implement Password Hashing (Bcrypt)**
-- [ ] Server: Implement Login Logic (JWT Token generation)
+- [x] Database: Connect to MongoDB Atlas (Async/Motor)
+- [x] Server: Create User DB Model (models/user.py)
+- [x] Server: Create User Schemas (schemas/user.py)
+- [x] Server: Implement Registration Logic (Route/Service/Repo)
+- [x] Server: Implement Password Hashing (Bcrypt)
+- [x] **Server: Implement Login Logic (JWT Token generation)**
 - [ ] Client: Build Login/Register pages
 - [ ] Core: Implement File Upload logic
 
@@ -129,8 +100,8 @@ A. Server Side (Python):
 1. Navigate to server: `cd server`
 2. Activate venv: `source venv/bin/activate` (Mac/Linux) or `venv\Scripts\activate` (Windows)
 3. Install dependencies: `pip install -r requirements.txt`
-   *(Crucial packages: `fastapi`, `uvicorn`, `motor`, `python-dotenv`, `pydantic[email]`, `passlib`, `bcrypt==3.2.0`)*
-4. Setup Env: Create `.env` file with `MONGO_URL` and `DB_NAME`.
+   *(Crucial packages: `fastapi`, `uvicorn`, `motor`, `python-dotenv`, `pydantic[email]`, `passlib`, `bcrypt==3.2.0`, `python-jose[cryptography]`)*
+4. Setup Env: Create `.env` file with `MONGO_URL`, `DB_NAME`, and `SECRET_KEY`.
 5. Run: `uvicorn main:app --reload`
 > Server runs on: http://127.0.0.1:8000
 > API Docs (Swagger): http://127.0.0.1:8000/docs

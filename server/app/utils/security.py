@@ -2,8 +2,12 @@ from passlib.context import CryptContext
 from datetime import timedelta, timezone, datetime
 from jose import jwt
 from typing import Optional
+from dotenv import load_dotenv
+import os
 
-SECRET_KEY = ""
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRES_MINUTES = 30
 TOKEM_TYPE = "bearer"
