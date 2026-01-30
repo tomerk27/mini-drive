@@ -7,11 +7,14 @@ const useFilesUploader = () => {
     const inputRef = useRef(null);
 
     const uploadFiles = async (event) => {
-        const files = Array.from(event.target.files);
-        
-        if (!files) return;
-
         setIsLoading(true);
+
+        const files = Array.from(event.target.files);
+
+        if (!files){
+            setIsLoading(false)
+            return;
+        } 
 
         const formData = new FormData();
 

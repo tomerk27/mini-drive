@@ -4,13 +4,9 @@ from jose import jwt
 from typing import Optional
 from dotenv import load_dotenv
 import os
+from app.core.config import settings
 
 load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRES_MINUTES = 30
-TOKEM_TYPE = "bearer"
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -26,10 +22,10 @@ def create_access_token(data: dict, expire_delta: Optional[timedelta] = None) ->
     if expire_delta:
         expire_time = datetime.now(timezone.utc) + expire_delta
     else:
-        expire_time = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRES_MINUTES)
+        expire_time = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
 
     data_copy.update({"exp": expire_time})
 
-    encoded_jwt = jwt.encode(data_copy, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(data_copy, settings.secret_key, algorithm=settings.algorithm)
 
     return encoded_jwt
