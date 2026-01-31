@@ -14,8 +14,15 @@ class UserNotFoundError(AppException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Wrong email or password",
             headers={"WWW-Authenticate": settings.auth_scheme}
+        )
+
+class ExistingUserError(AppException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email is already in use"
         )
 
 async def handle_exception(request: Request, exc: AppException):

@@ -4,6 +4,7 @@ from app.schemas.user import UserCreate, UserResponse, UserLogin
 from app.database import get_users_collection
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.models.user import User
+from app.core.exceptions import UserNotFoundError, ExistingUserError
 
 async def register_new_user(user_data: UserCreate):
     users_collection = get_users_collection()
@@ -11,10 +12,7 @@ async def register_new_user(user_data: UserCreate):
     existing_user = await users_collection.find_one({"email": user_data.email})
 
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
+        raise ExistingUserError()
     
     hashed_password = get_password_hash(user_data.password)
 
@@ -36,19 +34,12 @@ async def login_user(user_data: UserLogin):
     user_doc = await users_collection.find_one({"email": user_data.email})
 
     if not user_doc: 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email is not existing in the system"
-        )
-    
+        raise UserNotFoundError()
+
     correct_password = verify_password(user_data.password, user_doc["hashed_password"])
 
     if not correct_password:
-         raise HTTPException(
-             status_code=status.HTTP_401_UNAUTHORIZED,
-             detail="Incorrect email or password",
-             headers={"WWW-Authenticate": "Bearer"}
-         )
+         raise UserNotFoundError()
     else:
         return {
             "access_token": create_access_token(data= {"sub": user_doc["email"]}),
