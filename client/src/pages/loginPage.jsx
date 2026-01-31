@@ -2,11 +2,14 @@ import {
   Box,
   Typography,
   Container,
+  Paper,
   Alert,
-  Paper
+  Divider
 } from '@mui/material';
-import useLogin from '../hooks/auth/useLogin';
+import GoogleConnectionButton from '../components/authentication/googleConnectionButton';
 import FormsBox from '../components/authentication/formsBox';
+import useLogin from '../hooks/auth/useLogin';
+
 
 const LoginPage = () => {
   const { handleSubmit, isLoading, error, emailRef, passwordRef } = useLogin();
@@ -15,19 +18,49 @@ const LoginPage = () => {
     <Container component="login-container" maxWidth="xs">
       <Box
         sx={{
-          marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          bgcolor: 'background.default',
+          p: 2
         }}
       >
-        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Sign in to Drive
+        <Paper
+          elevation={0}
+          sx={{
+            minHeight: '600px',
+            justifyContent: 'center',
+            p: 6,
+            gap: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+            maxWidth: '500px',
+            border: '1px solid #e0e0e0',
+            borderRadius: 4,
+            bgcolor: 'background.paper'
+          }}
+        >
+
+          <Typography component="h1" variant="h5" sx={{ mb: 1, color: 'text.primary' }}>
+            Sign in
           </Typography>
 
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Welcome user, please sign in to continue
+          </Typography>
+
+          <GoogleConnectionButton />
+
+          <Divider sx={{ width: '100%', mb: 3, color: 'text.secondary', '&::before, &::after': { borderColor: '#e0e0e0' } }}>
+            Or
+          </Divider>
+
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 2, width: '100%' }} variant="standard">
               {error}
             </Alert>
           )}
@@ -38,7 +71,6 @@ const LoginPage = () => {
             passwordRef={passwordRef}
             isLoading={isLoading}
           />
-
         </Paper>
       </Box>
     </Container>

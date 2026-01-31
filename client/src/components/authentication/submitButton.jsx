@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { Button, CircularProgress } from '@mui/material';
 
 const SubmitButton = ({ isLoading, handleSubmit }) => {
     return (
@@ -6,11 +6,11 @@ const SubmitButton = ({ isLoading, handleSubmit }) => {
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-            onClick={handleSubmit}
             disabled={isLoading}
+            sx={{ mt: 3, mb: 2, py: 1 }}
+            onClick={handleSubmit}
         >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
         </Button>
     );
 };

@@ -13,31 +13,51 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#455a64',
-      light: '#718792',
-      dark: '#1c313a',
-      contrastText: '#ffffff',
-    },
-    secondary: {
-      main: '#00838f',
+      main: '#1a73e8',
     },
     background: {
-      default: '#f4f6f8',
-      paper: '#ffffff',
+      default: '#f0f2f5',
+      paper: '#ffffff', 
     },
     text: {
-      primary: '#263238',
-      secondary: '#607d8b',
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h6: {
-      fontWeight: 600,
+      primary: '#1c1e21',
+      secondary: '#65676b',
     },
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 12,
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h5: {
+      fontWeight: 600,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 600,
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          '& fieldset': {
+            borderColor: '#e0e0e0',
+          },
+          '&:hover fieldset': {
+            borderColor: '#b0b0b0',
+          },
+        },
+      },
+    },
   },
 });
 
