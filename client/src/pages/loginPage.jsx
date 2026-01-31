@@ -46,11 +46,11 @@ const LoginPage = () => {
         >
 
           <Typography component="h1" variant="h5" sx={{ mb: 1, color: 'text.primary' }}>
-            Sign in
+            Log in
           </Typography>
 
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Welcome user, please sign in to continue
+            Welcome user, please log in to continue
           </Typography>
 
           <GoogleConnectionButton />

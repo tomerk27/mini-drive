@@ -1,10 +1,10 @@
 import { useState, useRef } from "react";
-//import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { loginUserApi } from "../../api/authApi";
 import { useAuthContext } from "../../context/auth/authContext";
 
 const useLogin = () => {
-    //const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const { login } = useAuthContext();
 
@@ -33,7 +33,7 @@ const useLogin = () => {
 
             login(data.access_token);
 
-            //navigate('/dashboard');
+            navigate('/dashboard');
         }
         catch (error) {
             setError(error.response?.data?.detail);

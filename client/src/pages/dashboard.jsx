@@ -2,7 +2,7 @@
 import FileUploaderComponent from "../components/fileUploader";
 import Item from "../components/item/item";
 
-const MainPage = () => {
+const Dashboard = () => {
     return (
         <div className="main-page">
             <FileUploaderComponent />
@@ -11,4 +11,4 @@ const MainPage = () => {
     );
 };
 
-export default MainPage;
+export default Dashboard;

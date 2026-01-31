@@ -1,11 +1,9 @@
-import MainPage from './pages/mainPage'
-import LoginPage from './pages/loginPage'
-//import TopBar from './components/topBar/topBar.jsx'
+import AppRouter from "./routers/appRouter"
 
 function App() {
   return (
     <>
-      <LoginPage />
+      <AppRouter />
     </>
   )
 }
