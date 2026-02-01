@@ -8,11 +8,10 @@ import {
 } from '@mui/material';
 import GoogleConnectionButton from '../components/authentication/googleConnectionButton';
 import FormsBox from '../components/authentication/formsBox';
-import useLogin from '../hooks/auth/useLogin';
+import useSignup from '../hooks/auth/useSignup';
 
-
-const LoginPage = () => {
-  const { handleSubmit, isLoading, error, emailRef, passwordRef } = useLogin();
+const SignupPage = () => {
+  const { handleSubmit, isLoading, error, emailRef, usernameRef, passwordRef } = useSignup();
 
   return (
     <Container component="login-container" maxWidth="xs">
@@ -46,11 +45,11 @@ const LoginPage = () => {
         >
 
           <Typography component="h1" variant="h5" sx={{ mb: 1, color: 'text.primary' }}>
-            Log in
+            Sign up
           </Typography>
 
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Welcome user, please log in to continue
+            Welcome user, please sign up to continue
           </Typography>
 
           <GoogleConnectionButton />
@@ -68,9 +67,10 @@ const LoginPage = () => {
           <FormsBox
             handleSubmit={handleSubmit}
             emailRef={emailRef}
+            usernameRef={usernameRef}
             passwordRef={passwordRef}
             isLoading={isLoading}
-            mode='login'
+            mode='signup'
           />
         </Paper>
       </Box>
@@ -78,4 +78,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignupPage;

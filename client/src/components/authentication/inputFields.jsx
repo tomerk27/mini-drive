@@ -38,6 +38,23 @@ export const PasswordField = ({ passwordRef }) => {
     );
 };
 
+export const UsernameField = ({ usernameRef }) => {
+    return (
+        <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="username"
+            label="Username"
+            type="username"
+            id="username"
+            autoComplete="current-username"
+            inputRef={usernameRef}
+            size="small"
+        />
+    );
+};
+
 export const RememberMeField = () => {
     return (
         <FormControlLabel
@@ -46,4 +63,4 @@ export const RememberMeField = () => {
             sx={{ mt: 1 }}
         />
     )
-}
+};

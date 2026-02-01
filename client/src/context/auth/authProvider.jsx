@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
         return null;
     });
 
-    const login = (newToken) => {
+    const authenticate = (newToken) => {
         try {
             const decodedToken = jwtDecode(newToken);
             localStorage.setItem("authToken", newToken);
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }} >
+        <AuthContext.Provider value={{ user, authenticate, logout }} >
             {children}
         </AuthContext.Provider>
     )
