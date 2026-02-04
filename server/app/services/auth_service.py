@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from app.core.config import settings
 from app.schemas.user import UserCreate, UserResponse, UserLogin
-from app.database import get_users_collection
+from app.database import get_collection
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.models.user import User
 from app.core.exceptions import UserNotFoundError, ExistingUserError
@@ -29,7 +29,7 @@ async def register_new_user(user_data: UserCreate):
     return UserResponse.model_validate(user_in_db)
 
 async def login_user(user_data: UserLogin):
-    users_collection = get_users_collection()
+    users_collection = get_collection("users")
 
     user_doc = await users_collection.find_one({"email": user_data.email})
 
@@ -38,10 +38,11 @@ async def login_user(user_data: UserLogin):
 
     correct_password = verify_password(user_data.password, user_doc["hashed_password"])
 
-    if not correct_password:
-         raise UserNotFoundError()
-    else:
+    if correct_password:
         return {
             "access_token": create_access_token(data= {"sub": user_doc["email"]}),
             "token_type": settings.token_type
         }
+    else:
+        raise UserNotFoundError()
+        

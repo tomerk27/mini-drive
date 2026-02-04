@@ -25,6 +25,28 @@ class ExistingUserError(AppException):
             detail="Email is already in use"
         )
 
+class ExistingItemError(AppException):
+    def __init__(self, filename):
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"A file named '{filename}' already exists in this destination."        
+        )
+
+class TokenCredentialsError(AppException):
+    def __init__(self):
+        super.__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+class ResourceNotFoundError(AppException):
+    def __init__(self, detail: str = "Resource not found"):
+        super.__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=detail
+        )
+
 async def handle_exception(request: Request, exc: AppException):
     return JSONResponse(
         status_code=exc.status_code,

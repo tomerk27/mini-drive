@@ -11,7 +11,7 @@ class UserCreate(UserBase):
 
 class UserResponse(UserBase):
     username: str
-    id: Optional[str] = Field(None, alias='_id')
+    id: Optional[str] = Field(..., alias='_id')
     created_at: datetime
 
     class Config:

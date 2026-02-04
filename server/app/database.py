@@ -13,5 +13,6 @@ client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 
 db = client.get_default_database()
 
-def get_users_collection():
-    return db["users"]
+def get_collection(collection_name):
+    return db[collection_name]
+

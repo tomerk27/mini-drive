@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     auth_scheme: str = "Bearer"
     token_type: str = "bearer"
 
+    files_dir: str = "settings/files"
+    
     class Config:
         env_file=".env"
 
