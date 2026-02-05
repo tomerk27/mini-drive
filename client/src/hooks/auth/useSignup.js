@@ -33,7 +33,7 @@ const useSignup = () => {
         try{
             const data = await signupUserApi(userData);
 
-            authenticate(data);
+            authenticate(data.access_token);
             
             navigate('/dashboard');
         }

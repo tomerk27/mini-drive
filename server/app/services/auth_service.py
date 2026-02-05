@@ -7,7 +7,7 @@ from app.models.user import User
 from app.core.exceptions import UserNotFoundError, ExistingUserError
 
 async def register_new_user(user_data: UserCreate):
-    users_collection = get_users_collection()
+    users_collection = get_collection("users")
 
     existing_user = await users_collection.find_one({"email": user_data.email})
 
@@ -26,7 +26,10 @@ async def register_new_user(user_data: UserCreate):
     result = await users_collection.insert_one(user_dict)
     user_in_db.id = str(result.inserted_id)
 
-    return UserResponse.model_validate(user_in_db)
+    return {
+        "access_token": create_access_token(data={"sub": user_in_db.id}),
+        "token_type": "bearer"
+    }
 
 async def login_user(user_data: UserLogin):
     users_collection = get_collection("users")
@@ -40,7 +43,7 @@ async def login_user(user_data: UserLogin):
 
     if correct_password:
         return {
-            "access_token": create_access_token(data= {"sub": user_doc["email"]}),
+            "access_token": create_access_token(data= {"sub": str(user_doc["_id"])}),
             "token_type": settings.token_type
         }
     else:

@@ -1,16 +1,25 @@
-export const filesUploaderApi = async (formData) => {
-    if (formData)
-        console.log('it like that just for now', formData.get("file"))
+import apiClient from "./axiosClient";
 
-    //    const response = await fetch("/upload", {
-    //        body: formData,
-    //        method: "POST",
-    //    });
-//
-    //    if (!response.ok) {
-    //        throw new Error(`Server error: ${response.status}`);
-    //    }
-//
-    //    return await response.json();
-    //}
+export const initUploadApi = async (fileName, parentId) => {
+    const response = await apiClient.post('/items/upload/init', {
+        name: fileName,
+        parent_id: parentId || '/',
+        item_type: 'file'
+    });
+
+    return response.data;
+};
+
+export const uploadFileContentApi = async (fileId, fileObject) => {
+    const formData = new FormData();
+
+    formData.append("file", fileObject);
+
+    const response = await apiClient.post(`/items/upload/${fileId}/content`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+
+    return response.data
 };

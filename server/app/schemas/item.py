@@ -9,14 +9,14 @@ class BaseItem(BaseModel):
 
 class FileCreate(BaseItem):
     item_type: ItemType = ItemType.FILE
-    file_type: str
-    size: int
+    file_type: Optional[str] = None
+    size: Optional[int] = 0
 
 class FolderCreate(BaseItem): 
     item_type: ItemType = ItemType.FOLDER
 
 class ItemResponse(BaseItem): 
-    id: Optional[str] = Field(None, alias='_id')
+    id: str
     created_at: datetime
     is_owner: bool
 
@@ -32,5 +32,3 @@ class FileResponse(ItemResponse):
 class FolderResponse(ItemResponse):
     is_empty: bool
     item_type: ItemType = ItemType.FOLDER
-
-ItemResponse = Union[FileResponse, FolderResponse]

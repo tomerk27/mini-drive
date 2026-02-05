@@ -1,42 +1,56 @@
-import Button from '@mui/material/Button';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import { styled } from '@mui/material/styles';
-import useFilesUploader from "../hooks/useFilesUploader";
+import React from 'react';
+import { Button, Box, CircularProgress, Alert } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'; // וודא שיש לך @mui/icons-material
+import useFilesUploader from '../hooks/useFilesUploader';
 
-const VisuallyHiddenInput = styled('input')({
-    clip: 'rect(0 0 0 0)',
-    clipPath: 'inset(50%)',
-    height: 1,
-    overflow: 'hidden',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    whiteSpace: 'nowrap',
-    width: 1,
-});
+const FileUploaderBtn = ({ currentFolderId, onUploadSuccess }) => {
+    const { inputRef, uploadFiles, isLoading, error } = useFilesUploader();
 
-const FileUploaderComponent = () => {
-    const { inputRef, uploadFiles } = useFilesUploader();
+    const handleFileChange = async (event) => {
+        await uploadFiles(event, currentFolderId);
+        if (onUploadSuccess) {
+            onUploadSuccess();
+        }
+    };
+
+    const handleButtonClick = () => {
+        inputRef.current.click();
+    };
 
     return (
-        <div className="uploader-container">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-start', mb: 2 }}>
+            
+            <input
+                ref={inputRef}
+                type="file"
+                multiple
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+            />
+
             <Button
-                component="label"
-                role={undefined}
                 variant="contained"
-                tabIndex={-1}
-                startIcon={<CloudUploadIcon />}
+                color="primary"
+                onClick={handleButtonClick}
+                disabled={isLoading}
+                startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <CloudUploadIcon />}
+                sx={{
+                    borderRadius: 20,
+                    textTransform: 'none',
+                    fontWeight: 'bold',
+                    boxShadow: 2
+                }}
             >
-                Upload files
-                <VisuallyHiddenInput
-                    type="file"
-                    onChange={uploadFiles}
-                    ref={inputRef}
-                    multiple
-                />
+                {isLoading ? 'Uploading...' : 'Upload File'}
             </Button>
-        </div>
+
+            {error && (
+                <Alert severity="error">
+                    Failed to upload: {error.message}
+                </Alert>
+            )}
+        </Box>
     );
 };
 
-export default FileUploaderComponent;
+export default FileUploaderBtn;

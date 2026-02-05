@@ -34,7 +34,7 @@ class ExistingItemError(AppException):
 
 class TokenCredentialsError(AppException):
     def __init__(self):
-        super.__init__(
+        super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
@@ -42,7 +42,7 @@ class TokenCredentialsError(AppException):
         
 class ResourceNotFoundError(AppException):
     def __init__(self, detail: str = "Resource not found"):
-        super.__init__(
+        super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=detail
         )
