@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
-import { loginUserApi } from "../../api/authApi";
+import { loginUserApi, googleConectionApi } from "../../api/authApi";
 import { useAuthContext } from "../../context/auth/authContext";
+
 
 const useLogin = () => {
     const navigate = useNavigate();
@@ -14,10 +15,11 @@ const useLogin = () => {
     const emailRef = useRef();
     const passwordRef = useRef();
 
-    const handleSubmit = (event) => {
+    const handleSubmit = (event, credentialResponse = null) => {
         event.preventDefault(); // Prevents page reload on form submission
-        handleLogin();
+        credentialResponse ? handleGoogleLogin(credentialResponse) : handleLogin();
     };
+
 
     const handleLogin = async () => {
         setError(null)
@@ -44,7 +46,29 @@ const useLogin = () => {
 
     }
 
+    const handleGoogleLogin = async (credentialResponse) => {
+        setError(null);
+        setIsLoading(true);
+
+        const jwtToken  = credentialResponse.credential;
+
+        try {
+            const data = await googleConectionApi(jwtToken);
+
+            authenticate(data.access_token);
+
+            navigate('/dashboard');
+        }
+        catch (error) {
+            setError(error.response?.data?.detail);
+        }
+        finally{
+            setIsLoading(false);
+        }
+    };
+
     return {
+        handleGoogleLogin,
         handleSubmit,
         isLoading,
         error,

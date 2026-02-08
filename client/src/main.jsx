@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+//import { GoogleOAuthProvider } from '@react-oauth/google';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
@@ -17,7 +18,7 @@ const theme = createTheme({
     },
     background: {
       default: '#f0f2f5',
-      paper: '#ffffff', 
+      paper: '#ffffff',
     },
     text: {
       primary: '#1c1e21',
@@ -60,6 +61,8 @@ const theme = createTheme({
     },
   },
 });
+
+//const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
