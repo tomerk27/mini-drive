@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Union
+from typing import Optional
 from datetime import datetime
 from app.utils.item_utils import ItemType
 
@@ -7,12 +7,15 @@ class BaseItem(BaseModel):
     name: str = Field(..., min_length=1, max_length=50)
     parent_id: Optional[str] = Field(None)
 
-class FileCreate(BaseItem):
+class ItemCreate(BaseItem):
+    item_type: ItemType
+
+class FileCreate(ItemCreate):
     item_type: ItemType = ItemType.FILE
     file_type: Optional[str] = None
     size: Optional[int] = 0
 
-class FolderCreate(BaseItem): 
+class FolderCreate(ItemCreate): 
     item_type: ItemType = ItemType.FOLDER
 
 class ItemResponse(BaseItem): 
@@ -30,5 +33,4 @@ class FileResponse(ItemResponse):
     item_type: ItemType = ItemType.FILE
 
 class FolderResponse(ItemResponse):
-    is_empty: bool
     item_type: ItemType = ItemType.FOLDER

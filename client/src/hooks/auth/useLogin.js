@@ -25,9 +25,9 @@ const useLogin = () => {
         setError(null)
         setIsLoading(true);
 
-        const userData = { 
-            "email": emailRef.current.value, 
-            "password": passwordRef.current.value 
+        const userData = {
+            "email": emailRef.current.value,
+            "password": passwordRef.current.value
         };
 
         try {
@@ -50,7 +50,7 @@ const useLogin = () => {
         setError(null);
         setIsLoading(true);
 
-        const jwtToken  = credentialResponse.credential;
+        const jwtToken = credentialResponse.credential;
 
         try {
             const data = await googleConectionApi(jwtToken);
@@ -62,7 +62,7 @@ const useLogin = () => {
         catch (error) {
             setError(error.response?.data?.detail);
         }
-        finally{
+        finally {
             setIsLoading(false);
         }
     };

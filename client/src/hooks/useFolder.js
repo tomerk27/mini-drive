@@ -1,40 +1,46 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { useParams } from 'react-router-dom';
 import folderApi from "../api/folderApi";
-import FolderItem from "../models/folderItem";
 
-const useFolder = (initialFolderId = 'root') => {
-    const [currentFolderId, setCurrentFolderID] = useState(initialFolderId);
-    const [isLoading, setLoading] = useState(false);
-    const [items, setItems] = useState([]);
+const useFolder = () => {
+    const { folderId } = useParams();
+    const [state, setState] = useState({
+        loading: false,
+        error: null,
+        childFiles: [],
+        childFolders: [],
+        folder: []
+    });
 
-    const handleFolderChange = (folderId) => {
-        setCurrentFolderID(folderId)
-    };
+    const refreshFolder = useCallback(async () => {
+        const currentId = folderId || 'root';
+
+        setState(prev => ({ ...prev, loading: true }));
+
+        try {
+            const data = await folderApi.getFolder(currentId);
+
+            setState({
+                loading: false,
+                error: null,
+                childFiles: data.childFiles,
+                childFolders: data.childFolders,
+                folder: data.folder
+            });
+        } catch(error) {
+            setState(prev => ({ ...prev, loading: false, error: error}));
+        }
+        
+    }, [folderId]);
 
     useEffect(() => {
-        const loadFolder = async () => {
-            setLoading(true);
+        refreshFolder();
+    }, [refreshFolder, folderId])
 
-            try {
-                const data = folderApi.uploadFolder(currentFolderId);
-                const folder = new FolderItem(data);
-                setItems(folder.children);
-
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadFolder();
-    }, [currentFolderId]);
-
-    return(
-        handleFolderChange,
-        items,
-        isLoading
-    )
+    return {
+        ...state, 
+        refreshFolder 
+    };
 };
 
 export default useFolder;

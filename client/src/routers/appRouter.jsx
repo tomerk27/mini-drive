@@ -8,7 +8,8 @@ const AppRouter = () => {
         <BrowserRouter>
             <Routes>
                 <Route path='/login' element={<LoginPage />} />
-                <Route path='/dashboard' element={<Dashboard />} />
+                <Route path="dashboard/folder/:folderId" element={<Dashboard />} />
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route path='/signup' element={<SignupPage />} />
                 <Route path='/' element={<Navigate to='/login' replace />} />
             </Routes>

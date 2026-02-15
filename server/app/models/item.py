@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-from zoneinfo import ZoneInfo
 from datetime import datetime
 from app.utils.item_utils import ItemType, ItemStatus
 from app.utils.db_utils import PyObjectId
@@ -15,14 +14,20 @@ class ItemModel(BaseModel):
 
     parent_id: Optional[str] = Field(None)
 
-    file_type: Optional[str] = None
-    size: Optional[int] = None
-    physical_path: Optional[str] = None
-
     created_at: datetime = Field(default_factory=current_time)
-
-    status: ItemStatus = ItemStatus.PENDING 
 
     class Config:
         populate_by_name = True
         arbitrary_types_allowed = True
+
+class FileModel(ItemModel):
+    item_type: ItemType = ItemType.FILE
+
+    file_type: Optional[str] = None
+    size: Optional[int] = None
+    physical_path: Optional[str] = None
+
+    status: ItemStatus = ItemStatus.PENDING 
+
+class FolderModel(ItemModel):
+    item_type: ItemType = ItemType.FOLDER

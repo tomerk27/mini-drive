@@ -3,40 +3,44 @@ import os
 import uuid
 import shutil
 from bson import ObjectId
-from app.schemas.item import BaseItem
-from app.models.item import ItemModel
+from app.schemas.item import ItemCreate
+from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
-from app.core.exceptions import ExistingItemError, ResourceNotFoundError
+from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistingError
 from app.utils.item_utils import ItemStatus
 from app.core.config import settings
 from app.utils.mappers import map_item_to_response
 from app.models.user import User
-from app.dependencies import get_current_user
 
 async def init_item(
-    item_data: BaseItem,
-    current_user: User = Depends(get_current_user)
+    item_data: ItemCreate,
+    current_user_id: str
 ) -> ItemModel:
     items = get_collection('items')
 
-    if await items.find_one({"owner_id": str(current_user.id), "parent_id": item_data.parent_id, "name": item_data.name}):
+    if await items.find_one({"owner_id": str(current_user_id), "parent_id": item_data.parent_id, "name": item_data.name}):
         raise ExistingItemError(item_data.name)
 
     item_dict = item_data.model_dump()
-    item_dict["owner_id"] = str(current_user.id)
-    item_in_db = ItemModel(**item_dict)
+    item_dict["owner_id"] = str(current_user_id)
+    if item_data.item_type == "FILE":
+        item_in_db = FileModel(**item_dict)
+    
+    else:
+        item_in_db = FolderModel(**item_dict)
 
     item_dict = item_in_db.model_dump(by_alias=True, exclude="_id")
 
     result = await items.insert_one(item_dict)
     item_in_db.id = result.inserted_id
 
-    return map_item_to_response(item_in_db, current_user)
+    return map_item_to_response(item_in_db, current_user_id)
 
 async def complete_item_upload(
     item_id: str,
     owner_id: str,
-    file: UploadFile
+    file: UploadFile,
+    current_user_id: User
 ) -> ItemModel:
     items = get_collection('items')
     
@@ -79,4 +83,19 @@ async def complete_item_upload(
     if not result:
         raise ResourceNotFoundError("Pending file not found")
 
-    return ItemModel(**result)
+    return map_item_to_response(ItemModel(**result), current_user_id)
+
+async def get_folder_service(folder_id: str, current_user_id: User):
+    items = get_collection('items')
+
+    try: 
+        ObjectId(folder_id)
+    except:
+        raise ResourceNotFoundError("Invalid ID format")
+    
+    folder = await items.find_one({"_id": folder_id})
+
+    if not folder:
+        raise ItemIsNotExistingError()
+    
+    return map_item_to_response(folder, current_user_id)

@@ -1,24 +1,20 @@
-const folderApi ={
-    getFolder: async (folderId) => {
-        const response = await fetch(`/api/folder?folderId=${folderId}`);
+import apiClient from "./axiosClient";
 
-        if(!response.ok) {
-            throw new Error(`Folder reciving error: ${response.status}`);
-        }
-        return response.json();
+const folderApi = {
+    getFolder: async (folderId) => {
+        const response = await apiClient.get(`/api/folder?folderId=${folderId}`);
+
+        return response.data;
     },
 
-    uploadFolder: async (formData) => {
-        const response = await fetch('api/folders/upload', {
-            method: "POST",
-            body: formData
+    uploadFolder: async (folderName, parentId) => {
+        const response = await apiClient('/items/upload/folder', {
+            name: folderName,
+            parent_id: parentId || '/',
+            item_type: 'folder'
         });
 
-        if(!response.ok){
-            throw new Error(`Folder uploading error: ${response.status}`);
-        }
-
-        return response.json();
+        return response.data;
     }
 };
 
