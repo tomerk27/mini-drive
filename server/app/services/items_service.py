@@ -7,10 +7,20 @@ from app.schemas.item import ItemCreate
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
 from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistingError
-from app.utils.item_utils import ItemStatus
+from app.utils.item_utils import ItemStatus, ItemType
 from app.core.config import settings
 from app.utils.mappers import map_item_to_response
 from app.models.user import User
+
+def parse_item_to_model(raw_dict: dict) -> ItemModel:
+    item_type = raw_dict.get("item_type")
+    
+    if item_type == ItemType.FILE:
+        return FileModel(**raw_dict)
+    elif item_type == ItemType.FOLDER:
+        return FolderModel(**raw_dict)
+    else:
+        return ItemModel(**raw_dict)
 
 async def init_item(
     item_data: ItemCreate,
@@ -21,18 +31,23 @@ async def init_item(
     if await items.find_one({"owner_id": str(current_user_id), "parent_id": item_data.parent_id, "name": item_data.name}):
         raise ExistingItemError(item_data.name)
 
-    item_dict = item_data.model_dump()
-    item_dict["owner_id"] = str(current_user_id)
-    if item_data.item_type == "FILE":
-        item_in_db = FileModel(**item_dict)
-    
+    if item_data.item_type == ItemType.FILE:
+        item_in_db = FileModel(
+            **item_data.model_dump(), 
+            owner_id=str(current_user_id),
+            status=ItemStatus.PENDING
+        )
     else:
-        item_in_db = FolderModel(**item_dict)
+        item_in_db = FolderModel(
+            **item_data.model_dump(), 
+            owner_id=str(current_user_id)
+        )
 
-    item_dict = item_in_db.model_dump(by_alias=True, exclude="_id")
+    item_dict_for_db = item_in_db.model_dump(by_alias=True, exclude={"id"})
 
-    result = await items.insert_one(item_dict)
-    item_in_db.id = result.inserted_id
+    result = await items.insert_one(item_dict_for_db)
+    
+    item_in_db.id = str(result.inserted_id)
 
     return map_item_to_response(item_in_db, current_user_id)
 
@@ -40,7 +55,7 @@ async def complete_item_upload(
     item_id: str,
     owner_id: str,
     file: UploadFile,
-    current_user_id: User
+    current_user_id: str
 ) -> ItemModel:
     items = get_collection('items')
     
@@ -49,7 +64,11 @@ async def complete_item_upload(
     except: 
         raise ResourceNotFoundError("Invalid ID format")
 
-    item = await items.find_one({"_id": obj_id, "owner_id": owner_id, "status": ItemStatus.PENDING})
+    item = await items.find_one({
+        "_id": obj_id, 
+        "owner_id": owner_id, 
+        "status": ItemStatus.PENDING.value
+        })
 
     if not item:
         raise ResourceNotFoundError("Pending file not found")
@@ -66,36 +85,44 @@ async def complete_item_upload(
         file_size = os.path.getsize(physical_path)
         file_type = file.content_type
     
-    except e:
+    except Exception as e:
         raise e
 
-    result = await items.find_one_and_update(
-        {"_id": obj_id, "owner_id": owner_id, "status": ItemStatus.PENDING},
+    result_dict = await items.find_one_and_update(
+        {
+            "_id": obj_id,
+            "owner_id": owner_id, 
+            "status": ItemStatus.PENDING.value
+            },
         {"$set":{
             "physical_path": physical_path,
             "size": file_size,
             "file_type": file_type,
-            "status": ItemStatus.COMPLETED
+            "status": ItemStatus.COMPLETED.value
         }},
         return_document=True
     )
 
-    if not result:
+    if not result_dict:
         raise ResourceNotFoundError("Pending file not found")
 
-    return map_item_to_response(ItemModel(**result), current_user_id)
+    updated_model = parse_item_to_model(result_dict)
 
-async def get_folder_service(folder_id: str, current_user_id: User):
+    return map_item_to_response(updated_model, current_user_id)
+
+async def get_folder_service(folder_id: str, current_user_id: str):
     items = get_collection('items')
 
     try: 
-        ObjectId(folder_id)
-    except:
+        obj_id = ObjectId(folder_id)
+    except Exception:
         raise ResourceNotFoundError("Invalid ID format")
     
-    folder = await items.find_one({"_id": folder_id})
+    folder_dict = await items.find_one({"_id": obj_id})
 
-    if not folder:
+    if not folder_dict:
         raise ItemIsNotExistingError()
     
-    return map_item_to_response(folder, current_user_id)
+    folder_model = parse_item_to_model(folder_dict)
+    
+    return map_item_to_response(folder_model, current_user_id)

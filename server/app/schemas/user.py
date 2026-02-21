@@ -13,4 +13,3 @@ class UserLogin(UserBase):
 class UserResponse(BaseModel): 
     access_token: str
     token_type: str
-    root_folder_id: str

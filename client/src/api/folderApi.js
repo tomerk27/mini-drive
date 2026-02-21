@@ -2,7 +2,7 @@ import apiClient from "./axiosClient";
 
 const folderApi = {
     getFolder: async (folderId) => {
-        const response = await apiClient.get(`/api/folder?folderId=${folderId}`);
+        const response = await apiClient.get(`/items/get/${folderId}`);
 
         return response.data;
     },

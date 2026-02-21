@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from "react"
 import { useParams } from 'react-router-dom';
+import { useAuthContext } from '../context/auth/authContext';
 import folderApi from "../api/folderApi";
 
 const useFolder = () => {
     const { folderId } = useParams();
+    const { user } = useAuthContext();
     const [state, setState] = useState({
         loading: false,
         error: null,
@@ -13,7 +15,7 @@ const useFolder = () => {
     });
 
     const refreshFolder = useCallback(async () => {
-        const currentId = folderId || 'root';
+        const currentId = folderId || user?.root_folder_id;
 
         setState(prev => ({ ...prev, loading: true }));
 

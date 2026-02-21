@@ -36,9 +36,8 @@ async def register_new_user(user_data: UserCreate):
     )
 
     return UserResponse(
-        access_token=create_access_token(data={"sub": user_in_db.id}),
+        access_token=create_access_token(data={"sub": user_in_db.id, "root_folder_id": root_folder.id}),
         token_type="bearer",
-        root_folder_id=root_folder.id
     )
 
 async def login_user(user_data: UserLogin):
@@ -53,11 +52,11 @@ async def login_user(user_data: UserLogin):
 
     if correct_password:
         root_folder_id = user_doc["root_id"]
+        user_id = str(user_doc["_id"])
 
         return UserResponse(
-            access_token=create_access_token(data= {"sub": str(user_doc["_id"])}),
+            access_token=create_access_token(data= {"sub": user_id, "root_folder_id": root_folder_id}),
             token_type=settings.token_type,
-            root_folder_id=root_folder_id
         )
     else:
         raise UserNotFoundError()
