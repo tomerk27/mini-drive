@@ -1,6 +1,5 @@
-import React from 'react';
 import { Button, Box, CircularProgress, Alert } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'; // וודא שיש לך @mui/icons-material
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import useFilesUploader from '../hooks/useFilesUploader';
 
 const FileUploaderBtn = ({ currentFolderId, onUploadSuccess }) => {

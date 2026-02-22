@@ -1,4 +1,4 @@
-import { Card, CardActionArea, CardContent, Typography, IconButton, Box } from '@mui/material';
+import { Card, CardActionArea, CardContent, Typography, Box } from '@mui/material';
 import FileIcon from './itemIcon';
 import ActionMenu from './actionMenu';
 
@@ -6,7 +6,7 @@ const Item = ({ fileName, fileType }) => {
   return (
     <Card 
       sx={{ 
-        width: 200,          
+        width: 240,          
         borderRadius: 2,  
         position: 'relative', 
         '&:hover': {         
@@ -33,11 +33,6 @@ const Item = ({ fileName, fileType }) => {
             sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}
           >
             {fileName}
-          </Typography>
-          
-          {/* אפשר להוסיף כאן סוג קובץ או תאריך */}
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-            {fileType || 'File'}
           </Typography>
         </CardContent>
 

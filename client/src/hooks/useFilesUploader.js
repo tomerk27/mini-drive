@@ -21,7 +21,6 @@ const useFilesUploader = () => {
             const filesPromises = files.map(async (file) => {
                 const initData = await initUploadApi(file.name, parentId);
                 const fileId = initData.id;
-                console.log(initData)
 
                 await uploadFileContentApi(fileId, file);
 

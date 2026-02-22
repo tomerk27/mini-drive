@@ -3,7 +3,7 @@ import os
 import uuid
 import shutil
 from bson import ObjectId
-from app.schemas.item import ItemCreate
+from app.schemas.item import ItemCreate, FolderContentResponse
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
 from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistingError
@@ -123,6 +123,25 @@ async def get_folder_service(folder_id: str, current_user_id: str):
     if not folder_dict:
         raise ItemIsNotExistingError()
     
+    cursor = items.find({"parent_id": folder_id})
+    children_dicts = await cursor.to_list(length=1000)
+
+    child_files = []
+    child_folders = []
+
+    for child_dict in children_dicts:
+        child_model = parse_item_to_model(child_dict)
+        child_response = map_item_to_response(child_model, current_user_id)
+        
+        if child_dict.get("item_type") == ItemType.FILE:
+            child_files.append(child_response)
+        elif child_dict.get("item_type") == ItemType.FOLDER:
+            child_folders.append(child_response)
+
     folder_model = parse_item_to_model(folder_dict)
     
-    return map_item_to_response(folder_model, current_user_id)
+    return FolderContentResponse(
+        folder=map_item_to_response(folder_model, current_user_id),
+        child_files=child_files,
+        child_folders=child_folders
+    )

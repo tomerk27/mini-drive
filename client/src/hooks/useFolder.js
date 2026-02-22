@@ -6,41 +6,44 @@ import folderApi from "../api/folderApi";
 const useFolder = () => {
     const { folderId } = useParams();
     const { user } = useAuthContext();
-    const [state, setState] = useState({
-        loading: false,
-        error: null,
-        childFiles: [],
-        childFolders: [],
-        folder: []
-    });
+    
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [childFiles, setChildFiles] = useState([]);
+    const [childFolders, setChildFolders] = useState([]);
+    const [folder, setFolder] = useState(null);
 
-    const refreshFolder = useCallback(async () => {
-        const currentId = folderId || user?.root_folder_id;
-
-        setState(prev => ({ ...prev, loading: true }));
+    const refreshFolder = useCallback(async (id) => {
+        setLoading(true);
+        setError(null);
 
         try {
-            const data = await folderApi.getFolder(currentId);
-
-            setState({
-                loading: false,
-                error: null,
-                childFiles: data.childFiles,
-                childFolders: data.childFolders,
-                folder: data.folder
-            });
+            const data = await folderApi.getFolder(id);
+            setChildFiles(data.child_files);
+            setChildFolders(data.child_folders.map(folder => ({ ...folder, type: 'folder' })));
+            setFolder(data.folder);
+            
         } catch(error) {
-            setState(prev => ({ ...prev, loading: false, error: error}));
+            setError(error);
+        } finally {
+            setLoading(false);
         }
         
-    }, [folderId]);
+    }, []);
 
     useEffect(() => {
-        refreshFolder();
-    }, [refreshFolder, folderId])
+        const currentId = folderId || user?.root_folder_id;
+        if(currentId) {
+            refreshFolder(currentId);
+        }
+    }, [folderId, user?.root_folder_id, refreshFolder]);
 
     return {
-        ...state, 
+        loading,
+        error,
+        childFiles,
+        childFolders,
+        folder,
         refreshFolder 
     };
 };

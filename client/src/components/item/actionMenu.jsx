@@ -3,10 +3,11 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShareIcon from '@mui/icons-material/Share';
 import EditIcon from '@mui/icons-material/Edit';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import useItemActionMenu from '../../hooks/useItemActionMenu';
 
 const ActionMenu = () => {
-    const { anchorEl, isOpen, openMenu, closeMenu} = useItemActionMenu();
+    const { anchorEl, isOpen, openMenu, closeMenu } = useItemActionMenu();
 
     return (
         <>
@@ -37,6 +38,10 @@ const ActionMenu = () => {
                 <MenuItem>
                     <ListItemIcon><EditIcon fontSize='small'></EditIcon></ListItemIcon>
                     <ListItemText>Edit</ListItemText>
+                </MenuItem>
+                <MenuItem>
+                    <ListItemIcon><InfoOutlinedIcon fontSize='small'></InfoOutlinedIcon></ListItemIcon>
+                    <ListItemText>details</ListItemText>
                 </MenuItem>
             </Menu>
 

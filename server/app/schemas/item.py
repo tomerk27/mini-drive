@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from app.utils.item_utils import ItemType
 
@@ -34,3 +34,9 @@ class FileResponse(ItemResponse):
 
 class FolderResponse(ItemResponse):
     item_type: ItemType = ItemType.FOLDER
+
+class FolderContentResponse(BaseModel):
+    folder: FolderResponse
+
+    child_files: List[FileResponse] = []
+    child_folders: List[FolderResponse] = []

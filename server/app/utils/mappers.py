@@ -1,5 +1,6 @@
 from app.models.item import ItemModel
 from app.schemas.item import FolderResponse, FileResponse, ItemResponse
+from app.utils.item_utils import ItemType
 
 def map_item_to_response(item_db: ItemModel, current_user_id: str) -> ItemResponse:
     item_dict = item_db.model_dump(by_alias=True)
@@ -12,9 +13,9 @@ def map_item_to_response(item_db: ItemModel, current_user_id: str) -> ItemRespon
 
     item_dict["is_owner"] = (item_db.owner_id == current_user_id)
 
-    if item_db.item_type == "FILE":
+    if item_db.item_type == ItemType.FILE:
         return FileResponse(**item_dict)
-    elif item_db.item_type == "FOLDER":
+    elif item_db.item_type == ItemType.FOLDER:
         return FolderResponse(**item_dict)
         
     return ItemResponse(**item_dict)

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Depends, File, UploadFile, Path
 from app.services.items_service import init_item, complete_item_upload, get_folder_service
-from app.schemas.item import ItemResponse, FileCreate
+from app.schemas.item import ItemResponse, FileCreate, FolderContentResponse
 from app.models.user import User
 from app.dependencies import get_current_user
 
@@ -27,7 +27,7 @@ async def upload_content(
 
     return completed_item
 
-@router.get('/get/{folder_id}', response_model=ItemResponse, status_code=status.HTTP_200_OK)
+@router.get('/get/{folder_id}', response_model=FolderContentResponse, status_code=status.HTTP_200_OK)
 async def get_folder(
     folder_id: str = Path(...), 
     current_user: User = Depends(get_current_user)

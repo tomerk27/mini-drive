@@ -3,7 +3,6 @@ import apiClient from "./axiosClient";
 const folderApi = {
     getFolder: async (folderId) => {
         const response = await apiClient.get(`/items/get/${folderId}`);
-
         return response.data;
     },
 
