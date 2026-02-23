@@ -6,9 +6,10 @@ const FileUploaderBtn = ({ currentFolderId, onUploadSuccess }) => {
     const { inputRef, uploadFiles, isLoading, error } = useFilesUploader();
 
     const handleFileChange = async (event) => {
-        await uploadFiles(event, currentFolderId);
-        if (onUploadSuccess) {
-            onUploadSuccess();
+        try {
+            await uploadFiles(event, currentFolderId, onUploadSuccess);
+        } catch (uploadError) {
+            console.error("An error occurred during file upload:", uploadError);
         }
     };
 

@@ -3,7 +3,7 @@ import apiClient from "./axiosClient";
 export const initUploadApi = async (fileName, parentId) => {
     const response = await apiClient.post('/items/upload/init', {
         name: fileName,
-        parent_id: parentId || '/',
+        parent_id: parentId,
         item_type: 'file'
     });
 

@@ -28,7 +28,6 @@ const useFolder = () => {
         } finally {
             setLoading(false);
         }
-        
     }, []);
 
     useEffect(() => {

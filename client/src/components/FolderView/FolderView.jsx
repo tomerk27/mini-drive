@@ -1,10 +1,7 @@
 import { Box, Grid, Typography, CircularProgress } from '@mui/material';
-import useFolder from '../../hooks/useFolder';
 import Item from '../item/item';
 
-const FolderView = () => {
-    const { childFiles, childFolders, loading, error } = useFolder();
-
+const FolderView = ({ childFiles, childFolders, loading, error }) => {
     const items = [...childFolders, ...childFiles];
 
     if (loading) {
