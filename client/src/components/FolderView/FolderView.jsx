@@ -1,7 +1,7 @@
 import { Box, Grid, Typography, CircularProgress } from '@mui/material';
 import Item from '../item/item';
 
-const FolderView = ({ childFiles, childFolders, loading, error }) => {
+const FolderView = ({ childFiles, childFolders, loading, error, refreshFolder}) => {
     const items = [...childFolders, ...childFiles];
 
     if (loading) {
@@ -21,7 +21,7 @@ const FolderView = ({ childFiles, childFolders, loading, error }) => {
             <Grid container spacing={1}>
                 {items.map((item) => (
                     <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2 }} key={item.id}>
-                        <Item fileName={item.name} fileType={item.item_type === 'FOLDER' ? 'folder' : item.file_type} />
+                        <Item item={item} refreshFolder={refreshFolder}/>
                     </Grid>
                 ))}
             </Grid>

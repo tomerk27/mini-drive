@@ -6,11 +6,10 @@ from bson import ObjectId
 from app.schemas.item import ItemCreate, FolderContentResponse
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
-from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistingError
+from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistError, PremissionError
 from app.utils.item_utils import ItemStatus, ItemType
 from app.core.config import settings
 from app.utils.mappers import map_item_to_response
-from app.models.user import User
 
 def parse_item_to_model(raw_dict: dict) -> ItemModel:
     item_type = raw_dict.get("item_type")
@@ -121,7 +120,7 @@ async def get_folder_service(folder_id: str, current_user_id: str):
     folder_dict = await items.find_one({"_id": obj_id})
 
     if not folder_dict:
-        raise ItemIsNotExistingError()
+        raise ItemIsNotExistError()
     
     cursor = items.find({"parent_id": folder_id})
     children_dicts = await cursor.to_list(length=1000)
@@ -145,3 +144,33 @@ async def get_folder_service(folder_id: str, current_user_id: str):
         child_files=child_files,
         child_folders=child_folders
     )
+
+async def remove_item_service(item_id: str, current_user_id: str):
+    items = get_collection("items")
+
+    try: 
+        obj_id = ObjectId(item_id)
+    except Exception:
+        raise ResourceNotFoundError("Invalid ID format")
+    
+    item_to_remove = await items.find_one({'_id': obj_id})
+
+    if not item_to_remove:
+        raise ItemIsNotExistError()
+    if item_to_remove.get('owner_id') != current_user_id:
+        raise PremissionError(action='remove')
+    
+    physical_path = item_to_remove.get('physical_path')
+
+    removed = await items.delete_one({'_id': obj_id})
+
+    if removed.deleted_count == 0:
+        raise ResourceNotFoundError("The content didn't found")
+    
+    if item_to_remove.get('item_type') == ItemType.FILE:
+        try:
+            if physical_path and os.path.exists(physical_path):
+                os.remove(physical_path)
+        except Exception as e:
+            print(f"Failed to delete physical file: {e}")
+            raise e

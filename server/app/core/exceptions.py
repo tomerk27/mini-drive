@@ -32,11 +32,11 @@ class ExistingItemError(AppException):
             detail=f"A file named '{filename}' already exists in this destination."        
         )
 
-class ItemIsNotExistingError(AppException):
+class ItemIsNotExistError(AppException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
-            detail="The item is not existing"        
+            detail="The item is not exist"        
         )
 
 class TokenCredentialsError(AppException):
@@ -52,6 +52,13 @@ class ResourceNotFoundError(AppException):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=detail
+        )
+
+class PremissionError(AppException): 
+    def __init__(self, action: str):
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"You don't have a premission to {action} this content"
         )
 
 async def handle_exception(request: Request, exc: AppException):

@@ -5,9 +5,18 @@ import ShareIcon from '@mui/icons-material/Share';
 import EditIcon from '@mui/icons-material/Edit';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import useItemActionMenu from '../../hooks/useItemActionMenu';
+import useRemoveItem from '../../hooks/itemActions/useRemoveItem';
 
-const ActionMenu = () => {
+const ActionMenu = ({item, refreshFolder}) => {
     const { anchorEl, isOpen, openMenu, closeMenu } = useItemActionMenu();
+
+    const { removeItem, isRemoving } = useRemoveItem();
+
+    const handleRemoveClick = async (event) => {
+        closeMenu(event);
+
+        await removeItem(item.id, refreshFolder);
+    };
 
     return (
         <>
@@ -30,7 +39,7 @@ const ActionMenu = () => {
                     <ListItemText>Share</ListItemText>
                 </MenuItem>
 
-                <MenuItem>
+                <MenuItem onClick={handleRemoveClick} disabled={isRemoving}>
                     <ListItemIcon><DeleteIcon fontSize='small'></DeleteIcon></ListItemIcon>
                     <ListItemText>Delete</ListItemText>
                 </MenuItem>

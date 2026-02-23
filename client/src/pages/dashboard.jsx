@@ -18,6 +18,7 @@ const Dashboard = () => {
                 childFolders={childFolders} 
                 loading={loading} 
                 error={error} 
+                refreshFolder={() => refreshFolder(folder.id)}
             />
         </div>
     );
