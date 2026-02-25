@@ -25,8 +25,8 @@ apiClient.interceptors.response.use(
         return response;
     },
     (error) => {
-        if (error.response && error.status === 401) {
-            localStorage.removeItem('access_token');
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('authToken');
 
             window.location.href = '/login';
         }
