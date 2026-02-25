@@ -3,10 +3,10 @@ import os
 import uuid
 import shutil
 from bson import ObjectId
-from app.schemas.item import ItemCreate, FolderContentResponse
+from app.schemas.item import ItemCreate, FolderContentResponse, ItemRename
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
-from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistError, PremissionError
+from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistError, PremissionError, DataBaseError
 from app.utils.item_utils import ItemStatus, ItemType
 from app.core.config import settings
 from app.utils.mappers import map_item_to_response
@@ -162,10 +162,13 @@ async def remove_item_service(item_id: str, current_user_id: str):
     
     physical_path = item_to_remove.get('physical_path')
 
-    removed = await items.delete_one({'_id': obj_id})
+    try:
+        removed = await items.delete_one({'_id': obj_id})
 
-    if removed.deleted_count == 0:
-        raise ResourceNotFoundError("The content didn't found")
+        if removed.deleted_count == 0:
+            raise ResourceNotFoundError("The content didn't found")
+    except Exception:
+        raise DataBaseError()
     
     if item_to_remove.get('item_type') == ItemType.FILE:
         try:
@@ -174,3 +177,30 @@ async def remove_item_service(item_id: str, current_user_id: str):
         except Exception as e:
             print(f"Failed to delete physical file: {e}")
             raise e
+        
+async def rename_item_service(item_id: str, current_user_id: str, new_name: str):
+    items = get_collection("items")
+
+    try: 
+        obj_id = ObjectId(item_id)
+    except Exception:
+        raise ResourceNotFoundError("Invalid ID format")
+    
+    item_to_rename = await items.find_one({'_id': obj_id})
+
+    if not item_to_rename:
+        raise ItemIsNotExistError()
+    if item_to_rename.get('owner_id') != current_user_id:
+        raise PremissionError(action='rename')
+    
+    try:
+        renamed = await items.update_one(
+            {'_id': obj_id},
+            {'$set': {'name': new_name}}
+        )
+
+        if renamed.matched_count == 0:
+            raise ResourceNotFoundError("The content didn't found")
+        
+    except Exception:
+        raise DataBaseError()

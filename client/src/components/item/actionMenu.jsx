@@ -7,15 +7,18 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import useItemActionMenu from '../../hooks/useItemActionMenu';
 import useRemoveItem from '../../hooks/itemActions/useRemoveItem';
 
-const ActionMenu = ({item, refreshFolder}) => {
+const ActionMenu = ({item, refreshFolder, onRenameClick}) => {
     const { anchorEl, isOpen, openMenu, closeMenu } = useItemActionMenu();
-
     const { removeItem, isRemoving } = useRemoveItem();
 
     const handleRemoveClick = async (event) => {
         closeMenu(event);
-
         await removeItem(item.id, refreshFolder);
+    };
+
+    const handleRenameClick = () => {
+        onRenameClick();
+        closeMenu();
     };
 
     return (
@@ -44,16 +47,15 @@ const ActionMenu = ({item, refreshFolder}) => {
                     <ListItemText>Delete</ListItemText>
                 </MenuItem>
 
-                <MenuItem>
+                <MenuItem onClick={handleRenameClick}>
                     <ListItemIcon><EditIcon fontSize='small'></EditIcon></ListItemIcon>
-                    <ListItemText>Edit</ListItemText>
+                    <ListItemText>Rename</ListItemText>
                 </MenuItem>
                 <MenuItem>
                     <ListItemIcon><InfoOutlinedIcon fontSize='small'></InfoOutlinedIcon></ListItemIcon>
-                    <ListItemText>details</ListItemText>
+                    <ListItemText>Details</ListItemText>
                 </MenuItem>
             </Menu>
-
         </>
     )
 };

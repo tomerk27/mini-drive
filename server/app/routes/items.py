@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Depends, File, UploadFile, Path, Response
-from app.services.items_service import init_item, complete_item_upload, get_folder_service, remove_item_service
-from app.schemas.item import ItemResponse, FileCreate, FolderContentResponse
+from app.services.items_service import init_item, complete_item_upload, get_folder_service, remove_item_service, rename_item_service
+from app.schemas.item import ItemResponse, FileCreate, FolderContentResponse, ItemRename
 from app.models.user import User
 from app.dependencies import get_current_user
 
@@ -44,3 +44,13 @@ async def remove_item(
     await remove_item_service(item_id, current_user.id)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.patch("/rename/{item_id}", status_code=status.HTTP_200_OK)
+async def rename_item(
+    item_id: str,
+    rename_schema: ItemRename,
+    current_user: User = Depends(get_current_user)
+):
+    await rename_item_service(item_id, current_user.id, rename_schema.new_name)
+
+    return Response(status_code=status.HTTP_200_OK)

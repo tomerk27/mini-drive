@@ -61,6 +61,13 @@ class PremissionError(AppException):
             detail=f"You don't have a premission to {action} this content"
         )
 
+class DataBaseError(AppException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Data base error"
+        )
+
 async def handle_exception(request: Request, exc: AppException):
     return JSONResponse(
         status_code=exc.status_code,

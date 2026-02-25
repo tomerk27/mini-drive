@@ -40,3 +40,6 @@ class FolderContentResponse(BaseModel):
 
     child_files: List[FileResponse] = []
     child_folders: List[FolderResponse] = []
+
+class ItemRename(BaseModel):
+    new_name: str

@@ -1,7 +1,15 @@
 import apiClient from "./axiosClient";
 
-export const removeItemApi = async (itemId, ) => {
+export const removeItemApi = async (itemId) => {
     const response = await apiClient.delete(`/items/remove/${itemId}`);
 
     return response.data;
-}
+};
+
+export const renameItemApi = async (itemId, newName) => {
+    const response = await apiClient.patch(`/items/rename/${itemId}`,{
+        'new_name': newName
+    });
+
+    return response.data;
+};
