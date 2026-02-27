@@ -1,5 +1,7 @@
+import { Box } from '@mui/material';
 import FolderView from '../components/FolderView/FolderView'
 import FileUploaderBtn from '../components/fileUploader';
+import LogoutButton from '../components/authentication/logoutButton';
 import useFolder from '../hooks/useFolder';
 
 const Dashboard = () => {
@@ -7,12 +9,15 @@ const Dashboard = () => {
     
     return (
         <div className="main-page">
-            {folder && (
-                <FileUploaderBtn 
-                    currentFolderId={folder.id} 
-                    onUploadSuccess={() => refreshFolder(folder.id)} 
-                />
-            )}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+                {folder && (
+                    <FileUploaderBtn 
+                        currentFolderId={folder.id} 
+                        onUploadSuccess={() => refreshFolder(folder.id)} 
+                    />
+                )}
+                <LogoutButton />
+            </Box>
             <FolderView 
                 childFiles={childFiles} 
                 childFolders={childFolders} 
