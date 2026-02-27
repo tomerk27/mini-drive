@@ -1,12 +1,13 @@
-from fastapi import UploadFile, File, Depends
+from fastapi import UploadFile
+from fastapi.responses import FileResponse
 import os
 import uuid
 import shutil
 from bson import ObjectId
-from app.schemas.item import ItemCreate, FolderContentResponse, ItemRename
+from app.schemas.item import ItemCreate, FolderContentResponse
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
-from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistError, PremissionError, DataBaseError
+from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistError, PremissionError, DataBaseError, ItemIsFolderError
 from app.utils.item_utils import ItemStatus, ItemType
 from app.core.config import settings
 from app.utils.mappers import map_item_to_response
@@ -204,3 +205,26 @@ async def rename_item_service(item_id: str, current_user_id: str, new_name: str)
         
     except Exception:
         raise DataBaseError()
+    
+async def get_file_preview_service(item_id: str, current_user_id: str):
+    items = get_collection("items")
+
+    try: 
+        obj_id = ObjectId(item_id)
+    except Exception:
+        raise ResourceNotFoundError("Invalid ID format")
+    
+    item = await items.find_one({'_id': obj_id})
+
+    if not item:
+        raise ItemIsNotExistError()
+    if item.get('owner_id') != current_user_id:
+        raise PremissionError(action='preview')
+    if item.get('item_type') == ItemType.FOLDER:
+        raise ItemIsFolderError()
+    
+    return FileResponse(
+        path=item.get('physical_path'),
+        media_type=item.get('file_type'),
+        filename=item.get('name')
+    )

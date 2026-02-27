@@ -23,3 +23,11 @@ export const uploadFileContentApi = async (fileId, fileObject) => {
 
     return response.data
 };
+
+export const getFileContentApi = async (fileId) => {
+    const response = await apiClient.get(`/items/preview/${fileId}`, {
+        responseType: 'blob'
+    });
+
+    return response.data;
+};

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, Depends, File, UploadFile, Path, Response
-from app.services.items_service import init_item, complete_item_upload, get_folder_service, remove_item_service, rename_item_service
+from app.services.items_service import init_item, complete_item_upload, get_folder_service, remove_item_service, rename_item_service, get_file_preview_service
 from app.schemas.item import ItemResponse, FileCreate, FolderContentResponse, ItemRename
 from app.models.user import User
 from app.dependencies import get_current_user
@@ -54,3 +54,12 @@ async def rename_item(
     await rename_item_service(item_id, current_user.id, rename_schema.new_name)
 
     return Response(status_code=status.HTTP_200_OK)
+
+@router.get('/preview/{item_id}')
+async def get_file_preview(
+    item_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    file_preview = await get_file_preview_service(item_id, current_user.id)
+
+    return file_preview

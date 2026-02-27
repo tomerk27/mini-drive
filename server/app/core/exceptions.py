@@ -75,6 +75,13 @@ async def handle_exception(request: Request, exc: AppException):
         headers=exc.headers
     )
 
+class ItemIsFolderError(AppException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot perform this action: the requested item is a folder, not a file."
+        )
+        
 async def validation_error_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
