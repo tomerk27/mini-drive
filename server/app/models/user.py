@@ -1,6 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
-from typing import Optional
 from app.utils.time import current_time
 from app.utils.db_utils import PyObjectId
 

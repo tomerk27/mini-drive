@@ -37,10 +37,11 @@ const useSignup = () => {
             
             navigate('/dashboard');
         }
-        catch(error){
-            setError(error.response?.data?.detail);
+        catch (error) {
+            const detail = error.response?.data?.detail;
+            setError(typeof detail === 'string' ? detail : "Sign up failed. Please check your inputs.");
         }
-        finally{
+        finally {
             setIsLoading(false);
         }
     };

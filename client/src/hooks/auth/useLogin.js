@@ -38,7 +38,8 @@ const useLogin = () => {
             navigate('/dashboard');
         }
         catch (error) {
-            setError(error.response?.data?.detail);
+            const detail = error.response?.data?.detail;
+            setError(typeof detail === 'string' ? detail : "Invalid email or password");
         }
         finally {
             setIsLoading(false)
@@ -60,7 +61,8 @@ const useLogin = () => {
             navigate('/dashboard');
         }
         catch (error) {
-            setError(error.response?.data?.detail);
+            const detail = error.response?.data?.detail;
+            setError(typeof detail === 'string' ? detail : "Google login failed. Please try again.");
         }
         finally {
             setIsLoading(false);

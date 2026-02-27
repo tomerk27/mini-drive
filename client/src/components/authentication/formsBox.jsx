@@ -6,8 +6,14 @@ import SubmitButton from './submitButton';
 const FormsBox = ({ handleSubmit, emailRef, usernameRef, passwordRef, isLoading, mode }) => {
     const isSignup = mode === 'signup';
 
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter' && event.target.type !== 'submit') {
+            event.preventDefault();
+        }
+    };
+
     return (
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%' }}>
+        <Box component="form" onSubmit={handleSubmit} onKeyDown={handleKeyDown} noValidate sx={{ width: '100%' }}>
             <EmailField emailRef={emailRef} isLoading={isLoading} />
 
             {isSignup && <UsernameField usernameRef={usernameRef} isLoading={isLoading} />}

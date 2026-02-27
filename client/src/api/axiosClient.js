@@ -25,9 +25,10 @@ apiClient.interceptors.response.use(
         return response;
     },
     (error) => {
-        if (error.response && error.response.status === 401) {
-            localStorage.removeItem('authToken');
+        const isAuthRequest = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/register');
 
+        if (error.response && error.response.status === 401 && !isAuthRequest) {
+            localStorage.removeItem('authToken');
             window.location.href = '/login';
         }
         return Promise.reject(error);

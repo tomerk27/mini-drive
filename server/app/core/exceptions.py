@@ -85,5 +85,5 @@ class ItemIsFolderError(AppException):
 async def validation_error_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-        content={"detail": "Invalid email or password"}
+        content={"detail": "Invalid input"}
     )
