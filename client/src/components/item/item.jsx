@@ -3,6 +3,7 @@ import FileIcon from './itemIcon';
 import ActionMenu from './actionMenu';
 import RenameDialog from './renameDialog';
 import PreviewDialog from './previewDialog';
+import DetailsDialog from './detailsDialog';
 import useRenameItem from '../../hooks/itemActions/useRenameItem';
 import useFilePreview from '../../hooks/useFilePreview';
 import { useState } from 'react';
@@ -14,6 +15,8 @@ const Item = ({ item, refreshFolder }) => {
     const type = isFolder ? 'folder' : item.file_type;
     const itemName = item.name;
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
     const { 
         onRenameSubmit,
         isRenaming, 
@@ -21,6 +24,9 @@ const Item = ({ item, refreshFolder }) => {
         openRenameModal, 
         closeRenameModal 
     } = useRenameItem(item.id, refreshFolder);
+
+    const openDetailsModal = () => setIsDetailsOpen(true);
+    const closeDetailsModal = () => setIsDetailsOpen(false);
 
     const { getFileContent, clearPreview, isLoading, error, imageUrl } = useFilePreview();
 
@@ -57,6 +63,7 @@ const Item = ({ item, refreshFolder }) => {
                     item={item} 
                     refreshFolder={refreshFolder} 
                     onRenameClick={openRenameModal} 
+                    onDetailsClick={openDetailsModal}
                 />
             </Box>
 
@@ -97,6 +104,11 @@ const Item = ({ item, refreshFolder }) => {
                 error={error}
                 fileName={item.name}
                 fileType={item.file_type}
+            />
+            <DetailsDialog
+                open={isDetailsOpen}
+                onClose={closeDetailsModal}
+                item={item}
             />
         </Card>
     );

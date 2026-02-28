@@ -7,7 +7,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import useItemActionMenu from '../../hooks/useItemActionMenu';
 import useRemoveItem from '../../hooks/itemActions/useRemoveItem';
 
-const ActionMenu = ({item, refreshFolder, onRenameClick}) => {
+const ActionMenu = ({item, refreshFolder, onRenameClick, onDetailsClick}) => {
     const { anchorEl, isOpen, openMenu, closeMenu } = useItemActionMenu();
     const { removeItem, isRemoving } = useRemoveItem();
 
@@ -18,6 +18,11 @@ const ActionMenu = ({item, refreshFolder, onRenameClick}) => {
 
     const handleRenameClick = () => {
         onRenameClick();
+        closeMenu();
+    };
+
+    const handleDetailsClick = () => {
+        onDetailsClick();
         closeMenu();
     };
 
@@ -38,21 +43,21 @@ const ActionMenu = ({item, refreshFolder, onRenameClick}) => {
                 onClick={closeMenu}
             >
                 <MenuItem>
-                    <ListItemIcon><ShareIcon fontSize='small'>Share</ShareIcon></ListItemIcon>
+                    <ListItemIcon><ShareIcon fontSize='small' /></ListItemIcon>
                     <ListItemText>Share</ListItemText>
                 </MenuItem>
 
                 <MenuItem onClick={handleRemoveClick} disabled={isRemoving}>
-                    <ListItemIcon><DeleteIcon fontSize='small'></DeleteIcon></ListItemIcon>
+                    <ListItemIcon><DeleteIcon fontSize='small' /></ListItemIcon>
                     <ListItemText>Delete</ListItemText>
                 </MenuItem>
 
                 <MenuItem onClick={handleRenameClick}>
-                    <ListItemIcon><EditIcon fontSize='small'></EditIcon></ListItemIcon>
+                    <ListItemIcon><EditIcon fontSize='small' /></ListItemIcon>
                     <ListItemText>Rename</ListItemText>
                 </MenuItem>
-                <MenuItem>
-                    <ListItemIcon><InfoOutlinedIcon fontSize='small'></InfoOutlinedIcon></ListItemIcon>
+                <MenuItem onClick={handleDetailsClick}>
+                    <ListItemIcon><InfoOutlinedIcon fontSize='small' /></ListItemIcon>
                     <ListItemText>Details</ListItemText>
                 </MenuItem>
             </Menu>
