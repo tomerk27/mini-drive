@@ -26,7 +26,7 @@ const Item = ({ item, refreshFolder }) => {
 
     const handleItemClick = async () => {
         if (isFolder) {
-            navigate(`/dashboard/folder/${item.id}`);
+            navigate(`/dashboard/${item.id}`);
         } else {
             setIsPreviewOpen(true);
             await getFileContent(item.id);

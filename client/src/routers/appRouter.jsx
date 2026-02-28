@@ -14,7 +14,7 @@ const AppRouter = () => {
 
                 <Route element={<ProtectedRoute />}>
                     <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="dashboard/folder/:folderId" element={<Dashboard />} />
+                    <Route path="dashboard/:folderId" element={<Dashboard />} />
                 </Route>
             </Routes>
         </BrowserRouter>
