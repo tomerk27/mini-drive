@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Button } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ComputerIcon from '@mui/icons-material/Computer';
@@ -12,6 +13,8 @@ import AddIcon from '@mui/icons-material/Add';
 const drawerWidth = 256;
 
 const SideBar = ({ onNewClick }) => {
+    const navigate = useNavigate();
+
     return (
         <Drawer
             variant="permanent"
@@ -54,7 +57,7 @@ const SideBar = ({ onNewClick }) => {
 
             <List sx={{ pt: 0 }}>
                 {[
-                    { text: 'My Drive', icon: <HomeIcon />, selected: true },
+                    { text: 'My Drive', icon: <HomeIcon />, selected: true, onClick: () => navigate('/dashboard')},
                     { text: 'Computers', icon: <ComputerIcon /> },
                     { text: 'Shared with me', icon: <PeopleAltIcon /> },
                     { text: 'Recent', icon: <AccessTimeIcon /> },
@@ -73,6 +76,7 @@ const SideBar = ({ onNewClick }) => {
                                     }
                                 }
                             }}
+                            onClick={item.onClick}
                         >
                             <ListItemIcon sx={{ minWidth: 40, color: item.selected ? '#001d35' : 'inherit' }}>
                                 {item.icon}
