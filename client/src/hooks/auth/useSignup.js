@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { signupUserApi } from "../../api/authApi";
 import { useAuthContext } from "../../context/auth/authContext";
+import handleError from "../../utils/handleError";
 
 const useSignup = () => {
     const navigate = useNavigate();
@@ -38,10 +39,9 @@ const useSignup = () => {
             navigate('/dashboard');
         }
         catch (error) {
-            const detail = error.response?.data?.detail;
-            setError(typeof detail === 'string' ? detail : "Sign up failed. Please check your inputs.");
+            handleError(setError, error, "Sign up failed. Please check your inputs.");
         }
-        finally {
+        finally{
             setIsLoading(false);
         }
     };

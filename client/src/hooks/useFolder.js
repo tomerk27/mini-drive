@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useParams } from 'react-router-dom';
 import { useAuthContext } from '../context/auth/authContext';
 import folderApi from "../api/folderApi";
+import handleError from "../utils/handleError";
 
 const useFolder = () => {
     const { folderId } = useParams();
@@ -12,6 +13,19 @@ const useFolder = () => {
     const [childFiles, setChildFiles] = useState([]);
     const [childFolders, setChildFolders] = useState([]);
     const [folder, setFolder] = useState(null);
+
+    const createFolder = async (folderName, currentFolderId) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            await folderApi.uploadFolder(folderName, currentFolderId);
+        } catch (err) {
+            handleError(setError, err, "There was a problem with folder creation");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const refreshFolder = useCallback(async (id) => {
         setLoading(true);
@@ -24,7 +38,7 @@ const useFolder = () => {
             setFolder(data.folder);
             
         } catch(error) {
-            setError(error);
+            handleError(setError, error, "Failed to load folder content. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -43,7 +57,8 @@ const useFolder = () => {
         childFiles,
         childFolders,
         folder,
-        refreshFolder 
+        refreshFolder,
+        createFolder
     };
 };
 

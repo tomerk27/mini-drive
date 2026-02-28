@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { initUploadApi, uploadFileContentApi } from "../api/fileApi";
+import handleError from "../utils/handleError";
 
 const useFilesUploader = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +38,7 @@ const useFilesUploader = () => {
             }
             return settledPromises;
         } catch (error) {
-            setError(error);
+            handleError(setError, error, "Failed to upload files. Please try again.");
             // Propagate the error to the caller
             return Promise.reject(error);
         } finally {

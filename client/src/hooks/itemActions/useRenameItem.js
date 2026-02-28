@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { renameItemApi } from "../../api/itemApi";
+import handleError from "../../utils/handleError";
 
 const useRenameItem = (itemId, onSuccessCallback) => {
     const [isRenaming, setIsRenaming] = useState(false);
@@ -25,8 +26,7 @@ const useRenameItem = (itemId, onSuccessCallback) => {
                 onSuccessCallback();
             }
         } catch (err) {
-            setError(err.response?.data?.detail || "Failed to rename item");
-            console.error("Renaming error: ", err);
+            handleError(setError, err, "Failed to rename item");
         } finally {
             setIsRenaming(false);
         }

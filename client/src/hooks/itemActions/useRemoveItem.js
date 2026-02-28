@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { removeItemApi } from "../../api/itemApi";
+import handleError from "../../utils/handleError";
 
 const useRemoveItem = () => {
     const [isRemoving, setIsRemoving] = useState(false);
@@ -17,8 +18,7 @@ const useRemoveItem = () => {
                 onSuccess();
             } 
         } catch (err) {
-            setError(err.response?.data?.detail || "Failed to remove item");
-            console.error("Deletion error: ", err);
+            handleError(setError, err, "Failed to remove item");
         } finally {
             setIsRemoving(false);
         }

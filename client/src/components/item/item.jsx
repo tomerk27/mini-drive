@@ -6,9 +6,12 @@ import PreviewDialog from './previewDialog';
 import useRenameItem from '../../hooks/itemActions/useRenameItem';
 import useFilePreview from '../../hooks/useFilePreview';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Item = ({ item, refreshFolder }) => {
-    const type = item.item_type === 'FOLDER' ? 'folder' : item.file_type;
+    const navigate = useNavigate();
+    const isFolder = item.item_type === 'folder' || item.type === 'folder';
+    const type = isFolder ? 'folder' : item.file_type;
     const itemName = item.name;
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const { 
@@ -21,8 +24,10 @@ const Item = ({ item, refreshFolder }) => {
 
     const { getFileContent, clearPreview, isLoading, error, imageUrl } = useFilePreview();
 
-    const handlePreviewOpen = async () => {
-        if (item.item_type !== 'FOLDER') {
+    const handleItemClick = async () => {
+        if (isFolder) {
+            navigate(`/dashboard/folder/${item.id}`);
+        } else {
             setIsPreviewOpen(true);
             await getFileContent(item.id);
         }
@@ -54,8 +59,7 @@ const Item = ({ item, refreshFolder }) => {
 
             <CardActionArea 
                 sx={{ height: '100%', pt: 4, pb: 2 }}
-                onClick={handlePreviewOpen}
-                disabled={item.item_type === 'FOLDER'} // Later: add folder navigation
+                onClick={handleItemClick}
             >
 
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>

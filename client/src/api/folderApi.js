@@ -7,7 +7,7 @@ const folderApi = {
     },
 
     uploadFolder: async (folderName, parentId) => {
-        const response = await apiClient('/items/upload/folder', {
+        const response = await apiClient.post('/items/upload/folder', {
             name: folderName,
             parent_id: parentId || '/',
             item_type: 'folder'

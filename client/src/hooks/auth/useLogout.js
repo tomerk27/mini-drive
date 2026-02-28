@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../context/auth/authContext";
+import handleError from "../../utils/handleError";
 
 const useLogout = () => {
     const navigate = useNavigate();
@@ -19,7 +20,7 @@ const useLogout = () => {
             logout();
             navigate('/login');
         } catch (error) {
-            setError(error);
+            handleError(setError, error, "Logout failed. Please try again.");
         } finally {
             setIsLoading(false);
         }

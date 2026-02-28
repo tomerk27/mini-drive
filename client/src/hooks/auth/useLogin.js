@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { loginUserApi, googleConectionApi } from "../../api/authApi";
 import { useAuthContext } from "../../context/auth/authContext";
+import handleError from "../../utils/handleError";
 
 
 const useLogin = () => {
@@ -38,8 +39,7 @@ const useLogin = () => {
             navigate('/dashboard');
         }
         catch (error) {
-            const detail = error.response?.data?.detail;
-            setError(typeof detail === 'string' ? detail : "Invalid email or password");
+            handleError(setError, error, "Invalid email or password");
         }
         finally {
             setIsLoading(false)
@@ -61,8 +61,7 @@ const useLogin = () => {
             navigate('/dashboard');
         }
         catch (error) {
-            const detail = error.response?.data?.detail;
-            setError(typeof detail === 'string' ? detail : "Google login failed. Please try again.");
+            handleError(setError, error, "Google login failed. Please try again.");
         }
         finally {
             setIsLoading(false);
