@@ -14,13 +14,10 @@ const FolderView = ({ childFiles, childFolders, loading, error, refreshFolder}) 
     }
 
     return (
-        <Box sx={{ p: 3 }}>
-            <Typography variant="h4" gutterBottom>
-                My Drive
-            </Typography>
+        <Box sx={{ p: 1 }}>
             <Grid container spacing={1}>
                 {items.map((item) => (
-                    <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2 }} key={item.id}>
+                    <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2.4 }} key={item.id}>
                         <Item item={item} refreshFolder={refreshFolder}/>
                     </Grid>
                 ))}

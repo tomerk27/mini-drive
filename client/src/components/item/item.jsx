@@ -41,11 +41,14 @@ const Item = ({ item, refreshFolder }) => {
     return (
         <Card
             sx={{
-                width: 240,
+                width: '100%',
                 borderRadius: 2,
                 position: 'relative',
+                border: '1px solid #e0e0e0',
+                boxShadow: 'none',
                 '&:hover': {
-                    boxShadow: 6
+                    boxShadow: 2,
+                    bgcolor: '#f8f9fa'
                 }
             }}
         >

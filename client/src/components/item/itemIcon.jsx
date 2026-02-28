@@ -11,7 +11,7 @@ import SlideshowOutlinedIcon from '@mui/icons-material/SlideshowOutlined';
 import PublicIcon from '@mui/icons-material/Public'; // For HTML, CSS, JS
 
 const FileIcon = ({ fileType }) => {
-    const iconSize = 90;
+    const iconSize = 70;
     const commonColor = '#909090'; // Default color for most icons
 
     switch (fileType) {
