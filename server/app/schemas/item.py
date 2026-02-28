@@ -22,6 +22,7 @@ class ItemResponse(BaseItem):
     id: str
     created_at: datetime
     is_owner: bool
+    starred_by: List[str]
 
     class Config:
         populate_by_name = True

@@ -228,3 +228,37 @@ async def get_file_preview_service(item_id: str, current_user_id: str):
         media_type=item.get('file_type'),
         filename=item.get('name')
     )
+
+async def mark_item_as_starred_service(item_id: str, current_user_id: str):
+    items = get_collection("items")
+
+    try: 
+        obj_id = ObjectId(item_id)
+    except Exception:
+        raise ResourceNotFoundError("Invalid ID format")
+    
+    item_to_mark = await items.find_one({'_id': obj_id})
+
+    if not item_to_mark:
+        raise ItemIsNotExistError()
+    
+    try:
+        current_stars = item_to_mark.get("starred_by", [])
+        
+        if current_user_id in current_stars:
+            # Remove star
+            update_op = {"$pull": {"starred_by": current_user_id}}
+        else:
+            # Add star
+            update_op = {"$addToSet": {"starred_by": current_user_id}}
+
+        result = await items.update_one(
+            {'_id': obj_id},
+            update_op        
+        )
+
+        if result.matched_count == 0:
+            raise ResourceNotFoundError("The content was not found")
+        
+    except Exception:
+        raise DataBaseError()

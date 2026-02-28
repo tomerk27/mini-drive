@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from app.utils.item_utils import ItemType, ItemStatus
 from app.utils.db_utils import PyObjectId
@@ -15,6 +15,8 @@ class ItemModel(BaseModel):
     parent_id: Optional[str] = Field(None)
 
     created_at: datetime = Field(default_factory=current_time)
+
+    starred_by: List[str] = []
 
     class Config:
         populate_by_name = True

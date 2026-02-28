@@ -13,3 +13,9 @@ export const renameItemApi = async (itemId, newName) => {
 
     return response.data;
 };
+
+export const markAsStarredApi = async (itemId) => {
+    const response = await apiClient.patch(`/items/markAsStarred/${itemId}`);
+
+    return response.data;
+};
