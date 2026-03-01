@@ -64,7 +64,7 @@ async def rename_item(
 
     return Response(status_code=status.HTTP_200_OK)
 
-@router.get('/preview/{item_id}')
+@router.get('/preview/{item_id}', status_code=status.HTTP_200_OK)
 async def get_file_preview(
     item_id: str,
     current_user: User = Depends(get_current_user)

@@ -4,13 +4,13 @@ import os
 import uuid
 import shutil
 from bson import ObjectId
-from app.schemas.item import ItemCreate, FolderContentResponse
+from app.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, FileResponse as FileResponseSchema, FolderResponse
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
-from app.core.exceptions import ExistingItemError, ResourceNotFoundError, ItemIsNotExistError, PremissionError, DataBaseError, ItemIsFolderError
-from app.utils.item_utils import ItemStatus, ItemType
+from app.core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError
+from app.utils.item_utils import ItemStatus, ItemType, get_item_or_404, verify_ownership
 from app.core.config import settings
-from app.utils.mappers import map_item_to_response
+from app.utils.mappers import map_item_to_response, map_items_to_responses
 
 def parse_item_to_model(raw_dict: dict) -> ItemModel:
     item_type = raw_dict.get("item_type")
@@ -25,7 +25,7 @@ def parse_item_to_model(raw_dict: dict) -> ItemModel:
 async def init_item(
     item_data: ItemCreate,
     current_user_id: str
-) -> ItemModel:
+) -> ItemResponse:
     items = get_collection('items')
 
     if await items.find_one({"owner_id": str(current_user_id), "parent_id": item_data.parent_id, "name": item_data.name}):
@@ -56,21 +56,14 @@ async def complete_item_upload(
     owner_id: str,
     file: UploadFile,
     current_user_id: str
-) -> ItemModel:
+) -> ItemResponse:
     items = get_collection('items')
     
-    try:
-        obj_id = ObjectId(item_id)
-    except: 
-        raise ResourceNotFoundError("Invalid ID format")
-
-    item = await items.find_one({
-        "_id": obj_id, 
-        "owner_id": owner_id, 
-        "status": ItemStatus.PENDING.value
-        })
-
-    if not item:
+    # We verify the pending item exists and belongs to the owner
+    item = await get_item_or_404(item_id)
+    verify_ownership(item, owner_id, "upload")
+    
+    if item.get("status") != ItemStatus.PENDING.value:
         raise ResourceNotFoundError("Pending file not found")
 
     os.makedirs(settings.files_dir, exist_ok=True)
@@ -90,7 +83,7 @@ async def complete_item_upload(
 
     result_dict = await items.find_one_and_update(
         {
-            "_id": obj_id,
+            "_id": ObjectId(item_id),
             "owner_id": owner_id, 
             "status": ItemStatus.PENDING.value
             },
@@ -111,19 +104,11 @@ async def complete_item_upload(
     return map_item_to_response(updated_model, current_user_id)
 
 async def get_folder_service(folder_id: str, current_user_id: str):
-    items = get_collection('items')
+    items_collection = get_collection('items')
 
-    try: 
-        obj_id = ObjectId(folder_id)
-    except Exception:
-        raise ResourceNotFoundError("Invalid ID format")
+    folder_dict = await get_item_or_404(folder_id)
     
-    folder_dict = await items.find_one({"_id": obj_id})
-
-    if not folder_dict:
-        raise ItemIsNotExistError()
-    
-    cursor = items.find({"parent_id": folder_id})
+    cursor = items_collection.find({"parent_id": folder_id})
     children_dicts = await cursor.to_list(length=1000)
 
     child_files = []
@@ -149,77 +134,37 @@ async def get_folder_service(folder_id: str, current_user_id: str):
 async def remove_item_service(item_id: str, current_user_id: str):
     items = get_collection("items")
 
-    try: 
-        obj_id = ObjectId(item_id)
-    except Exception:
-        raise ResourceNotFoundError("Invalid ID format")
-    
-    item_to_remove = await items.find_one({'_id': obj_id})
-
-    if not item_to_remove:
-        raise ItemIsNotExistError()
-    if item_to_remove.get('owner_id') != current_user_id:
-        raise PremissionError(action='remove')
+    item_to_remove = await get_item_or_404(item_id)
+    verify_ownership(item_to_remove, current_user_id, "remove")
     
     physical_path = item_to_remove.get('physical_path')
 
     try:
-        removed = await items.delete_one({'_id': obj_id})
-
-        if removed.deleted_count == 0:
-            raise ResourceNotFoundError("The content didn't found")
+        await items.delete_one({'_id': ObjectId(item_id)})
     except Exception:
         raise DataBaseError()
     
-    if item_to_remove.get('item_type') == ItemType.FILE:
-        try:
-            if physical_path and os.path.exists(physical_path):
-                os.remove(physical_path)
-        except Exception as e:
-            print(f"Failed to delete physical file: {e}")
-            raise e
+    if item_to_remove.get('item_type') == ItemType.FILE and physical_path and os.path.exists(physical_path):
+        os.remove(physical_path)
         
 async def rename_item_service(item_id: str, current_user_id: str, new_name: str):
     items = get_collection("items")
 
-    try: 
-        obj_id = ObjectId(item_id)
-    except Exception:
-        raise ResourceNotFoundError("Invalid ID format")
-    
-    item_to_rename = await items.find_one({'_id': obj_id})
-
-    if not item_to_rename:
-        raise ItemIsNotExistError()
-    if item_to_rename.get('owner_id') != current_user_id:
-        raise PremissionError(action='rename')
+    item_to_rename = await get_item_or_404(item_id)
+    verify_ownership(item_to_rename, current_user_id, "rename")
     
     try:
-        renamed = await items.update_one(
-            {'_id': obj_id},
+        await items.update_one(
+            {'_id': ObjectId(item_id)},
             {'$set': {'name': new_name}}
         )
-
-        if renamed.matched_count == 0:
-            raise ResourceNotFoundError("The content didn't found")
-        
     except Exception:
         raise DataBaseError()
     
 async def get_file_preview_service(item_id: str, current_user_id: str):
-    items = get_collection("items")
+    item = await get_item_or_404(item_id)
+    verify_ownership(item, current_user_id, "preview")
 
-    try: 
-        obj_id = ObjectId(item_id)
-    except Exception:
-        raise ResourceNotFoundError("Invalid ID format")
-    
-    item = await items.find_one({'_id': obj_id})
-
-    if not item:
-        raise ItemIsNotExistError()
-    if item.get('owner_id') != current_user_id:
-        raise PremissionError(action='preview')
     if item.get('item_type') == ItemType.FOLDER:
         raise ItemIsFolderError()
     
@@ -232,33 +177,15 @@ async def get_file_preview_service(item_id: str, current_user_id: str):
 async def mark_item_as_starred_service(item_id: str, current_user_id: str):
     items = get_collection("items")
 
-    try: 
-        obj_id = ObjectId(item_id)
-    except Exception:
-        raise ResourceNotFoundError("Invalid ID format")
+    item_to_mark = await get_item_or_404(item_id)
     
-    item_to_mark = await items.find_one({'_id': obj_id})
+    # Allow marking items you can see (could add shared permission check here later)
+    # For now, it's just toggling the star for the current user
+    
+    current_stars = item_to_mark.get("starred_by", [])
+    update_op = {"$pull": {"starred_by": current_user_id}} if current_user_id in current_stars else {"$addToSet": {"starred_by": current_user_id}}
 
-    if not item_to_mark:
-        raise ItemIsNotExistError()
-    
     try:
-        current_stars = item_to_mark.get("starred_by", [])
-        
-        if current_user_id in current_stars:
-            # Remove star
-            update_op = {"$pull": {"starred_by": current_user_id}}
-        else:
-            # Add star
-            update_op = {"$addToSet": {"starred_by": current_user_id}}
-
-        result = await items.update_one(
-            {'_id': obj_id},
-            update_op        
-        )
-
-        if result.matched_count == 0:
-            raise ResourceNotFoundError("The content was not found")
-        
+        await items.update_one({'_id': ObjectId(item_id)}, update_op)
     except Exception:
         raise DataBaseError()

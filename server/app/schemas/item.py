@@ -21,6 +21,7 @@ class FolderCreate(ItemCreate):
 class ItemResponse(BaseItem): 
     id: str
     created_at: datetime
+    item_type: ItemType
     is_owner: bool
     starred_by: List[str]
 

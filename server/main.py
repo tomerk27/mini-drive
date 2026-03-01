@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from app.routes import auth
 from app.routes import items
+from app.routes import user
 from app.core.exceptions import AppException, handle_exception, validation_error_handler
 
 app = FastAPI()
@@ -19,6 +20,7 @@ app.add_exception_handler(AppException, handle_exception)
 app.add_exception_handler(RequestValidationError, validation_error_handler)
 app.include_router(auth.router)
 app.include_router(items.router)
+app.include_router(user.router)
 
 @app.get("/")
 def read_root():

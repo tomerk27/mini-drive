@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Button } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ComputerIcon from '@mui/icons-material/Computer';
@@ -14,6 +14,7 @@ const drawerWidth = 256;
 
 const SideBar = ({ onNewClick }) => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     return (
         <Drawer
@@ -57,11 +58,11 @@ const SideBar = ({ onNewClick }) => {
 
             <List sx={{ pt: 0 }}>
                 {[
-                    { text: 'My Drive', icon: <HomeIcon />, selected: true, onClick: () => navigate('/dashboard')},
+                    { text: 'Home Page', icon: <HomeIcon />, selected: location.pathname.startsWith('/dashboard'), onClick: () => navigate('/dashboard')},
                     { text: 'Computers', icon: <ComputerIcon /> },
                     { text: 'Shared with me', icon: <PeopleAltIcon /> },
                     { text: 'Recent', icon: <AccessTimeIcon /> },
-                    { text: 'Starred', icon: <StarBorderIcon /> },
+                    { text: 'Starred', icon: <StarBorderIcon />, selected: location.pathname === '/starred', onClick: () => navigate('/starred') },
                 ].map((item) => (
                     <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
                         <ListItemButton 
