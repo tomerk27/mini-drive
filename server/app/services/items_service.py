@@ -4,7 +4,7 @@ import os
 import uuid
 import shutil
 from bson import ObjectId
-from app.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, FileResponse as FileResponseSchema, FolderResponse
+from app.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, FileResponse
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
 from app.core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError
@@ -178,9 +178,6 @@ async def mark_item_as_starred_service(item_id: str, current_user_id: str):
     items = get_collection("items")
 
     item_to_mark = await get_item_or_404(item_id)
-    
-    # Allow marking items you can see (could add shared permission check here later)
-    # For now, it's just toggling the star for the current user
     
     current_stars = item_to_mark.get("starred_by", [])
     update_op = {"$pull": {"starred_by": current_user_id}} if current_user_id in current_stars else {"$addToSet": {"starred_by": current_user_id}}

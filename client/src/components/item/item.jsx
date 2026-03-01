@@ -6,6 +6,7 @@ import PreviewDialog from './previewDialog';
 import DetailsDialog from './detailsDialog';
 import useRenameItem from '../../hooks/itemActions/useRenameItem';
 import useFilePreview from '../../hooks/useFilePreview';
+import useItemActionMenu from '../../hooks/useItemActionMenu';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,6 +17,8 @@ const Item = ({ item, refreshFolder }) => {
     const itemName = item.name;
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+    const { anchorEl, anchorPosition, isOpen, openMenu, closeMenu } = useItemActionMenu();
 
     const { 
         onRenameSubmit,
@@ -30,7 +33,7 @@ const Item = ({ item, refreshFolder }) => {
 
     const { getFileContent, clearPreview, isLoading, error, imageUrl } = useFilePreview();
 
-    const handleItemClick = async () => {
+    const handleItemClick = async (event) => {
         if (isFolder) {
             navigate(`/dashboard/${item.id}`);
         } else {
@@ -64,12 +67,18 @@ const Item = ({ item, refreshFolder }) => {
                     refreshFolder={refreshFolder} 
                     onRenameClick={openRenameModal} 
                     onDetailsClick={openDetailsModal}
+                    anchorEl={anchorEl}
+                    anchorPosition={anchorPosition}
+                    isOpen={isOpen}
+                    openMenu={openMenu}
+                    closeMenu={closeMenu}
                 />
             </Box>
 
             <CardActionArea 
                 sx={{ height: '100%', pt: 4, pb: 2 }}
                 onClick={handleItemClick}
+                onContextMenu={openMenu}
             >
 
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>

@@ -6,13 +6,21 @@ import EditIcon from '@mui/icons-material/Edit';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import useItemActionMenu from '../../hooks/useItemActionMenu';
 import useRemoveItem from '../../hooks/itemActions/useRemoveItem';
 import useMarkAsStarred from '../../hooks/itemActions/useMarkAsStarred';
 import { useAuthContext } from '../../context/auth/authContext';
 
-const ActionMenu = ({item, refreshFolder, onRenameClick, onDetailsClick}) => {
-    const { anchorEl, isOpen, openMenu, closeMenu } = useItemActionMenu();
+const ActionMenu = ({
+    item, 
+    refreshFolder, 
+    onRenameClick, 
+    onDetailsClick,
+    anchorEl,
+    anchorPosition,
+    isOpen,
+    openMenu,
+    closeMenu
+}) => {
     const { removeItem, isRemoving } = useRemoveItem();
     const { markAsStarred, isLoading: isStarring } = useMarkAsStarred();
     const { user } = useAuthContext();
@@ -57,6 +65,8 @@ const ActionMenu = ({item, refreshFolder, onRenameClick, onDetailsClick}) => {
                 open={isOpen}
                 onClose={closeMenu}
                 onClick={closeMenu}
+                anchorReference={anchorPosition ? "anchorPosition" : "anchorEl"}
+                anchorPosition={anchorPosition}
             >
                 <MenuItem>
                     <ListItemIcon><ShareIcon fontSize='small' /></ListItemIcon>
