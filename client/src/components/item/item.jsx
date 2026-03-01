@@ -1,51 +1,11 @@
-import { Card, CardActionArea, CardContent, Typography, Box } from '@mui/material';
+import { Card, CardActionArea, CardContent, Typography, Box, IconButton } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import FileIcon from './itemIcon';
-import ActionMenu from './actionMenu';
-import RenameDialog from './renameDialog';
-import PreviewDialog from './previewDialog';
-import DetailsDialog from './detailsDialog';
-import useRenameItem from '../../hooks/itemActions/useRenameItem';
-import useFilePreview from '../../hooks/useFilePreview';
-import useItemActionMenu from '../../hooks/useItemActionMenu';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
-const Item = ({ item, refreshFolder }) => {
-    const navigate = useNavigate();
+const Item = ({ item, onClick, onOpenMenu }) => {
     const isFolder = item.item_type === 'folder' || item.type === 'folder';
     const type = isFolder ? 'folder' : item.file_type;
     const itemName = item.name;
-    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-
-    const { anchorEl, anchorPosition, isOpen, openMenu, closeMenu } = useItemActionMenu();
-
-    const { 
-        onRenameSubmit,
-        isRenaming, 
-        isRenameModalOpen, 
-        openRenameModal, 
-        closeRenameModal 
-    } = useRenameItem(item.id, refreshFolder);
-
-    const openDetailsModal = () => setIsDetailsOpen(true);
-    const closeDetailsModal = () => setIsDetailsOpen(false);
-
-    const { getFileContent, clearPreview, isLoading, error, imageUrl } = useFilePreview();
-
-    const handleItemClick = async (event) => {
-        if (isFolder) {
-            navigate(`/dashboard/${item.id}`);
-        } else {
-            setIsPreviewOpen(true);
-            await getFileContent(item.id);
-        }
-    };
-
-    const handlePreviewClose = () => {
-        setIsPreviewOpen(false);
-        clearPreview();
-    };
 
     return (
         <Card
@@ -62,23 +22,18 @@ const Item = ({ item, refreshFolder }) => {
             }}
         >
             <Box sx={{ position: 'absolute', top: 5, right: 5, zIndex: 10 }}>
-                <ActionMenu 
-                    item={item} 
-                    refreshFolder={refreshFolder} 
-                    onRenameClick={openRenameModal} 
-                    onDetailsClick={openDetailsModal}
-                    anchorEl={anchorEl}
-                    anchorPosition={anchorPosition}
-                    isOpen={isOpen}
-                    openMenu={openMenu}
-                    closeMenu={closeMenu}
-                />
+                <IconButton
+                    onClick={onOpenMenu}
+                    size='small'
+                >
+                    <MoreVertIcon fontSize='small' />
+                </IconButton>
             </Box>
 
             <CardActionArea 
                 sx={{ height: '100%', pt: 4, pb: 2 }}
-                onClick={handleItemClick}
-                onContextMenu={openMenu}
+                onClick={onClick}
+                onContextMenu={onOpenMenu}
             >
 
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
@@ -98,27 +53,6 @@ const Item = ({ item, refreshFolder }) => {
                 </CardContent>
 
             </CardActionArea>
-            <RenameDialog
-                open={isRenameModalOpen}
-                onClose={closeRenameModal}
-                onRename={onRenameSubmit}
-                currentName={item.name}
-                isRenaming={isRenaming}
-            />
-            <PreviewDialog
-                open={isPreviewOpen}
-                onClose={handlePreviewClose}
-                imageUrl={imageUrl}
-                isLoading={isLoading}
-                error={error}
-                fileName={item.name}
-                fileType={item.file_type}
-            />
-            <DetailsDialog
-                open={isDetailsOpen}
-                onClose={closeDetailsModal}
-                item={item}
-            />
         </Card>
     );
 };

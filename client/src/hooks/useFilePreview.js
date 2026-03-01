@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { getFileContentApi } from "../api/fileApi";
+import handleError from "../utils/handleError";
 
 const useFilePreview = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -14,8 +15,8 @@ const useFilePreview = () => {
             const blob = await getFileContentApi(itemId);
             const objectUrl = URL.createObjectURL(blob);
             setImageUrl(objectUrl);
-        } catch (err) {
-            setError(err.response?.data?.detail || "Failed to show content");
+        } catch (error) {
+            handleError(setError, error, "Failed to show content");
         } finally {
             setIsLoading(false);
         }

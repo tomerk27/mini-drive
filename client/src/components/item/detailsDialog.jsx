@@ -38,7 +38,7 @@ const DetailsDialog = ({ open, onClose, item }) => {
                             Type
                         </Typography>
                         <Typography variant="body2">
-                            {isFolder ? 'Folder' : item.file_type || 'Unknown File'}
+                            {isFolder ? 'Folder' : item.file_type.split('/')[1] || 'Unknown File'}
                         </Typography>
                     </Box>
 
@@ -75,7 +75,7 @@ const DetailsDialog = ({ open, onClose, item }) => {
                         <Typography variant="caption" color="text.secondary" display="block">
                             Item ID
                         </Typography>
-                        <Typography variant="body2" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                        <Typography variant="body2">
                             {item.id}
                         </Typography>
                     </Box>

@@ -4,7 +4,7 @@ import os
 import uuid
 import shutil
 from bson import ObjectId
-from app.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, FileResponse
+from app.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, FileResponse as FileResponseSchema, FolderResponse
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
 from app.core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError

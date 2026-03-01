@@ -1,5 +1,4 @@
-import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShareIcon from '@mui/icons-material/Share';
 import EditIcon from '@mui/icons-material/Edit';
@@ -18,7 +17,6 @@ const ActionMenu = ({
     anchorEl,
     anchorPosition,
     isOpen,
-    openMenu,
     closeMenu
 }) => {
     const { removeItem, isRemoving } = useRemoveItem();
@@ -51,50 +49,41 @@ const ActionMenu = ({
     };
 
     return (
-        <>
-            <IconButton
-                onClick={openMenu}
-                size='small'
-            >
-                <MoreVertIcon fontSize='small' />
-            </IconButton>
+        <Menu
+            id='file-menu'
+            anchorEl={anchorEl}
+            open={isOpen}
+            onClose={closeMenu}
+            onClick={closeMenu}
+            anchorReference={anchorPosition ? "anchorPosition" : "anchorEl"}
+            anchorPosition={anchorPosition}
+        >
+            <MenuItem>
+                <ListItemIcon><ShareIcon fontSize='small' /></ListItemIcon>
+                <ListItemText>Share</ListItemText>
+            </MenuItem>
 
-            <Menu
-                id='file-menu'
-                anchorEl={anchorEl}
-                open={isOpen}
-                onClose={closeMenu}
-                onClick={closeMenu}
-                anchorReference={anchorPosition ? "anchorPosition" : "anchorEl"}
-                anchorPosition={anchorPosition}
-            >
-                <MenuItem>
-                    <ListItemIcon><ShareIcon fontSize='small' /></ListItemIcon>
-                    <ListItemText>Share</ListItemText>
-                </MenuItem>
+            <MenuItem onClick={handleStarClick} disabled={isStarring}>
+                <ListItemIcon>
+                    {isStarred ? <StarIcon fontSize='small' sx={{ color: '#FFD700' }} /> : <StarBorderIcon fontSize='small' />}
+                </ListItemIcon>
+                <ListItemText>{isStarred ? 'Remove Star' : 'Star'}</ListItemText>
+            </MenuItem>
 
-                <MenuItem onClick={handleStarClick} disabled={isStarring}>
-                    <ListItemIcon>
-                        {isStarred ? <StarIcon fontSize='small' sx={{ color: '#FFD700' }} /> : <StarBorderIcon fontSize='small' />}
-                    </ListItemIcon>
-                    <ListItemText>{isStarred ? 'Remove Star' : 'Star'}</ListItemText>
-                </MenuItem>
+            <MenuItem onClick={handleRemoveClick} disabled={isRemoving}>
+                <ListItemIcon><DeleteIcon fontSize='small' /></ListItemIcon>
+                <ListItemText>Delete</ListItemText>
+            </MenuItem>
 
-                <MenuItem onClick={handleRemoveClick} disabled={isRemoving}>
-                    <ListItemIcon><DeleteIcon fontSize='small' /></ListItemIcon>
-                    <ListItemText>Delete</ListItemText>
-                </MenuItem>
-
-                <MenuItem onClick={handleRenameClick}>
-                    <ListItemIcon><EditIcon fontSize='small' /></ListItemIcon>
-                    <ListItemText>Rename</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={handleDetailsClick}>
-                    <ListItemIcon><InfoOutlinedIcon fontSize='small' /></ListItemIcon>
-                    <ListItemText>Details</ListItemText>
-                </MenuItem>
-            </Menu>
-        </>
+            <MenuItem onClick={handleRenameClick}>
+                <ListItemIcon><EditIcon fontSize='small' /></ListItemIcon>
+                <ListItemText>Rename</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={handleDetailsClick}>
+                <ListItemIcon><InfoOutlinedIcon fontSize='small' /></ListItemIcon>
+                <ListItemText>Details</ListItemText>
+            </MenuItem>
+        </Menu>
     )
 };
 
