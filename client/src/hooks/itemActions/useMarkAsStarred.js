@@ -6,6 +6,10 @@ const useMarkAsStarred = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
+    const clearError = () => {
+        setError(null);
+    };
+
     const markAsStarred = async (itemId) => {
         setError(null);
         setIsLoading(true);
@@ -22,7 +26,8 @@ const useMarkAsStarred = () => {
     return {
         error, 
         isLoading,
-        markAsStarred
+        markAsStarred,
+        clearError
     };
 };
 

@@ -1,11 +1,16 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
-from app.utils.item_utils import ItemType
+from app.utils.item_utils import ItemType, SharePermission
 
 class BaseItem(BaseModel):
     name: str = Field(..., min_length=1, max_length=50)
     parent_id: Optional[str] = Field(None)
+
+class SharedUserResponse(BaseModel):
+    id: str
+    permission: SharePermission
+    email: Optional[str] = None
 
 class ItemCreate(BaseItem):
     item_type: ItemType
@@ -24,6 +29,7 @@ class ItemResponse(BaseItem):
     item_type: ItemType
     is_owner: bool
     starred_by: List[str]
+    shared_with: List[SharedUserResponse] = []
 
     class Config:
         populate_by_name = True

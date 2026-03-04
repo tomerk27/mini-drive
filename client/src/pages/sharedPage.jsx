@@ -2,15 +2,15 @@ import { Box, Typography } from '@mui/material';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';
 import LogoutButton from '../components/authentication/logoutButton';
-import useStarredItems from '../hooks/useStarredItems';
+import useSharedItems from '../hooks/useSharedItems';
 import ItemsView from '../components/itemsView/itemsView';
 import { useEffect } from 'react';
 
-const StarredPage = () => {
-    const { error, isLoading, starredItems, loadStarredItems } = useStarredItems();
+const SharedPage = () => {
+    const { error, isLoading, sharedItems, loadSharedItems } = useSharedItems();
 
     useEffect(() => {
-        loadStarredItems();
+        loadSharedItems();
     }, []);
 
     return (
@@ -22,7 +22,7 @@ const StarredPage = () => {
             <Box component="main" sx={{ flexGrow: 1, pt: 10, px: 3, pb: 3, width: 'calc(100% - 256px)' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h5" sx={{ fontWeight: 400, color: '#1f1f1f' }}>
-                        Starred
+                        Shared with me
                     </Typography>
                     <LogoutButton />
                 </Box>
@@ -35,12 +35,12 @@ const StarredPage = () => {
                     boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3)'
                 }}>
                     <ItemsView 
-                        items={starredItems?.items}
+                        items={sharedItems}
                         loading={isLoading}
                         error={error}
-                        refreshFolder={loadStarredItems}
-                        emptyMessage="No starred items yet"
-                        emptySubMessage="Starred items will appear here"
+                        refreshFolder={loadSharedItems}
+                        emptyMessage="Nothing shared with you yet"
+                        emptySubMessage="Items shared with you will appear here"
                     />
                 </Box>
             </Box>
@@ -48,4 +48,4 @@ const StarredPage = () => {
     );
 };
 
-export default StarredPage;
+export default SharedPage;

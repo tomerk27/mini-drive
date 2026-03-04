@@ -60,7 +60,7 @@ const SideBar = ({ onNewClick }) => {
                 {[
                     { text: 'Home Page', icon: <HomeIcon />, selected: location.pathname.startsWith('/dashboard'), onClick: () => navigate('/dashboard')},
                     { text: 'Computers', icon: <ComputerIcon /> },
-                    { text: 'Shared with me', icon: <PeopleAltIcon /> },
+                    { text: 'Shared with me', icon: <PeopleAltIcon />, selected: location.pathname === '/shared', onClick: () => navigate('/shared') },
                     { text: 'Recent', icon: <AccessTimeIcon /> },
                     { text: 'Starred', icon: <StarBorderIcon />, selected: location.pathname === '/starred', onClick: () => navigate('/starred') },
                 ].map((item) => (

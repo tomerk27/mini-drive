@@ -54,7 +54,7 @@ class ResourceNotFoundError(AppException):
             detail=detail
         )
 
-class PremissionError(AppException): 
+class PermissionError(AppException): 
     def __init__(self, action: str):
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -68,19 +68,26 @@ class DataBaseError(AppException):
             detail="Data base error"
         )
 
-async def handle_exception(request: Request, exc: AppException):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail},
-        headers=exc.headers
-    )
-
 class ItemIsFolderError(AppException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot perform this action: the requested item is a folder, not a file."
         )
+
+class SelfShareError(AppException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot share an item with yourself."
+        )
+
+async def handle_exception(request: Request, exc: AppException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=exc.headers
+    )
         
 async def validation_error_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(

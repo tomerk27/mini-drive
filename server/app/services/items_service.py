@@ -8,7 +8,7 @@ from app.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, Fi
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
 from app.core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError
-from app.utils.item_utils import ItemStatus, ItemType, get_item_or_404, verify_ownership
+from app.utils.item_utils import ItemStatus, ItemType, SharePermission,get_item_or_404, verify_access
 from app.core.config import settings
 from app.utils.mappers import map_item_to_response, map_items_to_responses
 
@@ -61,7 +61,7 @@ async def complete_item_upload(
     
     # We verify the pending item exists and belongs to the owner
     item = await get_item_or_404(item_id)
-    verify_ownership(item, owner_id, "upload")
+    verify_access(item, owner_id, "upload", SharePermission.OWNER)
     
     if item.get("status") != ItemStatus.PENDING.value:
         raise ResourceNotFoundError("Pending file not found")
@@ -135,7 +135,7 @@ async def remove_item_service(item_id: str, current_user_id: str):
     items = get_collection("items")
 
     item_to_remove = await get_item_or_404(item_id)
-    verify_ownership(item_to_remove, current_user_id, "remove")
+    verify_access(item_to_remove, current_user_id, "remove", SharePermission.EDITOR)
     
     physical_path = item_to_remove.get('physical_path')
 
@@ -151,7 +151,7 @@ async def rename_item_service(item_id: str, current_user_id: str, new_name: str)
     items = get_collection("items")
 
     item_to_rename = await get_item_or_404(item_id)
-    verify_ownership(item_to_rename, current_user_id, "rename")
+    verify_access(item_to_rename, current_user_id, "rename", SharePermission.EDITOR)
     
     try:
         await items.update_one(
@@ -163,7 +163,7 @@ async def rename_item_service(item_id: str, current_user_id: str, new_name: str)
     
 async def get_file_preview_service(item_id: str, current_user_id: str):
     item = await get_item_or_404(item_id)
-    verify_ownership(item, current_user_id, "preview")
+    verify_access(item, current_user_id, "preview", SharePermission.VIEWER)
 
     if item.get('item_type') == ItemType.FOLDER:
         raise ItemIsFolderError()
@@ -178,7 +178,8 @@ async def mark_item_as_starred_service(item_id: str, current_user_id: str):
     items = get_collection("items")
 
     item_to_mark = await get_item_or_404(item_id)
-    
+    verify_access(item_to_mark, current_user_id, "mark as starred", SharePermission.VIEWER)
+
     current_stars = item_to_mark.get("starred_by", [])
     update_op = {"$pull": {"starred_by": current_user_id}} if current_user_id in current_stars else {"$addToSet": {"starred_by": current_user_id}}
 

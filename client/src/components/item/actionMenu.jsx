@@ -14,20 +14,25 @@ const ActionMenu = ({
     refreshFolder, 
     onRenameClick, 
     onDetailsClick,
+    onShareClick,
+    onRemoveClick,
+    onStarClick,
+    isRemoving,
+    isStarring,
     anchorEl,
     anchorPosition,
     isOpen,
     closeMenu
 }) => {
-    const { removeItem, isRemoving } = useRemoveItem();
-    const { markAsStarred, isLoading: isStarring } = useMarkAsStarred();
     const { user } = useAuthContext();
 
     const isStarred = item.starred_by?.includes(user?.sub);
 
     const handleRemoveClick = async (event) => {
         closeMenu(event);
-        await removeItem(item.id, refreshFolder);
+        if (onRemoveClick) {
+            await onRemoveClick(item.id);
+        }
     };
 
     const handleRenameClick = () => {
@@ -40,11 +45,15 @@ const ActionMenu = ({
         closeMenu();
     };
 
+    const handleShareClick = () => {
+        onShareClick();
+        closeMenu();
+    };
+
     const handleStarClick = async () => {
         closeMenu();
-        await markAsStarred(item.id);
-        if (refreshFolder) {
-            refreshFolder();
+        if (onStarClick) {
+            await onStarClick(item.id);
         }
     };
 
@@ -58,7 +67,7 @@ const ActionMenu = ({
             anchorReference={anchorPosition ? "anchorPosition" : "anchorEl"}
             anchorPosition={anchorPosition}
         >
-            <MenuItem>
+            <MenuItem onClick={handleShareClick}>
                 <ListItemIcon><ShareIcon fontSize='small' /></ListItemIcon>
                 <ListItemText>Share</ListItemText>
             </MenuItem>

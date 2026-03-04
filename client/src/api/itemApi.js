@@ -19,3 +19,12 @@ export const markAsStarredApi = async (itemId) => {
 
     return response.data;
 };
+
+export const shareItemApi = async (itemId, sharedEmail, permission) => {
+    const response = await apiClient.post(`/items/${itemId}/share`, {
+        'email': sharedEmail,
+        'permission': permission
+    });
+
+    return response.data;
+};

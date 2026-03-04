@@ -1,9 +1,14 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
-from app.utils.item_utils import ItemType, ItemStatus
+from app.utils.item_utils import ItemType, ItemStatus, SharePermission
 from app.utils.db_utils import PyObjectId
 from app.utils.time import current_time
+
+class SharedUser(BaseModel):
+    permission: SharePermission
+    id: str
+    email: Optional[str] = None
 
 class ItemModel(BaseModel): 
     id: PyObjectId = Field(None, alias='_id')
@@ -16,6 +21,7 @@ class ItemModel(BaseModel):
 
     created_at: datetime = Field(default_factory=current_time)
 
+    shared_with: List[SharedUser] = []
     starred_by: List[str] = []
 
     class Config:

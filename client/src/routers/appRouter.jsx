@@ -3,6 +3,7 @@ import LoginPage from '../pages/loginPage';
 import Dashboard from '../pages/dashboard';
 import SignupPage from '../pages/signupPage';
 import StarredPage from '../pages/starredPage';
+import SharedPage from '../pages/sharedPage';
 import ProtectedRoute from '../components/protectedRoute';
 
 const AppRouter = () => {
@@ -17,6 +18,7 @@ const AppRouter = () => {
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="dashboard/:folderId" element={<Dashboard />} />
                     <Route path="starred" element={<StarredPage />} />
+                    <Route path="shared" element={<SharedPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

@@ -1,13 +1,17 @@
-import { Box, Typography, CircularProgress, Grid } from '@mui/material';
+import { Box, Typography, CircularProgress, Grid, Snackbar, Alert } from '@mui/material';
 import Item from '../item/item';
 import ActionMenu from '../item/actionMenu';
 import RenameDialog from '../item/renameDialog';
 import DetailsDialog from '../item/detailsDialog';
 import PreviewDialog from '../item/previewDialog';
+import ShareDialog from '../item/shareDialog';
 import useItemActionMenu from '../../hooks/useItemActionMenu';
 import useRenameItem from '../../hooks/itemActions/useRenameItem';
+import useShareItem from '../../hooks/itemActions/useShareItem';
+import useRemoveItem from '../../hooks/itemActions/useRemoveItem';
+import useMarkAsStarred from '../../hooks/itemActions/useMarkAsStarred';
 import useFilePreview from '../../hooks/useFilePreview';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const ItemsView = ({ 
@@ -22,6 +26,7 @@ const ItemsView = ({
     const [selectedItem, setSelectedItem] = useState(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
 
     const { anchorEl, anchorPosition, isOpen, openMenu, closeMenu } = useItemActionMenu();
     const { getFileContent, clearPreview, isLoading: isPreviewLoading, error: previewError, imageUrl } = useFilePreview();
@@ -32,12 +37,81 @@ const ItemsView = ({
         isRenaming,
         isRenameModalOpen,
         openRenameModal,
-        closeRenameModal
+        closeRenameModal,
+        error: renameError,
+        clearError: clearRenameError
     } = useRenameItem(selectedItem?.id, refreshFolder);
+
+    const {
+        onShareSubmit,
+        isSharing,
+        isShareModalOpen,
+        openShareModal,
+        closeShareModal,
+        error: shareError,
+        clearError: clearShareError
+    } = useShareItem(selectedItem?.id, refreshFolder);
+
+    const {
+        removeItem,
+        isRemoving,
+        error: removeError,
+        clearError: clearRemoveError
+    } = useRemoveItem();
+
+    const {
+        markAsStarred,
+        isLoading: isStarring,
+        error: starError,
+        clearError: clearStarError
+    } = useMarkAsStarred();
+
+    useEffect(() => {
+        if (renameError) {
+            setSnackbar({ open: true, message: renameError, severity: 'error' });
+            clearRenameError();
+        }
+    }, [renameError, clearRenameError]);
+
+    useEffect(() => {
+        if (shareError) {
+            setSnackbar({ open: true, message: shareError, severity: 'error' });
+            clearShareError();
+        }
+    }, [shareError, clearShareError]);
+
+    useEffect(() => {
+        if (removeError) {
+            setSnackbar({ open: true, message: removeError, severity: 'error' });
+            clearRemoveError();
+        }
+    }, [removeError, clearRemoveError]);
+
+    useEffect(() => {
+        if (starError) {
+            setSnackbar({ open: true, message: starError, severity: 'error' });
+            clearStarError();
+        }
+    }, [starError, clearStarError]);
+
+    const handleSnackbarClose = () => {
+        setSnackbar({ ...snackbar, open: false });
+    };
 
     const handleOpenMenu = (event, item) => {
         setSelectedItem(item);
         openMenu(event);
+    };
+
+    const handleRemoveClick = async (itemId) => {
+        await removeItem(itemId, refreshFolder);
+    };
+
+    const handleStarClick = async (itemId) => {
+        await markAsStarred(itemId);
+        if (refreshFolder) {
+            refreshFolder();
+        }
     };
 
     const handleItemClick = async (item) => {
@@ -59,6 +133,11 @@ const ItemsView = ({
     const handleRenameClick = () => {
         closeMenu();
         openRenameModal();
+    };
+
+    const handleShareClick = () => {
+        closeMenu();
+        openShareModal();
     };
 
     const handleDetailsClick = () => {
@@ -114,6 +193,11 @@ const ItemsView = ({
                         refreshFolder={refreshFolder}
                         onRenameClick={handleRenameClick}
                         onDetailsClick={handleDetailsClick}
+                        onShareClick={handleShareClick}
+                        onRemoveClick={handleRemoveClick}
+                        onStarClick={handleStarClick}
+                        isRemoving={isRemoving}
+                        isStarring={isStarring}
                         anchorEl={anchorEl}
                         anchorPosition={anchorPosition}
                         isOpen={isOpen}
@@ -125,6 +209,13 @@ const ItemsView = ({
                         onRename={onRenameSubmit}
                         currentName={selectedItem.name}
                         isRenaming={isRenaming}
+                    />
+                    <ShareDialog
+                        open={isShareModalOpen}
+                        onClose={closeShareModal}
+                        onShare={onShareSubmit}
+                        isSharing={isSharing}
+                        currentSharedWith={selectedItem.shared_with || []}
                     />
                     <PreviewDialog
                         open={isPreviewOpen}
@@ -142,6 +233,17 @@ const ItemsView = ({
                     />
                 </>
             )}
+
+            <Snackbar 
+                open={snackbar.open} 
+                autoHideDuration={6000} 
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={handleSnackbarClose} severity={snackbar.severity} variant="filled">
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };

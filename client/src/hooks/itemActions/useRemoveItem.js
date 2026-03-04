@@ -7,9 +7,13 @@ const useRemoveItem = () => {
 
     const [error, setError] = useState(null);
 
+    const clearError = () => {
+        setError(null);
+    };
+
     const removeItem = async (itemId, onSuccess) => {
         setIsRemoving(true);
-        setError(false);
+        setError(null);
 
         try {
             await removeItemApi(itemId);
@@ -24,7 +28,7 @@ const useRemoveItem = () => {
         }
     };
 
-    return { removeItem, isRemoving, error };
+    return { removeItem, isRemoving, error, clearError };
 };
 
 export default useRemoveItem

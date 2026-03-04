@@ -15,6 +15,10 @@ const useRenameItem = (itemId, onSuccessCallback) => {
         setIsRenameModalOpen(false);
     };
 
+    const clearError = () => {
+        setError(null);
+    };
+
     const _renameItem = async (newName) => {
         setIsRenaming(true);
         setError(null);
@@ -27,6 +31,9 @@ const useRenameItem = (itemId, onSuccessCallback) => {
             }
         } catch (err) {
             handleError(setError, err, "Failed to rename item");
+            if (err.response?.status === 403) {
+                closeRenameModal();
+            }
         } finally {
             setIsRenaming(false);
         }
@@ -40,6 +47,7 @@ const useRenameItem = (itemId, onSuccessCallback) => {
         onRenameSubmit,
         isRenaming, 
         error,
+        clearError,
         isRenameModalOpen,
         openRenameModal,
         closeRenameModal
