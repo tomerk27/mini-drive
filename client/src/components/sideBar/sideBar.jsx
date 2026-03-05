@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Button } from '@mui/material';
+import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Button, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import HomeIcon from '@mui/icons-material/Home';
 import ComputerIcon from '@mui/icons-material/Computer';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -25,83 +26,99 @@ const SideBar = ({ onNewClick }) => {
                 [`& .MuiDrawer-paper`]: { 
                     width: drawerWidth, 
                     boxSizing: 'border-box',
-                    borderRight: 'none',
-                    pt: 10, // Push below top bar
-                    pl: 2
+                    borderRight: '1px solid #f1f5f9',
+                    backgroundColor: '#ffffff',
+                    pt: 11, // Push below top bar
+                    px: 1.5,
                 },
             }}
         >
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: 4, px: 0.5 }}>
                 <Button
                     variant="contained"
-                    startIcon={<AddIcon fontSize="large" />}
+                    fullWidth
+                    startIcon={<AddIcon />}
                     onClick={onNewClick}
                     sx={{
-                        borderRadius: 4,
+                        borderRadius: 3,
                         py: 1.5,
-                        px: 3,
-                        bgcolor: 'white',
-                        color: 'text.primary',
-                        boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)',
+                        bgcolor: 'primary.main',
+                        color: 'white',
+                        boxShadow: '0 10px 15px -3px rgb(99 102 241 / 0.3)',
                         '&:hover': {
-                            bgcolor: '#f8f9fa',
-                            boxShadow: '0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15)',
+                            bgcolor: 'primary.dark',
+                            boxShadow: '0 20px 25px -5px rgb(99 102 241 / 0.3)',
                         },
                         textTransform: 'none',
-                        fontSize: '1rem',
-                        fontWeight: 500
+                        fontSize: '0.95rem',
+                        fontWeight: 600
                     }}
                 >
-                    New
+                    Create New
                 </Button>
             </Box>
 
             <List sx={{ pt: 0 }}>
                 {[
-                    { text: 'Home Page', icon: <HomeIcon />, selected: location.pathname.startsWith('/dashboard'), onClick: () => navigate('/dashboard')},
-                    { text: 'Computers', icon: <ComputerIcon /> },
-                    { text: 'Shared with me', icon: <PeopleAltIcon />, selected: location.pathname === '/shared', onClick: () => navigate('/shared') },
-                    { text: 'Recent', icon: <AccessTimeIcon /> },
-                    { text: 'Starred', icon: <StarBorderIcon />, selected: location.pathname === '/starred', onClick: () => navigate('/starred') },
+                    { text: 'My Files', icon: <HomeIcon fontSize="small" />, selected: location.pathname.startsWith('/dashboard'), onClick: () => navigate('/dashboard')},
+                    { text: 'Shared', icon: <PeopleAltIcon fontSize="small" />, selected: location.pathname === '/shared', onClick: () => navigate('/shared') },
+                    { text: 'Starred', icon: <StarBorderIcon fontSize="small" />, selected: location.pathname === '/starred', onClick: () => navigate('/starred') },
+                    { text: 'Recent', icon: <AccessTimeIcon fontSize="small" /> },
+                    { text: 'Trash', icon: <DeleteOutlineIcon fontSize="small" /> },
                 ].map((item) => (
                     <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
                         <ListItemButton 
                             selected={item.selected}
                             sx={{
-                                borderRadius: '0 24px 24px 0',
+                                borderRadius: 3,
+                                py: 1,
+                                px: 2,
                                 '&.Mui-selected': {
-                                    bgcolor: '#c2e7ff',
-                                    color: '#001d35',
+                                    bgcolor: alpha('#6366f1', 0.08),
+                                    color: 'primary.main',
                                     '&:hover': {
-                                        bgcolor: '#b4d7f0',
-                                    }
+                                        bgcolor: alpha('#6366f1', 0.12),
+                                    },
+                                    '& .MuiListItemIcon-root': {
+                                        color: 'primary.main',
+                                    },
+                                },
+                                '&:hover': {
+                                    bgcolor: '#f8fafc',
                                 }
                             }}
                             onClick={item.onClick}
                         >
-                            <ListItemIcon sx={{ minWidth: 40, color: item.selected ? '#001d35' : 'inherit' }}>
+                            <ListItemIcon sx={{ minWidth: 36, color: 'text.secondary' }}>
                                 {item.icon}
                             </ListItemIcon>
-                            <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: item.selected ? 600 : 400, fontSize: '0.875rem' }} />
-                        </ListItemButton>
-                    </ListItem>
-                ))}
-
-                <Box sx={{ my: 1, borderTop: '1px solid #e0e0e0', mx: 2 }} />
-
-                {[
-                    { text: 'Spam', icon: <ReportGmailerrorredIcon /> },
-                    { text: 'Trash', icon: <DeleteOutlineIcon /> },
-                    { text: 'Storage', icon: <CloudQueueIcon /> },
-                ].map((item) => (
-                    <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
-                        <ListItemButton sx={{ borderRadius: '0 24px 24px 0' }}>
-                            <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                            <ListItemText primary={item.text} primaryTypographyProps={{ fontSize: '0.875rem' }} />
+                            <ListItemText 
+                                primary={item.text} 
+                                primaryTypographyProps={{ 
+                                    fontWeight: item.selected ? 600 : 500, 
+                                    fontSize: '0.875rem',
+                                    color: 'inherit'
+                                }} 
+                            />
                         </ListItemButton>
                     </ListItem>
                 ))}
             </List>
+
+            <Box sx={{ mt: 'auto', mb: 4, px: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 1 }}>
+                    <CloudQueueIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
+                        STORAGE
+                    </Typography>
+                </Box>
+                <Box sx={{ width: '100%', height: 6, bgcolor: '#f1f5f9', borderRadius: 3, mb: 1 }}>
+                    <Box sx={{ width: '45%', height: '100%', bgcolor: 'primary.main', borderRadius: 3 }} />
+                </Box>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                    1.2 GB of 15 GB used
+                </Typography>
+            </Box>
         </Drawer>
     );
 };

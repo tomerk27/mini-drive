@@ -57,7 +57,7 @@ const Dashboard = () => {
     };
     
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8fafd' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
             <TopBar />
             <input
                 ref={inputRef}
@@ -74,25 +74,31 @@ const Dashboard = () => {
                 open={openMenu}
                 onClose={handleCloseMenu}
                 PaperProps={{
-                    elevation: 3,
-                    sx: { width: 220, borderRadius: 2, mt: 1 }
+                    elevation: 4,
+                    sx: { 
+                        width: 240, 
+                        borderRadius: 3, 
+                        mt: 1.5,
+                        border: '1px solid #f1f5f9',
+                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+                    }
                 }}
             >
-                <MenuItem onClick={handleNewFolderClick}>
-                    <ListItemIcon><CreateNewFolderIcon fontSize="small" /></ListItemIcon>
-                    <ListItemText>New folder</ListItemText>
+                <MenuItem onClick={handleNewFolderClick} sx={{ py: 1.5 }}>
+                    <ListItemIcon><CreateNewFolderIcon fontSize="small" color="primary" /></ListItemIcon>
+                    <ListItemText primary="New folder" primaryTypographyProps={{ fontWeight: 600 }} />
                 </MenuItem>
-                <Box sx={{ my: 1, borderTop: '1px solid #e0e0e0' }} />
-                <MenuItem onClick={handleFileUploadClick}>
-                    <ListItemIcon><UploadFileIcon fontSize="small" /></ListItemIcon>
-                    <ListItemText>File upload</ListItemText>
+                <Box sx={{ my: 0.5, borderTop: '1px solid #f1f5f9' }} />
+                <MenuItem onClick={handleFileUploadClick} sx={{ py: 1.5 }}>
+                    <ListItemIcon><UploadFileIcon fontSize="small" color="primary" /></ListItemIcon>
+                    <ListItemText primary="File upload" primaryTypographyProps={{ fontWeight: 600 }} />
                 </MenuItem>
             </Menu>
 
-            <Box component="main" sx={{ flexGrow: 1, pt: 10, px: 3, pb: 3, width: 'calc(100% - 256px)' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 400, color: '#1f1f1f' }}>
-                        My Drive
+            <Box component="main" sx={{ flexGrow: 1, pt: 12, px: 4, pb: 4, width: 'calc(100% - 256px)' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', letterSpacing: '-0.025em' }}>
+                        My Files
                     </Typography>
                     <LogoutButton />
                 </Box>
@@ -105,11 +111,12 @@ const Dashboard = () => {
                 />
 
                 <Box sx={{ 
-                    bgcolor: 'white', 
+                    bgcolor: 'background.paper', 
                     borderRadius: 4, 
-                    p: 2, 
-                    minHeight: 'calc(100vh - 160px)',
-                    boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3)'
+                    p: 3, 
+                    minHeight: 'calc(100vh - 200px)',
+                    border: '1px solid #f1f5f9',
+                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
                 }}>
                     <FolderView 
                         childFiles={childFiles} 

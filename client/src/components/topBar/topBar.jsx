@@ -1,17 +1,25 @@
 import { Box, AppBar, Toolbar, Typography, InputBase, IconButton } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
-import SettingsIcon from '@mui/icons-material/Settings';
-import AppsIcon from '@mui/icons-material/Apps';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius * 4,
-  backgroundColor: alpha(theme.palette.common.black, 0.05),
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.black, 0.04),
+  border: '1px solid transparent',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.common.black, 0.1),
-    boxShadow: '0 1px 1px rgba(0,0,0,0.1)'
+    backgroundColor: '#ffffff',
+    borderColor: theme.palette.primary.light,
+    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+  },
+  '&:focus-within': {
+    backgroundColor: '#ffffff',
+    borderColor: theme.palette.primary.main,
+    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
   },
   marginRight: theme.spacing(2),
   marginLeft: 0,
@@ -21,7 +29,8 @@ const Search = styled('div')(({ theme }) => ({
     width: 'auto',
   },
   flexGrow: 1,
-  maxWidth: 720,
+  maxWidth: 640,
+  transition: theme.transitions.create(['background-color', 'border-color', 'box-shadow']),
 }));
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
@@ -39,48 +48,85 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: 'inherit',
   width: '100%',
   '& .MuiInputBase-input': {
-    padding: theme.spacing(1.5, 1, 1.5, 0),
+    padding: theme.spacing(1.2, 1, 1.2, 0),
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create('width'),
     width: '100%',
+    fontSize: '0.95rem',
   },
 }));
 
 const TopBar = () => {
   return (
-    <AppBar position="fixed" color="inherit" elevation={0} sx={{ borderBottom: '1px solid #e0e0e0', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1, sm: 3 } }}>
+    <AppBar 
+      position="fixed" 
+      color="inherit" 
+      elevation={0} 
+      sx={{ 
+        borderBottom: '1px solid #f1f5f9', 
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        backgroundColor: alpha('#ffffff', 0.95),
+        backdropFilter: 'blur(8px)'
+      }}
+    >
+      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 4 }, minHeight: 72 }}>
         
         {/* Left side: Logo & Name */}
         <Box sx={{ display: 'flex', alignItems: 'center', width: 240, flexShrink: 0 }}>
-          <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" alt="Drive Logo" style={{ width: 40, height: 40, marginRight: 8 }} />
-          <Typography variant="h6" color="text.primary" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 400 }}>
-            Drive
+          <Box 
+            sx={{ 
+              backgroundColor: 'primary.main', 
+              borderRadius: 2.5, 
+              width: 40, 
+              height: 40, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              mr: 1.5,
+              color: 'white',
+              boxShadow: '0 4px 6px -1px rgb(99 102 241 / 0.4)'
+            }}
+          >
+            <CloudOutlinedIcon />
+          </Box>
+          <Typography 
+            variant="h6" 
+            color="text.primary" 
+            sx={{ 
+              display: { xs: 'none', sm: 'block' }, 
+              fontWeight: 700,
+              letterSpacing: '-0.025em',
+              fontSize: '1.25rem'
+            }}
+          >
+            My Drive
           </Typography>
         </Box>
 
         {/* Middle: Search bar */}
         <Search>
           <SearchIconWrapper>
-            <SearchIcon />
+            <SearchIcon fontSize="small" />
           </SearchIconWrapper>
           <StyledInputBase
-            placeholder="Search in Drive"
+            placeholder="Search your files and folders"
             inputProps={{ 'aria-label': 'search' }}
           />
         </Search>
 
         {/* Right side: Actions & Profile */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-          <IconButton size="large" color="inherit" sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
-            <SettingsIcon />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+          <IconButton size="medium" color="inherit" sx={{ color: 'text.secondary' }}>
+            <SettingsOutlinedIcon fontSize="small" />
           </IconButton>
-          <IconButton size="large" color="inherit" sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
-            <AppsIcon />
+          <IconButton size="medium" color="inherit" sx={{ color: 'text.secondary' }}>
+            <GridViewOutlinedIcon fontSize="small" />
           </IconButton>
-          <IconButton size="large" edge="end" color="inherit">
-            <AccountCircleIcon fontSize="large" />
-          </IconButton>
+          <Box sx={{ ml: 1, borderLeft: '1px solid #e2e8f0', pl: 1 }}>
+            <IconButton size="medium" edge="end" color="inherit">
+              <AccountCircleOutlinedIcon fontSize="large" sx={{ color: 'text.secondary' }} />
+            </IconButton>
+          </Box>
         </Box>
 
       </Toolbar>

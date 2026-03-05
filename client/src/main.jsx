@@ -14,47 +14,76 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1a73e8',
+      main: '#6366f1', // Indigo 500 - more modern than Google Blue
+      light: '#818cf8',
+      dark: '#4f46e5',
+    },
+    secondary: {
+      main: '#ec4899', // Pink 500 for accents
     },
     background: {
-      default: '#f0f2f5',
+      default: '#f9fafb', // Very light gray/slate
       paper: '#ffffff',
     },
     text: {
-      primary: '#1c1e21',
-      secondary: '#65676b',
+      primary: '#111827', // Gray 900
+      secondary: '#4b5563', // Gray 600
     },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 16, // Softer corners
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h5: {
+      fontWeight: 700,
+      letterSpacing: '-0.025em',
+    },
+    h6: {
       fontWeight: 600,
+      letterSpacing: '-0.025em',
+    },
+    button: {
+      fontWeight: 600,
+      textTransform: 'none',
     },
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: 'none',
-          fontWeight: 600,
+          padding: '8px 16px',
           boxShadow: 'none',
           '&:hover': {
-            boxShadow: 'none',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
           },
+        },
+        containedPrimary: {
+          '&:hover': {
+            backgroundColor: '#4f46e5',
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
         },
       },
     },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
+          backgroundColor: '#ffffff',
           '& fieldset': {
-            borderColor: '#e0e0e0',
+            borderColor: '#e5e7eb',
           },
           '&:hover fieldset': {
-            borderColor: '#b0b0b0',
+            borderColor: '#d1d5db',
+          },
+          '&.Mui-focused fieldset': {
+            borderColor: '#6366f1',
           },
         },
       },
