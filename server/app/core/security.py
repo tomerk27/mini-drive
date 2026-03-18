@@ -3,7 +3,6 @@ from datetime import timedelta, timezone, datetime
 from jose import jwt
 from typing import Optional
 from dotenv import load_dotenv
-import os
 from app.core.config import settings
 
 load_dotenv()
@@ -22,10 +21,10 @@ def create_access_token(data: dict, expire_delta: Optional[timedelta] = None) ->
     if expire_delta:
         expire_time = datetime.now(timezone.utc) + expire_delta
     else:
-        expire_time = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
+        expire_time = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     data_copy.update({"exp": expire_time})
 
-    encoded_jwt = jwt.encode(data_copy, settings.secret_key, algorithm=settings.algorithm)
+    encoded_jwt = jwt.encode(data_copy, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
     return encoded_jwt

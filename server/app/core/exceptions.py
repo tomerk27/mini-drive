@@ -44,8 +44,9 @@ class TokenCredentialsError(AppException):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={"WWW-Authenticate": settings.AUTH_SCHEME}
         )
+
         
 class ResourceNotFoundError(AppException):
     def __init__(self, detail: str = "Resource not found"):
@@ -66,6 +67,13 @@ class DataBaseError(AppException):
         super().__init__(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Data base error"
+        )
+
+class StorageServerError(AppException):
+    def __init__(self, detail = "Storage server error"):
+        super().__init__(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=detail
         )
 
 class ItemIsFolderError(AppException):

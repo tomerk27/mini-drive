@@ -1,16 +1,17 @@
 from fastapi import UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
+from urllib.parse import quote
 import os
 import uuid
-import shutil
 from bson import ObjectId
 from app.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, FileResponse as FileResponseSchema, FolderResponse
 from app.models.item import ItemModel, FileModel, FolderModel
 from app.database import get_collection
-from app.core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError
+from app.core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError, StorageServerError
 from app.utils.item_utils import ItemStatus, ItemType, SharePermission,get_item_or_404, verify_access
 from app.core.config import settings
 from app.utils.mappers import map_item_to_response, map_items_to_responses
+from app.services.storage_service import send_file_to_storage, get_file_from_storage
 
 def parse_item_to_model(raw_dict: dict) -> ItemModel:
     item_type = raw_dict.get("item_type")
@@ -66,20 +67,17 @@ async def complete_item_upload(
     if item.get("status") != ItemStatus.PENDING.value:
         raise ResourceNotFoundError("Pending file not found")
 
-    os.makedirs(settings.files_dir, exist_ok=True)
     file_ext = os.path.splitext(file.filename)[1]
     physical_filename = f"{uuid.uuid4()}{file_ext}"
-    physical_path = os.path.join(settings.files_dir, physical_filename)
 
-    try: 
-        with open(physical_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
 
-        file_size = os.path.getsize(physical_path)
-        file_type = file.content_type
+    success, file_hash = send_file_to_storage(physical_filename, file_size, file.file)
     
-    except Exception as e:
-        raise e
+    if not success:
+        raise StorageServerError("Failed to save to storage node")
 
     result_dict = await items.find_one_and_update(
         {
@@ -88,10 +86,11 @@ async def complete_item_upload(
             "status": ItemStatus.PENDING.value
             },
         {"$set":{
-            "physical_path": physical_path,
+            "physical_name": physical_filename,
             "size": file_size,
-            "file_type": file_type,
-            "status": ItemStatus.COMPLETED.value
+            "file_type": file.content_type,
+            "status": ItemStatus.COMPLETED.value,
+            "file_hash": file_hash
         }},
         return_document=True
     )
@@ -168,10 +167,20 @@ async def get_file_preview_service(item_id: str, current_user_id: str):
     if item.get('item_type') == ItemType.FOLDER:
         raise ItemIsFolderError()
     
-    return FileResponse(
-        path=item.get('physical_path'),
-        media_type=item.get('file_type'),
-        filename=item.get('name')
+    physical_name = item.get('physical_name')
+    file_type = item.get('file_type')
+    name = item.get('name')
+    file_hash = item.get('item_hash')
+    
+    file_generator = get_file_from_storage(physical_name, file_hash)
+
+    if not file_generator:
+        raise StorageServerError("File not found on storage server")
+    
+    return StreamingResponse(
+        file_generator,
+        media_type=file_type,
+        headers={"Content-Disposition": f"inline; filename*=UTF-8''{quote(name)}"}
     )
 
 async def mark_item_as_starred_service(item_id: str, current_user_id: str):

@@ -56,7 +56,7 @@ async def login_user(user_data: UserLogin):
 
         return UserResponse(
             access_token=create_access_token(data= {"sub": user_id, "root_folder_id": root_folder_id}),
-            token_type=settings.token_type,
+            token_type=settings.TOKEN_TYPE,
         )
     else:
         raise UserNotFoundError()

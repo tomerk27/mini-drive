@@ -2,17 +2,24 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Taken from the .env file
-    mongo_uri: str
-    secret_key: str
+    MONGO_URI: str
+    SECRET_KEY: str
+    
 
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
-    auth_scheme: str = "Bearer"
-    token_type: str = "bearer"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    AUTH_SCHEME: str = "Bearer"
+    TOKEN_TYPE: str = "bearer"
 
-    files_dir: str = "settings/files"
+    # Directory for temporary file storage (before forwarding to storage node)
+    FILES_DIR: str = "settings/files"
+
+    # Storage Server Configuration
+    STORAGE_SERVER_HOST: str = "127.0.0.1"
+    STORAGE_SERVER_PORT: int = 9000
     
     class Config:
-        env_file=".env"
+        env_file = ".env"
+        case_sensitive = False
 
 settings = Settings()

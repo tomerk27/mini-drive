@@ -18,6 +18,7 @@
 
 3. TECH STACK (Backend & Data)
 - Server Framework: Python FastAPI
+- Storage Server: Custom Python TCP Socket Server (Data Node)
 - Database: MongoDB Atlas (Cloud)
 - Database Driver: Motor (Async MongoDB driver)
 - Data Validation: Pydantic (Schemas V2) + email-validator
@@ -25,7 +26,7 @@
 - Token Management: python-jose (JWT generation & validation)
 - File Handling: python-multipart
 - Environment Management: python-dotenv
-- Architecture: Client <-> Main Server (FastAPI) <-> Database Server (MongoDB)
+- Architecture: Client <-> Main Server (FastAPI) <-> Storage Server (Sockets)
 - Authentication: JSON based (UserCreate Schema) + Bearer Token (JWT)
 
 4. PROJECT STRUCTURE
@@ -126,28 +127,22 @@
     - **Password Hashing:** Bcrypt.
 * Planned Features:
     - **Secure Google Auth:** Backend verification of Google ID Tokens (preventing client-side spoofing).
+    - **Distributed Storage Architecture:** Decoupling physical storage from the API server using a custom binary protocol over TCP sockets.
     - Access Control (ACL): Sharing mechanism.
     - Magic Number Validation.
 
 7. CURRENT STATUS & ROADMAP
-- [x] Initialize Project Structure (Client/Server)
-- [x] Database: Connect to MongoDB Atlas (Async/Motor)
-- [x] Auth: Registration & Login (JWT + Bcrypt)
-- [x] Client: Login/Register UI & Logic
-- [x] **Architecture: Implement Service/Repository Pattern for Items**
-- [x] **Core: Secure File Upload (Two-Step Init/Content Flow)**
-- [x] **Client: Token Expiration Handling (Interceptors)**
-- [/] **Client: Google Sign-In Integration**
-    - [x] Google Cloud Project Configured (OAuth Consent Screen).
-    - [x] Client UI Component (`<GoogleLogin />`) implemented.
-    - [x] Token Retrieval from Google works.
-    - [ ] **Pending:** Sending Token to Backend & Verification Logic (Server-side).
+- [ ] **Storage: Implement Dedicated Storage Server (Socket-based)**
+    - [ ] Design custom binary protocol for file transfer.
+    - [ ] Implement TCP Socket Listener on Storage Server.
+    - [ ] Integrate Socket Client in Main Server (Forwarding uploads).
 - [ ] Core: Folder Creation & Navigation Logic
 - [ ] Core: File Download
 - [ ] Security: Implement File Sharing (Permissions)
 
 8. ARCHITECTURE & CODING STANDARDS
 - Backend Pattern: Routes -> Services -> Mappers -> Schemas.
+- Storage Architecture: Main Server (API Gateway) acts as a proxy, streaming data to isolated Storage Nodes via raw TCP sockets.
 - Frontend: Hooks, Context API, and Centralized Axios calls.
 
 9. HOW TO RUN (DEVELOPMENT)
