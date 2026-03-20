@@ -4,6 +4,7 @@ class Settings(BaseSettings):
     # Taken from the .env file
     MONGO_URI: str
     SECRET_KEY: str
+    STORAGE_ENCRYPTION_KEY: str
     
 
     ALGORITHM: str = "HS256"

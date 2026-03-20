@@ -14,8 +14,13 @@ from shared import (
     CommandType, 
     unpack_response, 
     unpack_download_response,
-    pack_response
+    pack_response,
+    send_packet,
+    receive_decrypted_packet
 )
+
+# Load encryption key
+STORAGE_KEY = getattr(settings, "STORAGE_ENCRYPTION_KEY", "").encode()
 
 def send_file_to_storage(filename: str, file_size: int, file_stream) -> bool:
     """
@@ -30,23 +35,23 @@ def send_file_to_storage(filename: str, file_size: int, file_stream) -> bool:
     try:
         sock.connect((settings.STORAGE_SERVER_HOST, settings.STORAGE_SERVER_PORT))
 
-        # Pack and send the custom binary header
+        # Pack and send the encrypted header packet
         header = pack_header(CommandType.UPLOAD, filename, file_size)
-        sock.sendall(header)
+        send_packet(sock, header, STORAGE_KEY)
 
-        # Stream the actual file data in 4KB chunks
+        # Stream the actual file data in 4KB chunks, each encrypted
         while True:
             chunk = file_stream.read(4096)
             if not chunk:
                 break
 
             sha256.update(chunk)
-            sock.sendall(chunk)
+            send_packet(sock, chunk, STORAGE_KEY)
 
         file_hash = sha256.hexdigest()
 
-        # Wait for the server's 1-byte acknowledgment
-        res = sock.recv(1)
+        # Receive encrypted acknowledgement
+        res = receive_decrypted_packet(sock, STORAGE_KEY)
         if not res:
             return False
             
@@ -74,9 +79,10 @@ def get_file_from_storage(filename: str, expected_hash: str):
         
         # Send Download Request Header
         header = pack_header(CommandType.DOWNLOAD, filename, 0)
-        sock.sendall(header)
+        send_packet(sock, header, STORAGE_KEY)
         
-        res_header = sock.recv(9)
+        # Receive encrypted response header
+        res_header = receive_decrypted_packet(sock, STORAGE_KEY)
         if not res_header:
             raise StorageServerError()
             
@@ -91,8 +97,8 @@ def get_file_from_storage(filename: str, expected_hash: str):
             try:
                 bytes_read = 0
                 while bytes_read < file_size:
-                    to_read = min(4096, file_size - bytes_read)
-                    chunk = sock.recv(to_read)
+                    # Receive encrypted chunk
+                    chunk = receive_decrypted_packet(sock, STORAGE_KEY)
                     if not chunk:
                         break
 
@@ -102,9 +108,9 @@ def get_file_from_storage(filename: str, expected_hash: str):
                     bytes_read += len(chunk)
 
                 if bytes_read == file_size:
-                    sock.sendall(pack_response(0))
+                    send_packet(sock, pack_response(0), STORAGE_KEY)
                 else:
-                    sock.sendall(pack_response(1))
+                    send_packet(sock, pack_response(1), STORAGE_KEY)
                     raise StorageServerError()
 
                 actual_hash = sha256.hexdigest()
@@ -114,7 +120,7 @@ def get_file_from_storage(filename: str, expected_hash: str):
 
             except Exception as e:
                 print(f"[!] Download Error: {e}")
-                sock.sendall(pack_response(1))
+                send_packet(sock, pack_response(1), STORAGE_KEY)
                 raise StorageServerError()
 
             finally:

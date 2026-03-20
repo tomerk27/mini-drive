@@ -1,4 +1,5 @@
 import enum
+from cryptography.fernet import Fernet
 
 class CommandType(enum.IntEnum):
     UPLOAD = 1
@@ -9,33 +10,75 @@ HEADER_FIXED_SIZE = 13
 DOWNLOAD_RESPONSE_SIZE = 9
 BYTE_ORDER = 'big'
 
-def pack_header(command: CommandType, filename: str, file_size: int) -> bytes:
-    """                                                                                                                                                       │
-    Packs metadata into a 13-byte header + encoded filename.                                                                                                  │
-    Structure: [Command(1B)] [FilenameLength(4B)] [FileSize(8B)] [Filename(Var)]                                                                              │
+def encrypt_data(data: bytes, key: bytes) -> bytes:
+    """Encrypts data using the provided key."""
+    f = Fernet(key)
+    return f.encrypt(data)
+
+def decrypt_data(data: bytes, key: bytes) -> bytes:
+    """Decrypts data using the provided key."""
+    f = Fernet(key)
+    return f.decrypt(data)
+
+def receive_exactly(sock, n):
+    """Utility to receive exactly n bytes from a socket."""
+    data = b''
+    while len(data) < n:
+        packet = sock.recv(n - len(data))
+        if not packet:
+            return None
+        data += packet
+    return data
+
+def receive_packet(sock, length_size=4):
+    """
+    Reads a length prefix, then receives and returns the full message.
     """
 
-    filename_bytes = filename.encode('utf-8')
-    filename_len = len(filename_bytes)
+    raw_length = receive_exactly(sock, length_size)
+
+    if not raw_length:
+        return None
+    
+    message_length = int.from_bytes(raw_length, byteorder=BYTE_ORDER)
+    
+    return receive_exactly(sock, message_length) 
+
+def send_packet(sock, data, key):
+    """Encrypts data, adds a 4-byte length prefix, and sends it."""
+    encrypted_data = encrypt_data(data, key)
+    length = len(encrypted_data)
+    sock.sendall(length.to_bytes(4, byteorder=BYTE_ORDER) + encrypted_data)
+
+def receive_decrypted_packet(sock, key):
+    """Receives a length-prefixed packet and decrypts it."""
+    encrypted_data = receive_packet(sock)
+    if not encrypted_data:
+        return None
+    return decrypt_data(encrypted_data, key)
+
+def pack_header(command: CommandType, filename: str, file_size: int) -> bytes:
+    """                                                                                                                                                       
+    Packs metadata into header.
+    Structure: [Command(1B)] [FileSize(8B)] [Filename(Var)]                                                                              
+    """
 
     cmd_bytes = int(command).to_bytes(1, byteorder=BYTE_ORDER)
-    name_len_bytes = filename_len.to_bytes(4, byteorder=BYTE_ORDER)
     size_bytes = file_size.to_bytes(8, byteorder=BYTE_ORDER)
+    filename_bytes = filename.encode('utf-8')
 
-    return cmd_bytes + name_len_bytes + size_bytes + filename_bytes
+    return cmd_bytes + size_bytes + filename_bytes
 
 def unpack_header(data: bytes):
-    """                                                                                                                                                       │
-    Unpacks exactly 13 bytes into (command, filename_length, file_size).                                                                                      │
     """
-    if len(data) != HEADER_FIXED_SIZE:
-       raise ValueError(f"Header must be exactly {HEADER_FIXED_SIZE} bytes. Received: {len(data)}")
+    Unpacks header into command, file_size, filename.
+    """
     
     command_val = data[0]
-    name_len = int.from_bytes(data[1:5], byteorder=BYTE_ORDER)
-    file_size = int.from_bytes(data[5:13], byteorder=BYTE_ORDER)
+    file_size = int.from_bytes(data[1:9], byteorder=BYTE_ORDER)
+    filename = data[9:].decode('utf-8')
 
-    return CommandType(command_val), name_len, file_size
+    return CommandType(command_val), file_size, filename
 
 def pack_response(status_code: int) -> bytes:
     """1-byte response (0 for Success, 1 for Error)"""
@@ -49,7 +92,7 @@ def pack_download_response(status_code: int, file_size: int) -> bytes:
     """
     Packs a response for a download request.
     Structure: [Status Code (1B)] [File Size (8B)]
-    """    
+    """
     
     status_bytes = pack_response(status_code)
 

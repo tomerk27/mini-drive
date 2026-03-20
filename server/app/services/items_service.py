@@ -170,7 +170,7 @@ async def get_file_preview_service(item_id: str, current_user_id: str):
     physical_name = item.get('physical_name')
     file_type = item.get('file_type')
     name = item.get('name')
-    file_hash = item.get('item_hash')
+    file_hash = item.get('file_hash')
     
     file_generator = get_file_from_storage(physical_name, file_hash)
 

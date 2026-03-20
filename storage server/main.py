@@ -2,54 +2,41 @@ import socket
 import threading
 import os
 import sys
+from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared import (
-    unpack_header, 
-    HEADER_FIXED_SIZE,
+    unpack_header,
+    receive_decrypted_packet,
     CommandType
 )
-
 from actions import handle_upload, handle_download
+
+load_dotenv()
+STORAGE_ENCRYPTION_KEY = os.getenv("STORAGE_ENCRYPTION_KEY", "").encode()
 
 PORT = 9000
 HOST = "0.0.0.0"
-
-def receive_exactly(sock, n):
-    """Utility to receive exactly n bytes from a socket."""
-    data = b''
-    while len(data) < n:
-        packet = sock.recv(n - len(data))
-        if not packet:
-            return None
-        data += packet
-    return data
 
 def handle_client(client_socket, address):
     """Handles an individual client connection."""
     print(f"[*] Connection from {address[0]}:{address[1]}")
     
     try:
-        # Read the 13-byte header
-        header_data = receive_exactly(client_socket, HEADER_FIXED_SIZE)
-        if not header_data:
+        # Receive and decrypt the meta packet (header + filename)
+        decrypted_data = receive_decrypted_packet(client_socket, STORAGE_ENCRYPTION_KEY)
+        if not decrypted_data:
             return
 
         # Unpack metadata
-        command, name_len, file_size = unpack_header(header_data)
-
-        # Read the filename
-        filename_data = receive_exactly(client_socket, name_len)
-        if not filename_data:
-            return
-        filename = filename_data.decode('utf-8')
+        command, file_size, filename = unpack_header(decrypted_data)
 
         # Route the command
         if command == CommandType.UPLOAD:
-            handle_upload(client_socket, filename, file_size)
+            handle_upload(client_socket, filename, file_size, STORAGE_ENCRYPTION_KEY)
         elif command == CommandType.DOWNLOAD:
-            handle_download(client_socket, filename)
+            handle_download(client_socket, filename, STORAGE_ENCRYPTION_KEY)
         else:
             print(f"[!] Unknown command: {command}")
             
@@ -67,7 +54,7 @@ def start_server():
     try:
         server_socket.bind((HOST, PORT))
         server_socket.listen(10)
-        print(f"[*] Storage Server is alive and listening on {HOST}:{PORT}")
+        print(f"[*] Storage Server (Encrypted) is alive and listening on {HOST}:{PORT}")
 
         while True:
             client_sock, address = server_socket.accept()

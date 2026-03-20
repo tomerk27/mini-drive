@@ -7,13 +7,14 @@ from shared import (
     pack_response, 
     pack_download_response,
     unpack_response,
-    BYTE_ORDER
+    send_packet,
+    receive_decrypted_packet
 )
 
 STORAGE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
-def handle_upload(sock, filename, file_size):
-    """Receives a file in chunks and saves it to the local storage."""
+def handle_upload(sock, filename, file_size, key):
+    """Receives a file in encrypted chunks and saves it to the local storage."""
     # Path Traversal prevention
     safe_filename = os.path.basename(filename)
     save_path = os.path.join(STORAGE_DIR, safe_filename)
@@ -24,8 +25,8 @@ def handle_upload(sock, filename, file_size):
     try:
         with open(save_path, 'wb') as f:
             while bytes_received < file_size:
-                to_read = min(4096, file_size - bytes_received)
-                chunk = sock.recv(to_read)
+                # Receive encrypted chunk
+                chunk = receive_decrypted_packet(sock, key)
                 
                 if not chunk:
                     raise Exception("Socket closed during upload")
@@ -33,39 +34,40 @@ def handle_upload(sock, filename, file_size):
                 f.write(chunk)
                 bytes_received += len(chunk)
         
-        # After successful writing, send a SUCCESS status code (0)
-        sock.sendall(pack_response(0))
+        # After successful writing, send an encrypted SUCCESS status code (0)
+        send_packet(sock, pack_response(0), key)
         print(f"[+] Saved: {safe_filename} ({file_size} bytes)")
         
     except Exception as e:
         print(f"[!] Upload Error: {e}")
-        sock.sendall(pack_response(1)) # Error status
+        send_packet(sock, pack_response(1), key) # Error status
 
-def handle_download(sock, filename):
-    """Sends a file from local storage to the client in chunks."""
+def handle_download(sock, filename, key):
+    """Sends a file from local storage to the client in encrypted chunks."""
     safe_filename = os.path.basename(filename)
     file_path = os.path.join(STORAGE_DIR, safe_filename)
 
     if not os.path.exists(file_path):
         print(f"[!] Download Failed: {safe_filename} not found.")
-        sock.sendall(pack_download_response(1, 0)) # Error status
+        send_packet(sock, pack_download_response(1, 0), key) # Error status
         return
 
     file_size = os.path.getsize(file_path)
     
-    # Send Success Header (Status 0 + File Size)
-    sock.sendall(pack_download_response(0, file_size))
+    # Send Encrypted Success Header (Status 0 + File Size)
+    send_packet(sock, pack_download_response(0, file_size), key)
 
-    # Stream directly from disk to socket (Memory Efficient)
+    # Stream directly from disk to socket, encrypting each chunk
     try:
         with open(file_path, 'rb') as f:
             while True:
                 chunk = f.read(4096)
                 if not chunk:
                     break
-                sock.sendall(chunk)
+                send_packet(sock, chunk, key)
         
-        res = sock.recv(1)
+        # Receive encrypted confirmation
+        res = receive_decrypted_packet(sock, key)
         if res:
             status_code = unpack_response(res)
             if status_code == 0:
