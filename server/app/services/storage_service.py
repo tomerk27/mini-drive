@@ -132,3 +132,31 @@ def get_file_from_storage(filename: str, expected_hash: str):
         print(f"[!] Storage Client Error (Download): {e}")
         sock.close()
         raise StorageServerError()
+
+def delete_file_from_storage(filename: str) -> bool:
+    """
+    Connects to the storage server and requests a file deletion.
+    Returns True if the storage server confirms successful deletion (status 0).
+    """
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    try:
+        sock.connect((settings.STORAGE_SERVER_HOST, settings.STORAGE_SERVER_PORT))
+        
+        # Send Delete Request Header
+        header = pack_header(CommandType.DELETE, filename, 0)
+        send_packet(sock, header, STORAGE_KEY)
+        
+        # Receive encrypted acknowledgement
+        res = receive_decrypted_packet(sock, STORAGE_KEY)
+        if not res:
+            return False
+            
+        status = unpack_response(res)
+        return status == 0
+    
+    except Exception as e:
+        print(f"[!] Storage Client Error (Delete): {e}")
+        return False
+    finally:
+        sock.close()

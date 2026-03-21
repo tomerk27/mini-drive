@@ -11,7 +11,7 @@ from app.core.exceptions import ExistingItemError, ResourceNotFoundError, DataBa
 from app.utils.item_utils import ItemStatus, ItemType, SharePermission,get_item_or_404, verify_access
 from app.core.config import settings
 from app.utils.mappers import map_item_to_response, map_items_to_responses
-from app.services.storage_service import send_file_to_storage, get_file_from_storage
+from app.services.storage_service import send_file_to_storage, get_file_from_storage, delete_file_from_storage
 
 def parse_item_to_model(raw_dict: dict) -> ItemModel:
     item_type = raw_dict.get("item_type")
@@ -136,15 +136,15 @@ async def remove_item_service(item_id: str, current_user_id: str):
     item_to_remove = await get_item_or_404(item_id)
     verify_access(item_to_remove, current_user_id, "remove", SharePermission.EDITOR)
     
-    physical_path = item_to_remove.get('physical_path')
+    physical_name = item_to_remove.get('physical_name')
 
     try:
         await items.delete_one({'_id': ObjectId(item_id)})
     except Exception:
         raise DataBaseError()
     
-    if item_to_remove.get('item_type') == ItemType.FILE and physical_path and os.path.exists(physical_path):
-        os.remove(physical_path)
+    if item_to_remove.get('item_type') == ItemType.FILE and physical_name:
+        delete_file_from_storage(physical_name)
         
 async def rename_item_service(item_id: str, current_user_id: str, new_name: str):
     items = get_collection("items")
