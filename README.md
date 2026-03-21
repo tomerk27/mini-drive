@@ -131,14 +131,31 @@
     - Access Control (ACL): Sharing mechanism.
     - Magic Number Validation.
 
-7. CURRENT STATUS & ROADMAP
-- [ ] **Storage: Implement Dedicated Storage Server (Socket-based)**
-    - [ ] Design custom binary protocol for file transfer.
-    - [ ] Implement TCP Socket Listener on Storage Server.
-    - [ ] Integrate Socket Client in Main Server (Forwarding uploads).
-- [ ] Core: Folder Creation & Navigation Logic
-- [ ] Core: File Download
-- [ ] Security: Implement File Sharing (Permissions)
+7. DISTRIBUTED STORAGE SYSTEM ROADMAP (Distributed Computing)
+To transform the current single-node storage architecture into a robust Distributed Storage System, the following step-by-step implementation plan will be executed. This will provide fault tolerance, high availability, and scalability.
+
+- [ ] **Phase 1: Architecture Shift & Node Registration (Control Plane)**
+    - [ ] Update the Main API Server to act as a "Tracker" (NameNode) managing multiple storage nodes.
+    - [ ] Implement a Heartbeat protocol: Storage nodes periodically ping the Main Server to report their health (IP, Port, Available Capacity).
+    - [ ] Create a `StorageNode` collection in MongoDB to track active nodes dynamically.
+
+- [ ] **Phase 2: Metadata Management & Intelligent Routing**
+    - [ ] Update the MongoDB `ItemModel` to map each file to a list of `node_ids` holding that file.
+    - [ ] Modify the Main Server's `StorageService` to route uploads/downloads dynamically by selecting an available node from the DB, removing the hardcoded IP/Port.
+
+- [ ] **Phase 3: Data Replication & Upload Strategy**
+    - [ ] Define a Replication Factor (e.g., RF=2 or RF=3) to ensure files are stored on multiple physical nodes.
+    - [ ] Implement replication logic: The Main Server streams the file to a Primary Node, which then forwards it to Replica Nodes, or the Main Server orchestrates multi-node uploads directly.
+    - [ ] Ensure database metadata is only finalized when replication is confirmed.
+
+- [ ] **Phase 4: Fault Tolerance & Self-Healing**
+    - [ ] Main Server detects offline nodes via missed heartbeats and marks them "Offline".
+    - [ ] Implement an async Background Worker: Periodically scan for files whose replica count has fallen below the Replication Factor.
+    - [ ] Trigger automated "Healing": Instruct a healthy node to transfer the missing file to another available node to restore redundancy.
+
+- [ ] **Phase 5: Load Balancing & Advanced File Sharding**
+    - [ ] Route client downloads using Round-Robin or Least-Connections to distribute bandwidth.
+    - [ ] File Chunking (Optional): Split large files into smaller encrypted chunks distributed across different nodes (similar to BitTorrent/HDFS) to allow parallel downloading and better space utilization.
 
 8. ARCHITECTURE & CODING STANDARDS
 - Backend Pattern: Routes -> Services -> Mappers -> Schemas.
