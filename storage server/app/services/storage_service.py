@@ -1,17 +1,21 @@
 import os
 from app.core.config import settings
 from shared.protocol import (
-    pack_response, 
-    pack_download_response,
-    unpack_response,
+    CommandType,
+    Field,
+    pack,
+    unpack,
     send_packet,
     receive_decrypted_packet
 )
 
 class StorageService:
     @staticmethod
-    def handle_upload(sock, filename: str, file_size: int, key: bytes):
+    def handle_upload(sock, fields: dict, key: bytes):
         """Receives a file in encrypted chunks and saves it to the local storage."""
+        filename = fields.get(Field.FILENAME)
+        file_size = fields.get(Field.FILE_SIZE)
+
         # Path Traversal prevention
         safe_filename = os.path.basename(filename)
         save_path = os.path.join(settings.STORAGE_DIR, safe_filename)
@@ -32,28 +36,33 @@ class StorageService:
                     bytes_received += len(chunk)
             
             # After successful writing, send an encrypted SUCCESS status code (0)
-            send_packet(sock, pack_response(0), key)
+            res_packet = pack(CommandType.UPLOAD, {Field.STATUS: 0})
+            send_packet(sock, res_packet, key)
             print(f"[+] Saved: {safe_filename} ({file_size} bytes)")
             
         except Exception as e:
             print(f"[!] Upload Error: {e}")
-            send_packet(sock, pack_response(1), key) # Error status
+            res_packet = pack(CommandType.UPLOAD, {Field.STATUS: 1})
+            send_packet(sock, res_packet, key) # Error status
 
     @staticmethod
-    def handle_download(sock, filename: str, key: bytes):
+    def handle_download(sock, fields: dict, key: bytes):
         """Sends a file from local storage to the client in encrypted chunks."""
+        filename = fields.get(Field.FILENAME)
         safe_filename = os.path.basename(filename)
         file_path = os.path.join(settings.STORAGE_DIR, safe_filename)
 
         if not os.path.exists(file_path):
             print(f"[!] Download Failed: {safe_filename} not found.")
-            send_packet(sock, pack_download_response(1, 0), key) # Error status
+            res_packet = pack(CommandType.DOWNLOAD, {Field.STATUS: 1, Field.FILE_SIZE: 0})
+            send_packet(sock, res_packet, key) # Error status
             return
 
         file_size = os.path.getsize(file_path)
         
         # Send Encrypted Success Header (Status 0 + File Size)
-        send_packet(sock, pack_download_response(0, file_size), key)
+        res_packet = pack(CommandType.DOWNLOAD, {Field.STATUS: 0, Field.FILE_SIZE: file_size})
+        send_packet(sock, res_packet, key)
 
         # Stream directly from disk to socket, encrypting each chunk
         try:
@@ -67,7 +76,8 @@ class StorageService:
             # Receive encrypted confirmation
             res = receive_decrypted_packet(sock, key)
             if res:
-                status_code = unpack_response(res)
+                _, res_fields = unpack(res)
+                status_code = res_fields.get(Field.STATUS)
                 if status_code == 0:
                     print(f"[+] Downloaded: {safe_filename} ({file_size} bytes)")
                 else:
@@ -79,19 +89,23 @@ class StorageService:
             print(f"[!] Download Error: {e}")
 
     @staticmethod
-    def handle_delete(sock, filename: str, key: bytes):
+    def handle_delete(sock, fields: dict, key: bytes):
         """Deletes a file from local storage."""
+        filename = fields.get(Field.FILENAME)
         safe_filename = os.path.basename(filename)
         file_path = os.path.join(settings.STORAGE_DIR, safe_filename)
 
         try:
             if os.path.exists(file_path):
                 os.remove(file_path)
-                send_packet(sock, pack_response(0), key) # Success
+                res_packet = pack(CommandType.DELETE, {Field.STATUS: 0})
+                send_packet(sock, res_packet, key) # Success
                 print(f"[+] Deleted: {safe_filename}")
             else:
                 print(f"[!] Delete Failed: {safe_filename} not found.")
-                send_packet(sock, pack_response(1), key) # Error: Not found
+                res_packet = pack(CommandType.DELETE, {Field.STATUS: 1})
+                send_packet(sock, res_packet, key) # Error: Not found
         except Exception as e:
             print(f"[!] Delete Error: {e}")
-            send_packet(sock, pack_response(1), key)
+            res_packet = pack(CommandType.DELETE, {Field.STATUS: 1})
+            send_packet(sock, res_packet, key)

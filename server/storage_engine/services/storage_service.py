@@ -14,7 +14,7 @@ def _get_client():
         encryption_key=STORAGE_KEY
     )
 
-def send_file_to_storage(filename: str, file_size: int, file_stream) -> (bool, str):
+def send_file_to_storage(filename: str, file_size: int, file_stream):
     """
     Orchestrates file upload: Calculates hash while streaming through the client.
     Returns (Success: bool, SHA256_Hash: str).

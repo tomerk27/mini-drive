@@ -5,23 +5,29 @@ class CommandType(enum.IntEnum):
     UPLOAD = 1
     DOWNLOAD = 2
     DELETE = 3
+    HEARTBEAT = 4
 
-HEADER_FIXED_SIZE = 13
-DOWNLOAD_RESPONSE_SIZE = 9
+class Field(enum.IntEnum):
+    STATUS = 1
+    FILE_SIZE = 2
+    FILENAME = 3
+    NODE_ID = 4
+    NODE_PORT = 5
+    CAPACITY = 6
+
 BYTE_ORDER = 'big'
 
+# Encryption/Decryption
 def encrypt_data(data: bytes, key: bytes) -> bytes:
-    """Encrypts data using the provided key."""
     f = Fernet(key)
     return f.encrypt(data)
 
 def decrypt_data(data: bytes, key: bytes) -> bytes:
-    """Decrypts data using the provided key."""
     f = Fernet(key)
     return f.decrypt(data)
 
+# Socket helpers
 def receive_exactly(sock, n):
-    """Utility to receive exactly n bytes from a socket."""
     data = b''
     while len(data) < n:
         packet = sock.recv(n - len(data))
@@ -31,85 +37,71 @@ def receive_exactly(sock, n):
     return data
 
 def receive_packet(sock, length_size=4):
-    """
-    Reads a length prefix, then receives and returns the full message.
-    """
-
     raw_length = receive_exactly(sock, length_size)
-
     if not raw_length:
         return None
-    
     message_length = int.from_bytes(raw_length, byteorder=BYTE_ORDER)
-    
     return receive_exactly(sock, message_length) 
 
 def send_packet(sock, data, key):
-    """Encrypts data, adds a 4-byte length prefix, and sends it."""
     encrypted_data = encrypt_data(data, key)
     length = len(encrypted_data)
     sock.sendall(length.to_bytes(4, byteorder=BYTE_ORDER) + encrypted_data)
 
 def receive_decrypted_packet(sock, key):
-    """Receives a length-prefixed packet and decrypts it."""
     encrypted_data = receive_packet(sock)
     if not encrypted_data:
         return None
     return decrypt_data(encrypted_data, key)
 
-def pack_header(command: CommandType, filename: str, file_size: int) -> bytes:
-    """                                                                                                                                                       
-    Packs metadata into header.
-    Structure: [Command(1B)] [FileSize(8B)] [Filename(Var)]                                                                              
+# Unified TLV Packing
+def pack(command: CommandType, fields: dict) -> bytes:
     """
-
-    cmd_bytes = int(command).to_bytes(1, byteorder=BYTE_ORDER)
-    size_bytes = file_size.to_bytes(8, byteorder=BYTE_ORDER)
-    filename_bytes = filename.encode('utf-8')
-
-    return cmd_bytes + size_bytes + filename_bytes
-
-def unpack_header(data: bytes):
+    Packs a command and its fields into a TLV-based binary message.
+    Structure: [Command(1B)] [ [FieldID(1B)] [Length(4B)] [Value(Var)] ... ]
     """
-    Unpacks header into command, file_size, filename.
-    """
+    packet = int(command).to_bytes(1, byteorder=BYTE_ORDER)
     
-    command_val = data[0]
-    file_size = int.from_bytes(data[1:9], byteorder=BYTE_ORDER)
-    filename = data[9:].decode('utf-8')
+    for field_id, value in fields.items():
+        if isinstance(value, str):
+            val_bytes = value.encode('utf-8')
+        elif isinstance(value, int):
+            val_bytes = value.to_bytes(8, byteorder=BYTE_ORDER)
+        elif isinstance(value, bytes):
+            val_bytes = value
+        else:
+            raise TypeError(f"Unsupported value type in pack: {type(value)}")
 
-    return CommandType(command_val), file_size, filename
+        packet += int(field_id).to_bytes(1, byteorder=BYTE_ORDER)
+        packet += len(val_bytes).to_bytes(4, byteorder=BYTE_ORDER)
+        packet += val_bytes
+        
+    return packet
 
-def pack_response(status_code: int) -> bytes:
-    """1-byte response (0 for Success, 1 for Error)"""
-    return status_code.to_bytes(1, byteorder=BYTE_ORDER)
-
-def unpack_response(data: bytes) -> int:
-    """Unpacks the 1-byte response"""
-    return int.from_bytes(data, byteorder=BYTE_ORDER)
-
-def pack_download_response(status_code: int, file_size: int) -> bytes:
+def unpack(data: bytes):
     """
-    Packs a response for a download request.
-    Structure: [Status Code (1B)] [File Size (8B)]
+    Unpacks a TLV-based binary message into (Command, FieldsDict).
     """
+    if not data:
+        return None, {}
+
+    command = CommandType(data[0])
+    fields = {}
     
-    status_bytes = pack_response(status_code)
-
-    size_bytes = file_size.to_bytes(8, byteorder=BYTE_ORDER)
-    
-    return status_bytes + size_bytes
-
-def unpack_download_response(data: bytes):
-    """
-    Unpacks exactly 9 bytes into (status_code, file_size).
-    Structure: [Status(1B)] [FileSize(8B)]
-    """
-    if len(data) != DOWNLOAD_RESPONSE_SIZE:
-        raise ValueError(f"Download response must be {DOWNLOAD_RESPONSE_SIZE} bytes. Got: {len(data)}")
-    
-    status_code = data[0]
-
-    file_size = int.from_bytes(data[1:9], byteorder=BYTE_ORDER)
-
-    return status_code, file_size
+    offset = 1
+    while offset < len(data):
+        field_id = Field(data[offset])
+        length = int.from_bytes(data[offset+1:offset+5], byteorder=BYTE_ORDER)
+        value_bytes = data[offset+5:offset+5+length]
+        
+        # Heuristic to convert back to int/str based on Field ID
+        if field_id in (Field.FILE_SIZE, Field.NODE_PORT, Field.CAPACITY, Field.STATUS):
+            fields[field_id] = int.from_bytes(value_bytes, byteorder=BYTE_ORDER)
+        elif field_id in (Field.FILENAME, Field.NODE_ID):
+            fields[field_id] = value_bytes.decode('utf-8')
+        else:
+            fields[field_id] = value_bytes
+            
+        offset += 5 + length
+        
+    return command, fields

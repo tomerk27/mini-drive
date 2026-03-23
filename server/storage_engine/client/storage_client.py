@@ -1,10 +1,9 @@
 import socket
-from shared import (
-    pack_header, 
-    CommandType, 
-    unpack_response, 
-    unpack_download_response,
-    pack_response,
+from shared.protocol import (
+    CommandType,
+    Field,
+    pack,
+    unpack,
     send_packet,
     receive_decrypted_packet
 )
@@ -12,7 +11,7 @@ from shared import (
 class StorageClient:
     """
     Low-level driver for communicating with a Storage Node over TCP sockets.
-    Handles protocol packing, encryption, and raw byte streaming.
+    Handles protocol packing, encryption, and raw byte streaming using generic TLV.
     """
     def __init__(self, host: str, port: int, encryption_key: bytes):
         self.host = host
@@ -29,7 +28,10 @@ class StorageClient:
         sock = self._connect()
         try:
             # Send Header
-            header = pack_header(CommandType.UPLOAD, filename, file_size)
+            header = pack(CommandType.UPLOAD, {
+                Field.FILENAME: filename,
+                Field.FILE_SIZE: file_size
+            })
             send_packet(sock, header, self.key)
 
             # Stream chunks
@@ -44,7 +46,8 @@ class StorageClient:
             if not res:
                 return False
             
-            return unpack_response(res) == 0
+            _, fields = unpack(res)
+            return fields.get(Field.STATUS) == 0
         finally:
             sock.close()
 
@@ -53,7 +56,7 @@ class StorageClient:
         sock = self._connect()
         try:
             # Send Download Request
-            header = pack_header(CommandType.DOWNLOAD, filename, 0)
+            header = pack(CommandType.DOWNLOAD, {Field.FILENAME: filename})
             send_packet(sock, header, self.key)
             
             # Receive response header
@@ -62,7 +65,10 @@ class StorageClient:
                 sock.close()
                 return None, 0
                 
-            status, file_size = unpack_download_response(res_header)
+            _, fields = unpack(res_header)
+            status = fields.get(Field.STATUS)
+            file_size = fields.get(Field.FILE_SIZE)
+
             if status != 0:
                 sock.close()
                 return None, 0
@@ -78,10 +84,9 @@ class StorageClient:
                         bytes_read += len(chunk)
 
                     # Send final ACK/NACK
-                    if bytes_read == file_size:
-                        send_packet(sock, pack_response(0), self.key)
-                    else:
-                        send_packet(sock, pack_response(1), self.key)
+                    status_code = 0 if bytes_read == file_size else 1
+                    res_packet = pack(CommandType.DOWNLOAD, {Field.STATUS: status_code})
+                    send_packet(sock, res_packet, self.key)
                 finally:
                     sock.close()
 
@@ -94,13 +99,14 @@ class StorageClient:
         """Requests a file deletion from the storage node."""
         sock = self._connect()
         try:
-            header = pack_header(CommandType.DELETE, filename, 0)
+            header = pack(CommandType.DELETE, {Field.FILENAME: filename})
             send_packet(sock, header, self.key)
             
             res = receive_decrypted_packet(sock, self.key)
             if not res:
                 return False
                 
-            return unpack_response(res) == 0
+            _, fields = unpack(res)
+            return fields.get(Field.STATUS) == 0
         finally:
             sock.close()
