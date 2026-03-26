@@ -6,6 +6,7 @@ class CommandType(enum.IntEnum):
     DOWNLOAD = 2
     DELETE = 3
     HEARTBEAT = 4
+    REGISTER = 5
 
 class Field(enum.IntEnum):
     STATUS = 1

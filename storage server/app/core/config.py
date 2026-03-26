@@ -16,8 +16,12 @@ class Settings:
             with open(DOTENV_PATH, 'a') as f:
                 f.write(f"\nNODE_ID={self.NODE_ID}")
         
-        self.HOST = os.getenv("HOST")
-        self.PORT = int(os.getenv("PORT"))
+        self.HOST = os.getenv("HOST") # Local listener IP
+        self.PORT = int(os.getenv("PORT")) # Local listener Port (for uploads)
+
+        self.TRACKER_HOST = os.getenv("TRACKER_HOST") # Main Server IP
+        self.TRACKER_PORT = int(os.getenv("TRACKER_PORT"))    # Main Server Port
+
         self.STORAGE_ENCRYPTION_KEY = os.getenv("STORAGE_ENCRYPTION_KEY")
         self.STORAGE_DIR = os.path.join(BASE_DIR, "data")
 

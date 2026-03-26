@@ -6,22 +6,20 @@ from storage_engine import StorageClient
 # Load encryption key from settings
 STORAGE_KEY = getattr(settings, "STORAGE_ENCRYPTION_KEY", "").encode()
 
-def _get_client():
-    """Returns an initialized StorageClient pointing to the primary storage server."""
+def _get_client(node_id: str):
+    """Returns an initialized StorageClient pointing to a specific connected node."""
     return StorageClient(
-        host=settings.STORAGE_SERVER_HOST,
-        port=settings.STORAGE_SERVER_PORT,
+        node_id=node_id,
         encryption_key=STORAGE_KEY
     )
 
-def send_file_to_storage(filename: str, file_size: int, file_stream):
+def send_file_to_storage(node_id: str, filename: str, file_size: int, file_stream):
     """
-    Orchestrates file upload: Calculates hash while streaming through the client.
+    Orchestrates file upload to a specific node.
     Returns (Success: bool, SHA256_Hash: str).
     """
     sha256 = hashlib.sha256()
 
-    # Wrapper to hash data as it's being read by the client
     class HashingStream:
         def __init__(self, stream):
             self.stream = stream
@@ -32,7 +30,7 @@ def send_file_to_storage(filename: str, file_size: int, file_stream):
                 sha256.update(chunk)
             return chunk
 
-    client = _get_client()
+    client = _get_client(node_id)
     try:
         hashing_stream = HashingStream(file_stream)
         success = client.upload(filename, file_size, hashing_stream)
@@ -42,12 +40,12 @@ def send_file_to_storage(filename: str, file_size: int, file_stream):
         print(f"[!] Storage Service Upload Error: {e}")
         return False, None
 
-def get_file_from_storage(filename: str, expected_hash: str):
+def get_file_from_storage(node_id: str, filename: str, expected_hash: str):
     """
-    Orchestrates file download: Streams chunks and verifies hash integrity.
+    Orchestrates file download from a specific node.
     Returns a generator that yields binary chunks.
     """
-    client = _get_client()
+    client = _get_client(node_id)
     
     try:
         chunk_gen, file_size = client.download_generator(filename)
@@ -64,7 +62,6 @@ def get_file_from_storage(filename: str, expected_hash: str):
                     total_bytes += len(chunk)
                     yield chunk
 
-                # Integrity Check
                 if total_bytes != file_size:
                     raise StorageServerError("Incomplete download from storage node")
 
@@ -83,11 +80,11 @@ def get_file_from_storage(filename: str, expected_hash: str):
         print(f"[!] Storage Service Download Error: {e}")
         raise StorageServerError()
 
-def delete_file_from_storage(filename: str) -> bool:
+def delete_file_from_storage(node_id: str, filename: str) -> bool:
     """
-    Requests a file deletion from the storage node.
+    Requests a file deletion from a specific node.
     """
-    client = _get_client()
+    client = _get_client(node_id)
     try:
         return client.delete(filename)
     except Exception as e:

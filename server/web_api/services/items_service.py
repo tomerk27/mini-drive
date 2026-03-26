@@ -11,9 +11,10 @@ from common import (
     ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError, StorageServerError,
     ItemStatus, ItemType, SharePermission, get_item_or_404, verify_access,
     settings,
-    map_item_to_response, map_items_to_responses
+    map_item_to_response
 )
 from storage_engine import send_file_to_storage, get_file_from_storage, delete_file_from_storage
+from storage_engine.services.tracker_service import TrackerService
 
 def parse_item_to_model(raw_dict: dict) -> ItemModel:
     item_type = raw_dict.get("item_type")
@@ -76,10 +77,16 @@ async def complete_item_upload(
     file_size = file.file.tell()
     file.file.seek(0)
 
-    success, file_hash = send_file_to_storage(physical_filename, file_size, file.file)
+    # 1. Select the best available node from the Tracker
+    node_id = await TrackerService.select_best_node()
+    if not node_id:
+        raise StorageServerError("No storage nodes available")
+
+    # 2. Upload to that specific node
+    success, file_hash = send_file_to_storage(node_id, physical_filename, file_size, file.file)
     
     if not success:
-        raise StorageServerError("Failed to save to storage node")
+        raise StorageServerError(f"Failed to save to storage node {node_id}")
 
     result_dict = await items.find_one_and_update(
         {
@@ -92,7 +99,8 @@ async def complete_item_upload(
             "size": file_size,
             "file_type": file.content_type,
             "status": ItemStatus.COMPLETED.value,
-            "file_hash": file_hash
+            "file_hash": file_hash,
+            "node_ids": [node_id]  # Store which node has this file
         }},
         return_document=True
     )
@@ -139,6 +147,7 @@ async def remove_item_service(item_id: str, current_user_id: str):
     verify_access(item_to_remove, current_user_id, "remove", SharePermission.EDITOR)
     
     physical_name = item_to_remove.get('physical_name')
+    node_ids = item_to_remove.get('node_ids', [])
 
     try:
         await items.delete_one({'_id': ObjectId(item_id)})
@@ -146,7 +155,8 @@ async def remove_item_service(item_id: str, current_user_id: str):
         raise DataBaseError()
     
     if item_to_remove.get('item_type') == ItemType.FILE and physical_name:
-        delete_file_from_storage(physical_name)
+        for node_id in node_ids:
+            delete_file_from_storage(node_id, physical_name)
         
 async def rename_item_service(item_id: str, current_user_id: str, new_name: str):
     items = get_collection("items")
@@ -173,8 +183,13 @@ async def get_file_preview_service(item_id: str, current_user_id: str):
     file_type = item.get('file_type')
     name = item.get('name')
     file_hash = item.get('file_hash')
+    node_ids = item.get('node_ids', [])
+
+    if not node_ids:
+        raise StorageServerError("File has no associated storage nodes")
     
-    file_generator = get_file_from_storage(physical_name, file_hash)
+    # Try fetching from the first available node
+    file_generator = get_file_from_storage(node_ids[0], physical_name, file_hash)
 
     if not file_generator:
         raise StorageServerError("File not found on storage server")

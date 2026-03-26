@@ -3,8 +3,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from web_api.routes import auth, items, user
 from common import AppException, handle_exception, validation_error_handler
+from storage_engine.tracker.tracker_server import TrackerServer
+from storage_engine.tracker.data_server import DataServer
+import threading
 
 app = FastAPI()
+
+# Start the Tracker Server in a background thread
+def start_tracker():
+    tracker = TrackerServer()
+    tracker.start()
+
+# Start the Data Server in a background thread (Reversed roles: Listener)
+def start_data_server():
+    data_server = DataServer()
+    data_server.start()
+
+threading.Thread(target=start_tracker, daemon=True).start()
+threading.Thread(target=start_data_server, daemon=True).start()
 
 app.add_middleware(
     CORSMiddleware,
