@@ -6,6 +6,8 @@ from common import AppException, handle_exception, validation_error_handler
 from storage_engine.tracker.tracker_server import TrackerServer
 from storage_engine.tracker.data_server import DataServer
 import threading
+import asyncio
+from storage_engine import TrackerService
 
 app = FastAPI()
 
@@ -19,8 +21,25 @@ def start_data_server():
     data_server = DataServer()
     data_server.start()
 
+def start_maintenance_loop():
+    """Periodic health check for dead nodes (Runs every 60s)."""
+    async def maintenance_task():
+        print("[*] Maintenance Loop Started: Monitoring node health...")
+        while True:
+            try:
+                await TrackerService.check_dead_nodes()
+            except Exception as e:
+                print(f"[!] Maintenance Error: {e}")
+            await asyncio.sleep(60)
+
+    # Initialize a new event loop for this thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(maintenance_task())
+
 threading.Thread(target=start_tracker, daemon=True).start()
 threading.Thread(target=start_data_server, daemon=True).start()
+threading.Thread(target=start_maintenance_loop, daemon=True).start()
 
 app.add_middleware(
     CORSMiddleware,

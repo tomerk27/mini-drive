@@ -77,16 +77,16 @@ async def complete_item_upload(
     file_size = file.file.tell()
     file.file.seek(0)
 
-    # 1. Select the best available node from the Tracker
-    node_id = await TrackerService.select_best_node()
-    if not node_id:
+    # Select the best 3 available nodes from the Tracker
+    node_id_list = await TrackerService.select_best_nodes()
+    if not node_id_list:
         raise StorageServerError("No storage nodes available")
 
-    # 2. Upload to that specific node
-    success, file_hash = send_file_to_storage(node_id, physical_filename, file_size, file.file)
+    # Upload to that specific node
+    success, file_hash = send_file_to_storage(node_id_list, physical_filename, file_size, file.file)
     
     if not success:
-        raise StorageServerError(f"Failed to save to storage node {node_id}")
+        raise StorageServerError(f"Failed to save to storage nodes")
 
     result_dict = await items.find_one_and_update(
         {
@@ -100,7 +100,7 @@ async def complete_item_upload(
             "file_type": file.content_type,
             "status": ItemStatus.COMPLETED.value,
             "file_hash": file_hash,
-            "node_ids": [node_id]  # Store which node has this file
+            "node_ids": node_id_list # Store which node has this file
         }},
         return_document=True
     )

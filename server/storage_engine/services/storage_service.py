@@ -13,32 +13,42 @@ def _get_client(node_id: str):
         encryption_key=STORAGE_KEY
     )
 
-def send_file_to_storage(node_id: str, filename: str, file_size: int, file_stream):
+def send_file_to_storage(node_id_list: list[str], filename: str, file_size: int, file_stream):
     """
     Orchestrates file upload to a specific node.
     Returns (Success: bool, SHA256_Hash: str).
     """
     sha256 = hashlib.sha256()
+    hash_calculated = False
 
-    class HashingStream:
-        def __init__(self, stream):
-            self.stream = stream
+    results = []
 
-        def read(self, size):
-            chunk = self.stream.read(size)
-            if chunk:
-                sha256.update(chunk)
-            return chunk
+    for node_id in node_id_list:
+        try:
+            file_stream.seek(0)
+            client = _get_client(node_id)
 
-    client = _get_client(node_id)
-    try:
-        hashing_stream = HashingStream(file_stream)
-        success = client.upload(filename, file_size, hashing_stream)
-        file_hash = sha256.hexdigest() if success else None
-        return success, file_hash
-    except Exception as e:
-        print(f"[!] Storage Service Upload Error: {e}")
-        return False, None
+            # We wrap the stream to calculate hash ONLY ONCE
+            class HashingWrapper:
+                def __init__(self, stream):
+                    self.stream = stream
+
+                def read(self, size):
+                    chunk = self.stream.read(size)
+                    if not hash_calculated:
+                        sha256.update(chunk)
+                    return chunk
+
+            hashing_wrapper = HashingWrapper(file_stream)
+            success = client.upload(filename, file_size, hashing_wrapper)
+            hash_calculated = True
+            results.append(success)
+        except Exception as e:
+            print(f"[!] Storage Service Upload Error: {e}")
+            results.append(False)
+    
+    final_success = any(results)
+    return final_success, sha256.hexdigest() if final_success else None
 
 def get_file_from_storage(node_id: str, filename: str, expected_hash: str):
     """

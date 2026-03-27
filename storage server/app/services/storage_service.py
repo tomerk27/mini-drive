@@ -1,5 +1,4 @@
 import os
-import shutil
 from app.core.config import settings
 from shared.protocol import (
     CommandType,

@@ -9,13 +9,20 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.config import settings
 from app.handlers.socket_handler import handle_client
-from shared.protocol import CommandType, Field, pack
+from shared.protocol import CommandType, Field, pack, send_packet, receive_decrypted_packet
+from app.handlers.heartbeat_handler import HeartbeatHandler
+from app.services.system_metrics_service import SystemMetricsService
 
-def start_heartbeat():
-    """Background thread to send heartbeats to the Tracker."""
-    # (Implementation details for sending heartbeat pulse every 30s)
-    # This will use settings.TRACKER_HOST and TRACKER_PORT (9001)
-    pass
+def heartbeat_loop():
+    """Background thread to send heartbeats every 30 seconds."""
+    print(f"[*] Starting Heartbeat loop for {settings.NODE_ID}...")
+    while True:
+        try:
+            free_space = SystemMetricsService.get_free_space()
+            HeartbeatHandler.send_heartbeat(free_space)
+        except Exception as e:
+            print(f"[!] Heartbeat Error: {e}")
+        time.sleep(30)
 
 def connect_to_main_server():
     """
@@ -29,17 +36,14 @@ def connect_to_main_server():
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((settings.TRACKER_HOST, 9000))
             
-            # 1. Identify ourselves (Registration)
+            # Registration
             reg_packet = pack(CommandType.REGISTER, {Field.NODE_ID: settings.NODE_ID})
-            from shared.protocol import send_packet
             send_packet(sock, reg_packet, key)
             
             print(f"[+] Successfully connected and registered as {settings.NODE_ID}")
             
-            # 2. Stay connected and handle incoming commands from the Main Server
-            # Since the socket is now persistent, we pass it to a modified handler
+            # Stay connected and handle incoming commands from the Main Server
             from app.handlers.command_router import route_command
-            from shared.protocol import receive_decrypted_packet
             
             while True:
                 # Wait for orders (UPLOAD/DOWNLOAD/DELETE)
@@ -61,8 +65,8 @@ def connect_to_main_server():
                 pass
 
 if __name__ == "__main__":
-    # Start the heartbeat in the background
-    # threading.Thread(target=start_heartbeat, daemon=True).start()
+    # Start the heartbeat in the background as a daemon thread
+    threading.Thread(target=heartbeat_loop, daemon=True).start()
     
     # Start the main worker connection
     connect_to_main_server()
