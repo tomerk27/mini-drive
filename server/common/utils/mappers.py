@@ -1,9 +1,14 @@
-from ..models.item import ItemModel
-from web_api import FolderResponse, FileResponse, ItemResponse
-from .item_utils import ItemType
 from typing import List, Union
+from web_api.schemas.item import FolderResponse, FileResponse, ItemResponse
 
-def map_item_to_response(item_db: ItemModel, current_user_id: str) -> Union[FileResponse, FolderResponse, ItemResponse]:
+def map_item_to_response(item_db, current_user_id: str) -> Union[FileResponse, FolderResponse, ItemResponse]:
+    """
+    Converts a database model into a public response schema.
+    Importing inside the function breaks circular dependency.
+    """
+    from common.models.item import ItemModel, ItemType
+    
+    # We use a generic 'item_db' but treat it as ItemModel
     item_dict = item_db.model_dump(by_alias=True)
 
     if "_id" in item_dict and item_dict["_id"]:
@@ -21,5 +26,8 @@ def map_item_to_response(item_db: ItemModel, current_user_id: str) -> Union[File
         
     return ItemResponse(**item_dict)
 
-def map_items_to_responses(item_models: List[ItemModel], current_user_id: str) -> List[Union[FileResponse, FolderResponse, ItemResponse]]:
+def map_items_to_responses(item_models: List, current_user_id: str) -> List[Union[FileResponse, FolderResponse, ItemResponse]]:
+    """
+    Maps a list of database models to a list of response schemas.
+    """
     return [map_item_to_response(model, current_user_id) for model in item_models]

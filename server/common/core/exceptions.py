@@ -1,7 +1,7 @@
 from fastapi import Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from .config import settings
+from common.core.config import settings
 
 class AppException(Exception): 
     def __init__(self, status_code: int, detail: str, headers: dict = None):

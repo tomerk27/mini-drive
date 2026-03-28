@@ -1,11 +1,4 @@
-from shared.protocol import (
-    CommandType,
-    Field,
-    pack,
-    unpack,
-    send_packet,
-    receive_decrypted_packet
-)
+from shared.protocol import ( CommandType, Field, pack, unpack, send_packet, receive_decrypted_packet )
 from storage_engine.tracker.connection_pool import connection_pool
 
 class StorageClient:

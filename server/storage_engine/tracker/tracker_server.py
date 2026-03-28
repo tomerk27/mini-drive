@@ -1,22 +1,16 @@
 import socket
 import threading
 import asyncio
-from common import settings
-from shared.protocol import (
-    CommandType, 
-    Field, 
-    pack, 
-    unpack, 
-    send_packet, 
-    receive_decrypted_packet
-)
-from services.tracker_service import TrackerService
+from common.core.config import settings
+from shared.protocol import ( CommandType, Field, pack, unpack, send_packet, receive_decrypted_packet )
+from storage_engine.services.tracker_service import TrackerService
 
 class TrackerServer:
-    def __init__(self):
+    def __init__(self, main_loop):
         self.host = "0.0.0.0"
         self.port = 9001
         self.key = settings.STORAGE_ENCRYPTION_KEY.encode()
+        self.main_loop = main_loop
 
     def handle_node(self, client_socket, address):
         """Processes a single heartbeat pulse from a storage node."""
@@ -36,13 +30,12 @@ class TrackerServer:
                 node_port = fields.get(Field.NODE_PORT)
                 capacity = fields.get(Field.CAPACITY)
 
-                # Update MongoDB (Since this is a thread, we must create an event loop for async DB calls)
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(
-                    TrackerService.update_node_status(node_id, node_ip, node_port, capacity)
+                # IMPORTANT: We use run_coroutine_threadsafe to talk to MongoDB
+                # using the MAIN loop of the FastAPI server.
+                asyncio.run_coroutine_threadsafe(
+                    TrackerService.update_node_status(node_id, node_ip, node_port, capacity),
+                    self.main_loop
                 )
-                loop.close()
 
                 # Send ACK back to the node
                 ack_packet = pack(CommandType.HEARTBEAT, {Field.STATUS: 0})

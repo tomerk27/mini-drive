@@ -2,10 +2,10 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from bson import ObjectId
-from common import settings
-from common import User
-from common import TokenCredentialsError
-from common import get_collection
+from common.core.config import settings
+from common.models.user import User
+from common.core.exceptions import TokenCredentialsError
+from common.database import get_collection
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 

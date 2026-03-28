@@ -1,9 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
-from ..utils.db_utils import PyObjectId
-from ..utils.time import current_time
-from ..utils.node_utils import NodeStatus
+from common.utils.db_utils import PyObjectId
+from common.utils.time import current_time
+from common.utils.node_utils import NodeStatus
 
 class StorageNodeModel(BaseModel):
     id: PyObjectId = Field(None, alias='_id')

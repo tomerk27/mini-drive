@@ -1,4 +1,4 @@
-from web_api import FileResponse, FolderResponse
+from web_api.schemas.item import FileResponse, FolderResponse
 from pydantic import BaseModel
 from typing import List, Union
 

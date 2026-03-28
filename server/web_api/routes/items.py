@@ -1,24 +1,10 @@
 from fastapi import APIRouter, status, Depends, File, UploadFile, Path, Response
-from web_api import (
-    init_item,
-    complete_item_upload,
-    get_folder_service,
-    remove_item_service,
-    rename_item_service,
-    get_file_preview_service,
-    mark_item_as_starred_service,
-)
-from web_api import share_item_service
-from web_api import (
-    ItemResponse,
-    FileCreate,
-    FolderContentResponse,
-    ItemRename,
-    FolderCreate,
-)
-from web_api import ShareRequest
-from common import User
-from web_api import get_current_user
+from web_api.services.items_service import init_item, complete_item_upload, get_folder_service, remove_item_service, rename_item_service, get_file_preview_service, mark_item_as_starred_service
+from web_api.services.share_service import share_item_service
+from web_api.schemas.item import ItemResponse, FolderContentResponse, ItemRename, FolderCreate, ItemCreate
+from web_api.schemas.share import ShareRequest
+from common.models.user import User
+from web_api.dependencies import get_current_user
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
@@ -27,7 +13,7 @@ router = APIRouter(prefix="/items", tags=["Items"])
     "/upload/init", response_model=ItemResponse, status_code=status.HTTP_201_CREATED
 )
 async def upload_file(
-    item_data: FileCreate, current_user: User = Depends(get_current_user)
+    item_data: ItemCreate, current_user: User = Depends(get_current_user)
 ) -> ItemResponse:
     new_item = await init_item(item_data, current_user.id)
     return new_item

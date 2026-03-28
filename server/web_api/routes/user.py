@@ -1,8 +1,8 @@
 from fastapi import APIRouter, status, Depends
-from common import User
-from web_api import get_current_user
-from web_api import get_starred_items_service, get_shared_items_service
-from web_api import ItemPageResponse
+from common.models.user import User
+from web_api.dependencies import get_current_user
+from web_api.services.user_service import get_starred_items_service, get_shared_items_service
+from web_api.schemas.item_pages import ItemPageResponse
 
 router = APIRouter(
     prefix="/users",

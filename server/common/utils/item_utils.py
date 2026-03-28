@@ -1,7 +1,7 @@
 from enum import Enum
 from bson import ObjectId
-from ..database import get_collection
-from ..core.exceptions import ResourceNotFoundError, ItemIsNotExistError, PermissionError
+from common.database import get_collection
+from common.core.exceptions import ResourceNotFoundError, ItemIsNotExistError, PermissionError
 
 class ItemType(str, Enum):
     FOLDER = "folder"

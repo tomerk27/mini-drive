@@ -1,9 +1,9 @@
 from bson import ObjectId
-from web_api import ShareRequest
-from common import get_item_or_404, verify_access, SharePermission
-from common import get_collection
-from common import UserNotFoundError, SelfShareError
-from common import SharedUser
+from web_api.schemas.share import ShareRequest
+from common.utils.item_utils import get_item_or_404, verify_access, SharePermission
+from common.database import get_collection
+from common.core.exceptions import UserNotFoundError, SelfShareError
+from common.models.item import SharedUser
 
 
 async def share_item_service(share_schema: ShareRequest, item_id, current_user_id):

@@ -1,13 +1,6 @@
 import os
 from app.core.config import settings
-from shared.protocol import (
-    CommandType,
-    Field,
-    pack,
-    unpack,
-    send_packet,
-    receive_decrypted_packet
-)
+from shared.protocol import ( CommandType, Field, pack, unpack, send_packet, receive_decrypted_packet )
 
 class StorageService:
     @staticmethod

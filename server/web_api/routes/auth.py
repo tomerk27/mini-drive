@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
-from web_api import UserCreate, UserLogin, UserResponse
-from web_api import register_new_user, login_user
+from web_api.schemas.user import UserCreate, UserLogin, UserResponse
+from web_api.services.auth_service import register_new_user, login_user
 
 router = APIRouter(
     prefix="/auth",

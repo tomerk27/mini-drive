@@ -1,7 +1,7 @@
-from common import get_collection
+from common.database import get_collection
 from common.utils.node_utils import NodeStatus
 from datetime import timedelta
-from common import current_time
+from common.utils.time import current_time
 
 class TrackerService:
     @staticmethod

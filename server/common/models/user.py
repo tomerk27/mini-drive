@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
-from ..utils.time import current_time
-from ..utils.db_utils import PyObjectId
+from common.utils.time import current_time
+from common.utils.db_utils import PyObjectId
 
 class User(BaseModel):
     id: PyObjectId = Field(None, alias="_id")

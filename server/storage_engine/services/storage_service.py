@@ -1,7 +1,7 @@
 import hashlib
-from common import settings
-from common import StorageServerError
-from storage_engine import StorageClient
+from common.core.config import settings
+from common.core.exceptions import StorageServerError
+from storage_engine.client.storage_client import StorageClient
 
 # Load encryption key from settings
 STORAGE_KEY = getattr(settings, "STORAGE_ENCRYPTION_KEY", "").encode()

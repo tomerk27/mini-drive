@@ -1,8 +1,8 @@
-from common import get_collection
-from web_api import ItemPageResponse
-from web_api import parse_item_to_model
-from common import map_items_to_responses
-from common import ResourceNotFoundError
+from common.database import get_collection
+from web_api.schemas.item_pages import ItemPageResponse
+from web_api.services.items_service import parse_item_to_model
+from common.utils.mappers import map_items_to_responses
+from common.core.exceptions import ResourceNotFoundError
 
 async def get_starred_items_service(current_user_id: str):
     responses = await _fetch_and_process_items(

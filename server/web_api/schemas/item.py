@@ -1,53 +1,39 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
-from common import ItemType, SharePermission
+from common.utils.item_utils import ItemType, SharePermission
 
-class BaseItem(BaseModel):
-    name: str = Field(..., min_length=1, max_length=50)
-    parent_id: Optional[str] = Field(None)
-
-class SharedUserResponse(BaseModel):
+class ItemResponse(BaseModel):
     id: str
-    permission: SharePermission
-    email: Optional[str] = None
-
-class ItemCreate(BaseItem):
+    name: str
+    parent_id: Optional[str]
     item_type: ItemType
-
-class FileCreate(ItemCreate):
-    item_type: ItemType = ItemType.FILE
-    file_type: Optional[str] = None
-    size: Optional[int] = 0
-
-class FolderCreate(ItemCreate): 
-    item_type: ItemType = ItemType.FOLDER
-
-class ItemResponse(BaseItem): 
-    id: str
     created_at: datetime
-    item_type: ItemType
-    is_owner: bool
-    starred_by: List[str]
-    shared_with: List[SharedUserResponse] = []
-
-    class Config:
-        populate_by_name = True
-        from_attributes = True
+    owner_id: str
+    is_owner: bool = False
+    starred_by: List[str] = []
 
 class FileResponse(ItemResponse):
+    item_type: ItemType = ItemType.FILE
     file_type: Optional[str] = None
     size: Optional[int] = None
-    item_type: ItemType = ItemType.FILE
 
 class FolderResponse(ItemResponse):
     item_type: ItemType = ItemType.FOLDER
 
-class FolderContentResponse(BaseModel):
-    folder: FolderResponse
+class ItemCreate(BaseModel):
+    name: str
+    parent_id: Optional[str] = None
+    item_type: ItemType
 
-    child_files: List[FileResponse] = []
-    child_folders: List[FolderResponse] = []
+class FolderCreate(BaseModel):
+    name: str
+    parent_id: Optional[str] = None
 
 class ItemRename(BaseModel):
-    new_name: str
+    name: str
+
+class FolderContentResponse(BaseModel):
+    folder: FolderResponse
+    child_files: List[FileResponse]
+    child_folders: List[FolderResponse]

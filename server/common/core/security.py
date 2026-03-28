@@ -3,7 +3,7 @@ from datetime import timedelta, timezone, datetime
 from jose import jwt
 from typing import Optional
 from dotenv import load_dotenv
-from .config import settings
+from common.core.config import settings
 
 load_dotenv()
 

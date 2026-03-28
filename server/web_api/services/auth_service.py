@@ -1,11 +1,11 @@
-from common import settings
-from web_api import UserCreate, UserLogin, UserResponse
-from web_api import FolderCreate
-from common import get_collection
-from common import get_password_hash, verify_password, create_access_token
-from common import User
-from common import UserNotFoundError, ExistingUserError
-from web_api import init_item
+from common.core.config import settings
+from web_api.schemas.user import UserCreate, UserLogin, UserResponse
+from web_api.schemas.item import FolderCreate
+from common.database import get_collection
+from common.core.security import get_password_hash, verify_password, create_access_token
+from common.models.user import User
+from common.core.exceptions import UserNotFoundError, ExistingUserError
+from web_api.services.items_service import init_item
 
 async def register_new_user(user_data: UserCreate):
     users_collection = get_collection("users")
