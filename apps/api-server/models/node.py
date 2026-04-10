@@ -1,16 +1,17 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
-from utils.db_utils import PyObjectId
+from core.types import PyObjectId
+from core.enums import NodeStatus
 from utils.time import current_time
-from utils.node_utils import NodeStatus
+
 
 class StorageNodeModel(BaseModel):
     id: PyObjectId = Field(None, alias='_id')
     ip: str = Field(...)
     port: int = Field(...)
-    status: str = NodeStatus.ONLINE  # "online" or "offline"
-    available_capacity: Optional[int] = None  # in bytes
+    status: str = NodeStatus.ONLINE
+    available_capacity: Optional[int] = None  # bytes
     last_heartbeat: datetime = Field(default_factory=current_time)
 
     class Config:

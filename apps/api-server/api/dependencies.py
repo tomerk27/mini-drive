@@ -9,13 +9,10 @@ from infrastructure.database.database import get_collection
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
+
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     try:
-        payload = jwt.decode(
-            token, 
-            settings.SECRET_KEY, 
-            algorithms=[settings.ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id = payload.get("sub")
 
         if user_id is None:
@@ -25,12 +22,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         raise TokenCredentialsError
 
     user_collection = get_collection("users")
-
     user_data = await user_collection.find_one({"_id": ObjectId(user_id)})
 
     if user_data is None:
         raise TokenCredentialsError
-    
+
     user_data["_id"] = str(user_data["_id"])
-    
     return User(**user_data)

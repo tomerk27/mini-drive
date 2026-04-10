@@ -6,13 +6,13 @@ load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
 
-if not MONGO_URI: 
-    raise ValueError("No MONGO_URL found in .env file")
+if not MONGO_URI:
+    raise ValueError("No MONGO_URI found in .env file")
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 
 db = client.get_default_database()
 
+
 def get_collection(collection_name):
     return db[collection_name]
-
