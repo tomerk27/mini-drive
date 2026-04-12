@@ -2,7 +2,7 @@ import io
 from infrastructure.database.repositories.item_repository import item_repository
 from core.enums import ItemType
 from infrastructure.storage.services.node_registry import NodeRegistry
-from infrastructure.storage.services.storage_service import get_file_from_storage, send_file_to_storage
+from infrastructure.storage.services.node_distribution_service import get_file_from_node, send_file_to_nodes
 
 
 class RepairService:
@@ -40,14 +40,14 @@ class RepairService:
     async def _replicate_file(item, source_node: str, target_node: str, dead_node: str):
         """Downloads from the source node and re-uploads to the target node, then updates the DB."""
         try:
-            file_gen = await get_file_from_storage(source_node, item.physical_name, item.file_hash)
+            file_gen = await get_file_from_node(source_node, item.physical_name, item.file_hash)
 
             buffer = io.BytesIO()
             async for chunk in file_gen:
                 buffer.write(chunk)
             buffer.seek(0)
 
-            success, _ = await send_file_to_storage([target_node], item.physical_name, item.size, buffer)
+            success, _ = await send_file_to_nodes([target_node], item.physical_name, item.size, buffer)
 
             if success:
                 await item_repository.replace_node(str(item.id), dead_node, target_node)

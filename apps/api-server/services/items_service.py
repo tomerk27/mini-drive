@@ -13,7 +13,7 @@ from core.permissions import verify_access
 from core.config import settings
 from utils.mappers import map_item_to_response
 from infrastructure.database.repositories.item_repository import item_repository
-from infrastructure.storage.services.storage_service import send_file_to_storage, get_file_from_storage, delete_file_from_storage
+from infrastructure.storage.services.node_distribution_service import send_file_to_nodes, get_file_from_node, delete_file_from_node
 from infrastructure.storage.services.node_registry import NodeRegistry
 
 
@@ -72,15 +72,15 @@ async def complete_item_upload(
     file_ext = os.path.splitext(file.filename)[1]
     physical_filename = f"{uuid.uuid4()}{file_ext}"
 
-    await file.seek(0, 2)
-    file_size = await file.tell()
+    file_content = await file.read()
+    file_size = len(file_content)
     await file.seek(0)
 
     node_id_list = await NodeRegistry.select_best_nodes()
     if not node_id_list:
         raise StorageServerError("No storage nodes available")
 
-    success, file_hash = await send_file_to_storage(node_id_list, physical_filename, file_size, file)
+    success, file_hash = await send_file_to_nodes(node_id_list, physical_filename, file_size, file)
 
     if not success:
         raise StorageServerError("Failed to save to storage nodes")
@@ -131,7 +131,7 @@ async def remove_item_service(item_id: str, current_user_id: str):
 
     if item.item_type == ItemType.FILE and hasattr(item, 'physical_name') and item.physical_name:
         for node_id in item.node_ids:
-            await delete_file_from_storage(node_id, item.physical_name)
+            await delete_file_from_node(node_id, item.physical_name)
 
 
 async def rename_item_service(item_id: str, current_user_id: str, new_name: str):
@@ -152,7 +152,7 @@ async def get_file_preview_service(item_id: str, current_user_id: str):
     if not item.node_ids:
         raise StorageServerError("File has no associated storage nodes")
 
-    file_generator = await get_file_from_storage(item.node_ids[0], item.physical_name, item.file_hash)
+    file_generator = await get_file_from_node(item.node_ids[0], item.physical_name, item.file_hash)
 
     if not file_generator:
         raise StorageServerError("File not found on storage server")

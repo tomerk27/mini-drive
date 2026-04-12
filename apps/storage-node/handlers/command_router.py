@@ -1,5 +1,5 @@
 from shared.protocol import CommandType, AsyncSecureTransport, Packet
-from app.services.storage_service import StorageService
+from services.storage_service import StorageService
 
 async def route_command(transport: AsyncSecureTransport, packet: Packet):
     """Routes the packet to the appropriate service."""
@@ -12,6 +12,6 @@ async def route_command(transport: AsyncSecureTransport, packet: Packet):
             await StorageService.handle_delete(transport, packet.fields)
         else:
             print(f"[!] Unknown command: {packet.command}")
-            
+
     except Exception as e:
         print(f"[!] Error routing command: {e}")

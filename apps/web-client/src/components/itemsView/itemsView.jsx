@@ -5,12 +5,12 @@ import RenameDialog from '../item/renameDialog';
 import DetailsDialog from '../item/detailsDialog';
 import PreviewDialog from '../item/previewDialog';
 import ShareDialog from '../item/shareDialog';
-import useItemActionMenu from '../../hooks/useItemActionMenu';
+import useItemActionMenu from '../../hooks/itemActions/useItemActionMenu';
 import useRenameItem from '../../hooks/itemActions/useRenameItem';
 import useShareItem from '../../hooks/itemActions/useShareItem';
 import useRemoveItem from '../../hooks/itemActions/useRemoveItem';
 import useMarkAsStarred from '../../hooks/itemActions/useMarkAsStarred';
-import useFilePreview from '../../hooks/useFilePreview';
+import useFilePreview from '../../hooks/files/useFilePreview';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 

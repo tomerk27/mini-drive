@@ -1,5 +1,5 @@
 import asyncio
-from app.core.config import settings
+from core.config import settings
 from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport
 
 class HeartbeatHandler:
@@ -16,7 +16,7 @@ class HeartbeatHandler:
         try:
             reader, writer = await asyncio.open_connection(settings.TRACKER_HOST, settings.TRACKER_PORT)
             transport = AsyncSecureTransport(reader, writer, key)
-            
+
             await transport.send_packet(packet)
 
             # Wait for acknowledgment
@@ -24,7 +24,7 @@ class HeartbeatHandler:
             if res:
                 if res.fields.get(Field.STATUS) == 0:
                     print(f"[*] Heartbeat confirmed by Tracker")
-            
+
             writer.close()
             await writer.wait_closed()
         except Exception as e:

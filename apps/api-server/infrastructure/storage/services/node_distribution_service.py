@@ -30,7 +30,7 @@ def _get_client(node_id: str) -> StorageClient:
     return StorageClient(node_id=node_id, encryption_key=STORAGE_KEY)
 
 
-async def send_file_to_storage(
+async def send_file_to_nodes(
     node_id_list: list[str], filename: str, file_size: int, file_stream
 ) -> tuple[bool, str | None]:
     """
@@ -53,14 +53,14 @@ async def send_file_to_storage(
             hash_locked = True
             results.append(success)
         except Exception as e:
-            print(f"[!] StorageService Upload Error for node {node_id}: {e}")
+            print(f"[!] NodeDistributionService Upload Error for node {node_id}: {e}")
             results.append(False)
 
     final_success = any(results)
     return final_success, sha256.hexdigest() if final_success else None
 
 
-async def get_file_from_storage(node_id: str, filename: str, expected_hash: str):
+async def get_file_from_node(node_id: str, filename: str, expected_hash: str):
     """
     Downloads a file from a node and streams it back as an async generator.
     Verifies size and SHA-256 integrity after streaming completes.
@@ -96,15 +96,15 @@ async def get_file_from_storage(node_id: str, filename: str, expected_hash: str)
         return verified_generator()
 
     except Exception as e:
-        print(f"[!] StorageService Download Error: {e}")
+        print(f"[!] NodeDistributionService Download Error: {e}")
         raise StorageServerError()
 
 
-async def delete_file_from_storage(node_id: str, filename: str) -> bool:
+async def delete_file_from_node(node_id: str, filename: str) -> bool:
     """Requests a file deletion from a specific node."""
     client = _get_client(node_id)
     try:
         return await client.delete(filename)
     except Exception as e:
-        print(f"[!] StorageService Delete Error for node {node_id}: {e}")
+        print(f"[!] NodeDistributionService Delete Error for node {node_id}: {e}")
         return False

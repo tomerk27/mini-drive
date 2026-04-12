@@ -7,11 +7,11 @@ root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 sys.path.append(root_dir)
 sys.path.append(os.path.join(root_dir, "libs"))
 
-from app.core.config import settings
+from core.config import settings
 from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport
-from app.handlers.heartbeat_handler import HeartbeatHandler
-from app.services.system_metrics_service import SystemMetricsService
-from app.handlers.command_router import route_command
+from handlers.heartbeat_handler import HeartbeatHandler
+from services.system_metrics_service import SystemMetricsService
+from handlers.command_router import route_command
 
 async def heartbeat_loop():
     """Background task to send heartbeats every 30 seconds."""

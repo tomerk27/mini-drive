@@ -6,8 +6,8 @@ import LogoutButton from '../components/authentication/logoutButton';
 import CreateFolderDialog from '../components/FolderView/createFolderDialog';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';
-import useFolder from '../hooks/useFolder';
-import useFilesUploader from '../hooks/useFilesUploader';
+import useFolder from '../hooks/folder/useFolder';
+import useFilesUploader from '../hooks/files/useFilesUploader';
 import { useState } from 'react';
 
 const Dashboard = () => {

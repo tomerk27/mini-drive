@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';
 import LogoutButton from '../components/authentication/logoutButton';
-import useStarredItems from '../hooks/useStarredItems';
+import useStarredItems from '../hooks/items/useStarredItems';
 import ItemsView from '../components/itemsView/itemsView';
 import { useEffect } from 'react';
 

@@ -1,6 +1,6 @@
 import os
 import asyncio
-from app.core.config import settings
+from core.config import settings
 from shared.protocol import ( CommandType, Field, Packet, AsyncSecureTransport )
 
 class StorageService:
@@ -13,9 +13,9 @@ class StorageService:
         # Path Traversal prevention
         safe_filename = os.path.basename(filename)
         save_path = os.path.join(settings.STORAGE_DIR, safe_filename)
-        
+
         os.makedirs(settings.STORAGE_DIR, exist_ok=True)
-        
+
         bytes_received = 0
         try:
             # We use a thread for file writing to not block the event loop
@@ -28,12 +28,12 @@ class StorageService:
                         raise Exception("Stream closed during upload")
                     f.write(chunk)
                     bytes_received += len(chunk)
-            
+
             # Send ACK
             res_packet = Packet(CommandType.UPLOAD, {Field.STATUS: 0})
             await transport.send_packet(res_packet)
             print(f"[+] Saved: {safe_filename} ({file_size} bytes)")
-            
+
         except Exception as e:
             print(f"[!] Upload Error: {e}")
             res_packet = Packet(CommandType.UPLOAD, {Field.STATUS: 1})
@@ -53,7 +53,7 @@ class StorageService:
             return
 
         file_size = os.path.getsize(file_path)
-        
+
         # Send Header
         res_packet = Packet(CommandType.DOWNLOAD, {Field.STATUS: 0, Field.FILE_SIZE: file_size})
         await transport.send_packet(res_packet)
@@ -67,7 +67,7 @@ class StorageService:
                     if not chunk:
                         break
                     await transport.send_chunk(chunk)
-            
+
             # Wait for confirmation
             res = await transport.receive_packet()
             if res:
@@ -78,7 +78,7 @@ class StorageService:
                     print(f"[!] Client reported error for {safe_filename}")
             else:
                 print(f"[!] Client disconnected without confirmation.")
-                
+
         except Exception as e:
             print(f"[!] Download Error: {e}")
 

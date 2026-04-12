@@ -3,7 +3,7 @@ import uuid
 from dotenv import load_dotenv
 
 # Path to the 'storage server' directory
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOTENV_PATH = os.path.join(BASE_DIR, ".env")
 
 load_dotenv(DOTENV_PATH)
@@ -15,7 +15,7 @@ class Settings:
             self.NODE_ID = f"Node-{str(uuid.uuid4())[:4]}"
             with open(DOTENV_PATH, 'a') as f:
                 f.write(f"\nNODE_ID={self.NODE_ID}")
-        
+
         self.HOST = os.getenv("HOST") # Local listener IP
         self.PORT = int(os.getenv("PORT")) # Local listener Port (for uploads)
 
