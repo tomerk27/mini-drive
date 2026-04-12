@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
-from utils.item_utils import SharePermission
+from core.enums import SharePermission
+
 
 class ShareRequest(BaseModel):
     permission: SharePermission

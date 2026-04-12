@@ -2,19 +2,20 @@ from bson import ObjectId
 from typing import List, Optional, Dict, Any
 from infrastructure.database.database import get_collection
 from models.item import ItemModel, FileModel, FolderModel
-from utils.item_utils import ItemType
+from core.enums import ItemType
+
 
 class ItemRepository:
     def __init__(self):
         self.collection = get_collection('items')
 
-    def _parse_to_model(self, raw_dict: dict) -> ItemModel:
+    def _parse_to_model(self, raw_dict: dict) -> Optional[ItemModel]:
         if not raw_dict:
             return None
-        
+
         raw_dict["id"] = str(raw_dict["_id"])
         item_type = raw_dict.get("item_type")
-        
+
         if item_type == ItemType.FILE:
             return FileModel(**raw_dict)
         elif item_type == ItemType.FOLDER:
@@ -26,13 +27,13 @@ class ItemRepository:
         try:
             raw = await self.collection.find_one({"_id": ObjectId(item_id)})
             return self._parse_to_model(raw)
-        except:
+        except Exception:
             return None
 
     async def get_by_name_and_parent(self, owner_id: str, parent_id: str, name: str) -> Optional[ItemModel]:
         raw = await self.collection.find_one({
-            "owner_id": owner_id, 
-            "parent_id": parent_id, 
+            "owner_id": owner_id,
+            "parent_id": parent_id,
             "name": name
         })
         return self._parse_to_model(raw)
@@ -65,5 +66,33 @@ class ItemRepository:
             {"_id": ObjectId(item_id)},
             {op: {"starred_by": user_id}}
         )
+
+    async def get_starred_items(self, user_id: str) -> List[ItemModel]:
+        cursor = self.collection.find({"starred_by": user_id})
+        raw_items = await cursor.to_list(length=100)
+        return [self._parse_to_model(raw) for raw in raw_items]
+
+    async def get_shared_items(self, user_id: str) -> List[ItemModel]:
+        cursor = self.collection.find({"shared_with.id": user_id})
+        raw_items = await cursor.to_list(length=100)
+        return [self._parse_to_model(raw) for raw in raw_items]
+
+    async def get_files_on_node(self, node_id: str) -> List[FileModel]:
+        cursor = self.collection.find({
+            "item_type": ItemType.FILE,
+            "node_ids": node_id
+        })
+        raw_items = await cursor.to_list(length=None)
+        return [self._parse_to_model(raw) for raw in raw_items]
+
+    async def replace_node(self, item_id: str, old_node_id: str, new_node_id: str):
+        await self.collection.update_one(
+            {"_id": ObjectId(item_id)},
+            {
+                "$pull": {"node_ids": old_node_id},
+                "$addToSet": {"node_ids": new_node_id}
+            }
+        )
+
 
 item_repository = ItemRepository()

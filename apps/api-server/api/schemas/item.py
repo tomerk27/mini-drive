@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
-from utils.item_utils import ItemType, SharePermission
+from core.enums import ItemType, SharePermission
+
 
 class ItemResponse(BaseModel):
     id: str
@@ -13,25 +14,32 @@ class ItemResponse(BaseModel):
     is_owner: bool = False
     starred_by: List[str] = []
 
+
 class FileResponse(ItemResponse):
     item_type: ItemType = ItemType.FILE
     file_type: Optional[str] = None
     size: Optional[int] = None
 
+
 class FolderResponse(ItemResponse):
     item_type: ItemType = ItemType.FOLDER
+
 
 class ItemCreate(BaseModel):
     name: str
     parent_id: Optional[str] = None
     item_type: ItemType
 
+
 class FolderCreate(BaseModel):
     name: str
     parent_id: Optional[str] = None
+    item_type: ItemType = ItemType.FOLDER
+
 
 class ItemRename(BaseModel):
-    name: str
+    new_name: str
+
 
 class FolderContentResponse(BaseModel):
     folder: FolderResponse
