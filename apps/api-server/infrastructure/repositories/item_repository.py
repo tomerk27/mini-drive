@@ -1,6 +1,6 @@
 from bson import ObjectId
 from typing import List, Optional, Dict, Any
-from infrastructure.database.database import get_collection
+from infrastructure.database import get_collection
 from models.item import ItemModel, FileModel, FolderModel
 from utils.item_utils import ItemType
 
