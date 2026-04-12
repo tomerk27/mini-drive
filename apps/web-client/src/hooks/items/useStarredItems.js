@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { getStarredItemsApi } from "../api/userApi";
-import handleError from "../utils/handleError"
+import { getStarredItemsApi } from "../../api/userApi";
+import handleError from "../../utils/handleError"
 
 const useStarredItems = () => {
     const [error, setError] = useState(null);

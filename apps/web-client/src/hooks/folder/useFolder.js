@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
 import { useParams } from 'react-router-dom';
-import { useAuthContext } from '../context/auth/authContext';
-import folderApi from "../api/folderApi";
-import handleError from "../utils/handleError";
+import { useAuthContext } from '../../context/auth/authContext';
+import folderApi from "../../api/folderApi";
+import handleError from "../../utils/handleError";
 
 const useFolder = () => {
     const { folderId } = useParams();

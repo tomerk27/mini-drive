@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Storage Server Configuration
     STORAGE_SERVER_HOST: str = "127.0.0.1"
     STORAGE_SERVER_PORT: int = 9000
+
+    # File chunking
+    CHUNK_SIZE_BYTES: int = 5 * 1024 * 1024  # 5 MB
     
     class Config:
         env_file = ".env"

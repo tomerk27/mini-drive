@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { getSharedItemsApi } from "../api/userApi";
-import handleError from "../utils/handleError";
+import { getSharedItemsApi } from "../../api/userApi";
+import handleError from "../../utils/handleError";
 
 const useSharedItems = () => {
     const [error, setError] = useState(null);

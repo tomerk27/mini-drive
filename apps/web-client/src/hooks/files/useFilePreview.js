@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { getFileContentApi } from "../api/fileApi";
-import handleError from "../utils/handleError";
+import { getFileContentApi } from "../../api/fileApi";
+import handleError from "../../utils/handleError";
 
 const useFilePreview = () => {
     const [isLoading, setIsLoading] = useState(false);

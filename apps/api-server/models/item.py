@@ -31,16 +31,22 @@ class ItemModel(BaseModel):
         arbitrary_types_allowed = True
 
 
+class ChunkInfo(BaseModel):
+    chunk_index: int
+    size: int
+    chunk_hash: str
+    physical_name: str
+    node_ids: List[str] = []
+
+
 class FileModel(ItemModel):
     item_type: ItemType = ItemType.FILE
 
     file_type: Optional[str] = None
     size: Optional[int] = None
-    physical_name: Optional[str] = None
     file_hash: Optional[str] = None
 
-    # List of storage node IDs where this file is stored (replication)
-    node_ids: List[str] = []
+    chunks: List[ChunkInfo] = []
 
     status: ItemStatus = ItemStatus.PENDING
 

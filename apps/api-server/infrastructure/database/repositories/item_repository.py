@@ -80,18 +80,21 @@ class ItemRepository:
     async def get_files_on_node(self, node_id: str) -> List[FileModel]:
         cursor = self.collection.find({
             "item_type": ItemType.FILE,
-            "node_ids": node_id
+            "chunks": {"$elemMatch": {"node_ids": node_id}}
         })
         raw_items = await cursor.to_list(length=None)
         return [self._parse_to_model(raw) for raw in raw_items]
 
-    async def replace_node(self, item_id: str, old_node_id: str, new_node_id: str):
+    async def replace_node_in_chunk(self, item_id: str, chunk_physical_name: str, old_node_id: str, new_node_id: str):
         await self.collection.update_one(
             {"_id": ObjectId(item_id)},
-            {
-                "$pull": {"node_ids": old_node_id},
-                "$addToSet": {"node_ids": new_node_id}
-            }
+            {"$pull": {"chunks.$[chunk].node_ids": old_node_id}},
+            array_filters=[{"chunk.physical_name": chunk_physical_name}]
+        )
+        await self.collection.update_one(
+            {"_id": ObjectId(item_id)},
+            {"$addToSet": {"chunks.$[chunk].node_ids": new_node_id}},
+            array_filters=[{"chunk.physical_name": chunk_physical_name}]
         )
 
 

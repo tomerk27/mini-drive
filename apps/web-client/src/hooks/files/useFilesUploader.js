@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
-import { initUploadApi, uploadFileContentApi } from "../api/fileApi";
-import handleError from "../utils/handleError";
+import { initUploadApi, uploadFileContentApi } from "../../api/fileApi";
+import handleError from "../../utils/handleError";
 
 const useFilesUploader = () => {
     const [isLoading, setIsLoading] = useState(false);

@@ -1,20 +1,23 @@
+import asyncio
+import hashlib
+import io
+import uuid
 from fastapi import UploadFile
 from fastapi.responses import StreamingResponse
 from urllib.parse import quote
-import os
-import uuid
 from typing import List, Optional
 
 from api.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, FileResponse as FileResponseSchema, FolderResponse
-from models.item import ItemModel, FileModel, FolderModel
+from models.item import ItemModel, FileModel, FolderModel, ChunkInfo
 from core.enums import ItemStatus, ItemType, SharePermission
 from core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError, StorageServerError
 from core.permissions import verify_access
 from core.config import settings
 from utils.mappers import map_item_to_response
 from infrastructure.database.repositories.item_repository import item_repository
-from infrastructure.storage.services.node_distribution_service import send_file_to_nodes, get_file_from_node, delete_file_from_node
+from infrastructure.storage.services.node_distribution_service import get_file_from_node, delete_file_from_node
 from infrastructure.storage.services.node_registry import NodeRegistry
+from infrastructure.storage.client.storage_client import StorageClient
 
 
 async def _get_item_or_404(item_id: str) -> ItemModel:
@@ -57,6 +60,55 @@ async def init_item(item_data: ItemCreate, current_user_id: str) -> ItemResponse
     return map_item_to_response(item_in_db, current_user_id)
 
 
+async def _select_nodes_for_chunks(num_chunks: int) -> list[list[str]]:
+    """Returns a list of node_id lists, one per chunk. Rotates the primary node across chunks."""
+    assignments = []
+    last_primary: list[str] = []
+    for _ in range(num_chunks):
+        node_ids = await NodeRegistry.select_best_nodes(limit=3, exclude_node_ids=last_primary or None)
+        if not node_ids:
+            node_ids = await NodeRegistry.select_best_nodes(limit=3)
+        if not node_ids:
+            return []
+        assignments.append(node_ids)
+        last_primary = [node_ids[0]]
+    return assignments
+
+
+async def _upload_chunk_to_node(node_id: str, physical_name: str, chunk_size: int, chunk_data: bytes) -> bool:
+    try:
+        client = StorageClient(node_id=node_id, encryption_key=settings.STORAGE_ENCRYPTION_KEY.encode())
+        return await client.upload(physical_name, chunk_size, io.BytesIO(chunk_data))
+    except Exception as e:
+        print(f"[!] Upload to {node_id} failed: {e}")
+        return False
+
+
+async def _upload_single_chunk(chunk_index: int, chunk_data: bytes, base_uuid: str, node_ids: list[str]) -> ChunkInfo | None:
+    physical_name = f"{base_uuid}_{chunk_index}"
+    chunk_size = len(chunk_data)
+    chunk_hash = hashlib.sha256(chunk_data).hexdigest()
+
+    upload_tasks = [
+        _upload_chunk_to_node(node_id, physical_name, chunk_size, chunk_data)
+        for node_id in node_ids
+    ]
+    results = await asyncio.gather(*upload_tasks)
+    succeeded_nodes = [node_ids[i] for i, ok in enumerate(results) if ok]
+
+    if not succeeded_nodes:
+        print(f"[!] Chunk {chunk_index}: all node uploads failed")
+        return None
+
+    return ChunkInfo(
+        chunk_index=chunk_index,
+        size=chunk_size,
+        chunk_hash=chunk_hash,
+        physical_name=physical_name,
+        node_ids=succeeded_nodes,
+    )
+
+
 async def complete_item_upload(
     item_id: str,
     owner_id: str,
@@ -69,29 +121,42 @@ async def complete_item_upload(
     if item.status != ItemStatus.PENDING:
         raise ResourceNotFoundError("Pending file not found")
 
-    file_ext = os.path.splitext(file.filename)[1]
-    physical_filename = f"{uuid.uuid4()}{file_ext}"
-
     file_content = await file.read()
     file_size = len(file_content)
-    await file.seek(0)
+    base_uuid = str(uuid.uuid4()).replace("-", "")
 
-    node_id_list = await NodeRegistry.select_best_nodes()
-    if not node_id_list:
+    raw_chunks = [
+        file_content[i:i + settings.CHUNK_SIZE_BYTES]
+        for i in range(0, file_size, settings.CHUNK_SIZE_BYTES)
+    ]
+    if not raw_chunks:
+        raise StorageServerError("Empty file cannot be uploaded")
+
+    chunk_node_assignments = await _select_nodes_for_chunks(len(raw_chunks))
+    if not chunk_node_assignments:
         raise StorageServerError("No storage nodes available")
 
-    success, file_hash = await send_file_to_nodes(node_id_list, physical_filename, file_size, file)
+    chunk_tasks = [
+        _upload_single_chunk(i, raw_chunks[i], base_uuid, chunk_node_assignments[i])
+        for i in range(len(raw_chunks))
+    ]
+    chunk_results = await asyncio.gather(*chunk_tasks)
 
-    if not success:
-        raise StorageServerError("Failed to save to storage nodes")
+    failed = [i for i, r in enumerate(chunk_results) if r is None]
+    if failed:
+        raise StorageServerError(f"Chunk upload failed for indices: {failed}")
+
+    chunks: list[ChunkInfo] = list(chunk_results)
+
+    combined = "".join(c.chunk_hash for c in chunks)
+    file_hash = hashlib.sha256(combined.encode()).hexdigest()
 
     update_data = {
-        "physical_name": physical_filename,
         "size": file_size,
         "file_type": file.content_type,
         "status": ItemStatus.COMPLETED.value,
         "file_hash": file_hash,
-        "node_ids": node_id_list
+        "chunks": [c.model_dump() for c in chunks],
     }
 
     updated_model = await item_repository.update(item_id, update_data)
@@ -129,9 +194,10 @@ async def remove_item_service(item_id: str, current_user_id: str):
     if not await item_repository.delete(item_id):
         raise DataBaseError()
 
-    if item.item_type == ItemType.FILE and hasattr(item, 'physical_name') and item.physical_name:
-        for node_id in item.node_ids:
-            await delete_file_from_node(node_id, item.physical_name)
+    if item.item_type == ItemType.FILE and item.chunks:
+        for chunk_info in item.chunks:
+            for node_id in chunk_info.node_ids:
+                await delete_file_from_node(node_id, chunk_info.physical_name)
 
 
 async def rename_item_service(item_id: str, current_user_id: str, new_name: str):
@@ -149,16 +215,25 @@ async def get_file_preview_service(item_id: str, current_user_id: str):
     if item.item_type == ItemType.FOLDER:
         raise ItemIsFolderError()
 
-    if not item.node_ids:
-        raise StorageServerError("File has no associated storage nodes")
+    if not item.chunks:
+        raise StorageServerError("File has no associated chunks")
 
-    file_generator = await get_file_from_node(item.node_ids[0], item.physical_name, item.file_hash)
+    ordered_chunks = sorted(item.chunks, key=lambda c: c.chunk_index)
 
-    if not file_generator:
-        raise StorageServerError("File not found on storage server")
+    async def chunked_generator():
+        for chunk_info in ordered_chunks:
+            chunk_gen = await get_file_from_node(
+                chunk_info.node_ids[0],
+                chunk_info.physical_name,
+                chunk_info.chunk_hash,
+            )
+            if not chunk_gen:
+                raise StorageServerError(f"Chunk {chunk_info.chunk_index} unavailable")
+            async for data in chunk_gen:
+                yield data
 
     return StreamingResponse(
-        file_generator,
+        chunked_generator(),
         media_type=item.file_type,
         headers={"Content-Disposition": f"inline; filename*=UTF-8''{quote(item.name)}"}
     )

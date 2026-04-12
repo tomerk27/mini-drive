@@ -39,3 +39,6 @@ venv/
 
 # MacOS junk
 .DS_Store
+
+# Storage node data directory
+data/
