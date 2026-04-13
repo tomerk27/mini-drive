@@ -14,10 +14,10 @@ from core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseEr
 from core.permissions import verify_access
 from core.config import settings
 from utils.mappers import map_item_to_response
-from infrastructure.database.repositories.item_repository import item_repository
-from infrastructure.storage.services.node_distribution_service import get_file_from_node, delete_file_from_node
-from infrastructure.storage.services.node_registry import NodeRegistry
-from infrastructure.storage.client.storage_client import StorageClient
+from gateways.database.repositories.item_repository import item_repository
+from gateways.storage.services.node_distribution_service import get_file_from_node, delete_file_from_node
+from gateways.storage.services.node_registry import NodeRegistry
+from gateways.storage.client.storage_client import StorageClient
 
 
 async def _get_item_or_404(item_id: str) -> ItemModel:

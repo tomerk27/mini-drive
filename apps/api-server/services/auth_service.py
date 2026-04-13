@@ -1,7 +1,7 @@
 from core.config import settings
 from api.schemas.user import UserCreate, UserLogin, UserResponse
 from api.schemas.item import FolderCreate
-from infrastructure.database.repositories.user_repository import user_repository
+from gateways.database.repositories.user_repository import user_repository
 from core.security import get_password_hash, verify_password, create_access_token
 from models.user import User
 from core.exceptions import UserNotFoundError, ExistingUserError

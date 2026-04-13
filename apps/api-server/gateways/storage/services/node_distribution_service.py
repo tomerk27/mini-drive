@@ -2,7 +2,7 @@ import hashlib
 import asyncio
 from core.config import settings
 from core.exceptions import StorageServerError
-from infrastructure.storage.client.storage_client import StorageClient
+from gateways.storage.client.storage_client import StorageClient
 
 STORAGE_KEY = settings.STORAGE_ENCRYPTION_KEY.encode()
 

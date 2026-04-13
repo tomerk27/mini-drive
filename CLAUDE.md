@@ -85,7 +85,7 @@ API Server (FastAPI)
 ```
 api/routes/       →  HTTP endpoints (auth, items, user)
 services/         →  Business logic (items, auth, share, repair)
-infrastructure/
+gateways/
   repositories/   →  MongoDB data access (Motor async driver)
   storage/
     tracker/      →  TrackerServer (manages node registry + heartbeats)
@@ -96,7 +96,7 @@ models/           →  Pydantic models (User, Item, File, Folder, Node)
 
 ## Architectural Standards (from GEMINI.md)
 
-- **Clean Architecture**: Strict separation — Transport/Infrastructure (Handlers) → Business Logic (Services) → Data/Models. Do not mix protocol logic with service logic.
+- **Clean Architecture**: Strict separation — Transport/gateways (Handlers) → Business Logic (Services) → Data/Models. Do not mix protocol logic with service logic.
 - **Single Responsibility**: If a function handles both networking and disk I/O, flag it for refactoring.
 - **Proactive Refactoring**: If a requested feature would damage architectural integrity, point it out and suggest a cleaner alternative before implementing.
 - **Placement Precision**: Always specify the exact file path, class, and method/line where a change belongs.

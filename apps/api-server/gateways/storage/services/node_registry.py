@@ -1,4 +1,4 @@
-from infrastructure.database.repositories.node_repository import node_repository
+from gateways.database.repositories.node_repository import node_repository
 
 
 class NodeRegistry:

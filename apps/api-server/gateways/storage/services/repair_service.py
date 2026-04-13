@@ -1,8 +1,8 @@
 import io
-from infrastructure.database.repositories.item_repository import item_repository
+from gateways.database.repositories.item_repository import item_repository
 from core.enums import ItemType
-from infrastructure.storage.services.node_registry import NodeRegistry
-from infrastructure.storage.services.node_distribution_service import get_file_from_node, send_file_to_nodes
+from gateways.storage.services.node_registry import NodeRegistry
+from gateways.storage.services.node_distribution_service import get_file_from_node, send_file_to_nodes
 
 
 class RepairService:

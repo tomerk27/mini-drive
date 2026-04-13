@@ -1,7 +1,7 @@
 import asyncio
 from core.config import settings
 from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport, ProtocolError
-from infrastructure.storage.services.node_registry import NodeRegistry
+from gateways.storage.services.node_registry import NodeRegistry
 
 
 class HeartbeatServer:

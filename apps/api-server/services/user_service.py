@@ -1,4 +1,4 @@
-from infrastructure.database.repositories.item_repository import item_repository
+from gateways.database.repositories.item_repository import item_repository
 from api.schemas.item_pages import ItemPageResponse
 from utils.mappers import map_items_to_responses
 

@@ -1,6 +1,6 @@
 import asyncio
-from infrastructure.storage.services.node_registry import NodeRegistry
-from infrastructure.storage.services.repair_service import RepairService
+from gateways.storage.services.node_registry import NodeRegistry
+from gateways.storage.services.repair_service import RepairService
 
 HEALTH_CHECK_INTERVAL_SECONDS = 60
 

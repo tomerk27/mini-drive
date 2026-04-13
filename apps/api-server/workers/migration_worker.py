@@ -3,11 +3,11 @@ import hashlib
 import io
 import uuid
 
-from infrastructure.database.database import get_collection
-from infrastructure.storage.servers.connection_pool import connection_pool
-from infrastructure.storage.services.node_distribution_service import get_file_from_node, delete_file_from_node
-from infrastructure.storage.services.node_registry import NodeRegistry
-from infrastructure.storage.client.storage_client import StorageClient
+from gateways.database.database import get_collection
+from gateways.storage.servers.connection_pool import connection_pool
+from gateways.storage.services.node_distribution_service import get_file_from_node, delete_file_from_node
+from gateways.storage.services.node_registry import NodeRegistry
+from gateways.storage.client.storage_client import StorageClient
 from core.config import settings
 from core.enums import ItemType
 

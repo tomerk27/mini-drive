@@ -1,7 +1,7 @@
 import asyncio
 from core.config import settings
 from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport, ProtocolError
-from infrastructure.storage.servers.connection_pool import connection_pool
+from gateways.storage.servers.connection_pool import connection_pool
 
 
 class DataServer:

@@ -1,6 +1,6 @@
 from bson import ObjectId
 from typing import Optional
-from infrastructure.database.database import get_collection
+from gateways.database.database import get_collection
 from models.user import User
 
 

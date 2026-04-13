@@ -5,7 +5,7 @@ from bson import ObjectId
 from core.config import settings
 from models.user import User
 from core.exceptions import TokenCredentialsError
-from infrastructure.database.database import get_collection
+from gateways.database.database import get_collection
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 

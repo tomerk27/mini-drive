@@ -3,8 +3,8 @@ from api.schemas.share import ShareRequest
 from core.enums import SharePermission
 from core.permissions import verify_access
 from core.exceptions import UserNotFoundError, SelfShareError, ResourceNotFoundError
-from infrastructure.database.database import get_collection
-from infrastructure.database.repositories.item_repository import item_repository
+from gateways.database.database import get_collection
+from gateways.database.repositories.item_repository import item_repository
 from models.item import SharedUser
 
 

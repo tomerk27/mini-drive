@@ -1,7 +1,7 @@
 # Gemini CLI Mandates
 
 ## Architectural Standards
-- **Clean Architecture:** Always evaluate changes against Clean Architecture principles. Maintain a strict separation between Transport/Infrastructure (Handlers), Business Logic (Services), and Data/Models.
+- **Clean Architecture:** Always evaluate changes against Clean Architecture principles. Maintain a strict separation between Transport/gateways (Handlers), Business Logic (Services), and Data/Models.
 - **Single Responsibility (SRP):** Each class and function must have one, and only one, reason to change. If a function handles both networking and disk I/O, flag it for refactoring.
 - **Separation of Concerns:** Keep protocol-specific logic (packing/unpacking) out of core service logic.
 - **Proactive Refactoring:** If a requested feature would damage the architectural integrity, I MUST point it out and suggest a cleaner alternative before implementing.

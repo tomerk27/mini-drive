@@ -12,8 +12,8 @@ sys.path.append(os.path.join(root_dir, "libs"))
 
 from api.routes import auth, items, user
 from core.exceptions import AppException, handle_exception, validation_error_handler
-from infrastructure.storage.servers.heartbeat_server import HeartbeatServer
-from infrastructure.storage.servers.data_server import DataServer
+from gateways.storage.servers.heartbeat_server import HeartbeatServer
+from gateways.storage.servers.data_server import DataServer
 from workers.node_monitor import run_node_monitor
 from workers.migration_worker import run_migration
 
