@@ -21,6 +21,9 @@ class Settings(BaseSettings):
 
     # File chunking
     CHUNK_SIZE_BYTES: int = 5 * 1024 * 1024  # 5 MB
+
+    # Per-user storage quota
+    MAX_STORAGE_BYTES: int = 5 * 1024 ** 3  # 5 GB
     
     class Config:
         env_file = ".env"

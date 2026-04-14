@@ -1,8 +1,9 @@
 from fastapi import APIRouter, status, Depends
 from models.user import User
 from api.dependencies import get_current_user
-from services.user_service import get_starred_items_service, get_shared_items_service
+from services.user_service import get_starred_items_service, get_shared_items_service, get_storage_service
 from api.schemas.item_pages import ItemPageResponse
+from api.schemas.user import StorageResponse
 
 router = APIRouter(
     prefix="/users",
@@ -24,3 +25,8 @@ async def get_shared_with_me_items(
     shared_items = await get_shared_items_service(current_user.id)
 
     return shared_items
+
+
+@router.get('/storage', status_code=status.HTTP_200_OK, response_model=StorageResponse)
+async def get_storage(current_user: User = Depends(get_current_user)):
+    return await get_storage_service(current_user.id)

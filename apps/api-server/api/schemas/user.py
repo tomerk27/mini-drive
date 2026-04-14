@@ -10,6 +10,10 @@ class UserCreate(UserBase):
 class UserLogin(UserBase):
     password: str
 
-class UserResponse(BaseModel): 
+class UserResponse(BaseModel):
     access_token: str
     token_type: str
+
+class StorageResponse(BaseModel):
+    used_bytes: int
+    max_bytes: int

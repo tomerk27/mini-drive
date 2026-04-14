@@ -97,6 +97,15 @@ class ItemRepository:
             array_filters=[{"chunk.physical_name": chunk_physical_name}]
         )
 
+    async def get_used_storage(self, user_id: str) -> int:
+        """Returns total bytes used by completed files owned by the user."""
+        pipeline = [
+            {"$match": {"owner_id": user_id, "item_type": "file", "status": "completed"}},
+            {"$group": {"_id": None, "total": {"$sum": "$size"}}}
+        ]
+        result = await self.collection.aggregate(pipeline).to_list(length=1)
+        return result[0]["total"] if result else 0
+
     async def search(self, user_id: str, query: str) -> list[ItemModel]:
         cursor = self.collection.find({
             "$or": [

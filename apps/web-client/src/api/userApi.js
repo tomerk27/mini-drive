@@ -11,3 +11,9 @@ export const getSharedItemsApi = async () => {
 
     return response.data;
 };
+
+export const getStorageUsageApi = async () => {
+    const response = await apiClient.get('/users/storage');
+
+    return response.data;
+};

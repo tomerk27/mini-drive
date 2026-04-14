@@ -83,6 +83,13 @@ class ItemIsFolderError(AppException):
             detail="Cannot perform this action: the requested item is a folder, not a file."
         )
 
+class StorageLimitExceededError(AppException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_507_INSUFFICIENT_STORAGE,
+            detail="Storage limit exceeded. You have used your 5 GB quota."
+        )
+
 class SelfShareError(AppException):
     def __init__(self):
         super().__init__(

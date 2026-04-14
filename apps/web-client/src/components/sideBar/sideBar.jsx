@@ -8,12 +8,14 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloudQueueIcon from '@mui/icons-material/CloudQueue';
 import AddIcon from '@mui/icons-material/Add';
+import useStorage from '../../hooks/user/useStorage';
 
 const drawerWidth = 256;
 
 const SideBar = ({ onNewClick }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { usedFormatted, maxFormatted, usedPercent, loading: storageLoading } = useStorage();
 
     return (
         <Drawer
@@ -111,10 +113,10 @@ const SideBar = ({ onNewClick }) => {
                     </Typography>
                 </Box>
                 <Box sx={{ width: '100%', height: 6, bgcolor: '#f1f5f9', borderRadius: 3, mb: 1 }}>
-                    <Box sx={{ width: '45%', height: '100%', bgcolor: 'primary.main', borderRadius: 3 }} />
+                    <Box sx={{ width: storageLoading ? '0%' : `${Math.min(usedPercent, 100)}%`, height: '100%', bgcolor: usedPercent >= 90 ? 'error.main' : 'primary.main', borderRadius: 3, transition: 'width 0.4s ease' }} />
                 </Box>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                    1.2 GB of 15 GB used
+                    {storageLoading ? 'Loading...' : `${usedFormatted} of ${maxFormatted} used`}
                 </Typography>
             </Box>
         </Drawer>

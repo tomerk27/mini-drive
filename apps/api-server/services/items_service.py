@@ -10,7 +10,7 @@ from typing import List, Optional
 from api.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, FileResponse as FileResponseSchema, FolderResponse
 from models.item import ItemModel, FileModel, FolderModel, ChunkInfo
 from core.enums import ItemStatus, ItemType, SharePermission
-from core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError, StorageServerError
+from core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError, StorageServerError, StorageLimitExceededError
 from core.permissions import verify_access
 from core.config import settings
 from utils.mappers import map_item_to_response
@@ -123,6 +123,11 @@ async def complete_item_upload(
 
     file_content = await file.read()
     file_size = len(file_content)
+
+    used_bytes = await item_repository.get_used_storage(owner_id)
+    if used_bytes + file_size > settings.MAX_STORAGE_BYTES:
+        raise StorageLimitExceededError()
+
     base_uuid = str(uuid.uuid4()).replace("-", "")
 
     raw_chunks = [
