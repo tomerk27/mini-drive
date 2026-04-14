@@ -13,7 +13,9 @@ def map_item_to_response(item_db, current_user_id: str) -> Union[FileResponse, F
     elif hasattr(item_db, "id") and item_db.id:
         item_dict["id"] = str(item_db.id)
 
-    item_dict["is_owner"] = (item_db.owner_id == current_user_id)
+    is_owner = (item_db.owner_id == current_user_id)
+    item_dict["is_owner"] = is_owner
+    item_dict["shared_with"] = item_dict.get("shared_with", []) if is_owner else []
 
     if item_db.item_type == ItemType.FILE:
         return FileResponse(**item_dict)

@@ -4,6 +4,12 @@ from datetime import datetime
 from core.enums import ItemType, SharePermission
 
 
+class SharedUserResponse(BaseModel):
+    id: str
+    email: Optional[str] = None
+    permission: SharePermission
+
+
 class ItemResponse(BaseModel):
     id: str
     name: str
@@ -13,6 +19,7 @@ class ItemResponse(BaseModel):
     owner_id: str
     is_owner: bool = False
     starred_by: List[str] = []
+    shared_with: List[SharedUserResponse] = []
 
 
 class FileResponse(ItemResponse):
