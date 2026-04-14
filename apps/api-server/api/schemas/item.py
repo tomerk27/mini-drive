@@ -48,7 +48,13 @@ class ItemRename(BaseModel):
     new_name: str
 
 
+class BreadcrumbItem(BaseModel):
+    id: str
+    name: str
+
+
 class FolderContentResponse(BaseModel):
     folder: FolderResponse
     child_files: List[FileResponse]
     child_folders: List[FolderResponse]
+    breadcrumb: List[BreadcrumbItem] = []

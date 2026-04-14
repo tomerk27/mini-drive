@@ -2,6 +2,7 @@ import { Box, Typography, Menu, MenuItem, ListItemIcon, ListItemText } from '@mu
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import FolderView from '../components/FolderView/FolderView'
+import Breadcrumb from '../components/FolderView/Breadcrumb'
 import LogoutButton from '../components/authentication/logoutButton';
 import CreateFolderDialog from '../components/FolderView/createFolderDialog';
 import SideBar from '../components/sideBar/sideBar';
@@ -12,7 +13,7 @@ import useFilesUploader from '../hooks/files/useFilesUploader';
 import { useState } from 'react';
 
 const Dashboard = () => {
-    const { folder, refreshFolder, childFiles, childFolders, loading, error, createFolder } = useFolder();
+    const { folder, refreshFolder, childFiles, childFolders, loading, error, createFolder, breadcrumb } = useFolder();
     const { inputRef, uploadFiles } = useFilesUploader();
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
     const { searchTerm, searchResults, isSearching, searchError } = useSearch();
@@ -98,7 +99,7 @@ const Dashboard = () => {
             </Menu>
 
             <Box component="main" sx={{ flexGrow: 1, pt: 12, px: 4, pb: 4, width: 'calc(100% - 256px)' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: breadcrumb.length > 0 ? 1 : 4 }}>
                     <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', letterSpacing: '-0.025em' }}>
                         My Files
                     </Typography>
@@ -119,6 +120,8 @@ const Dashboard = () => {
 
                     <LogoutButton />
                 </Box>
+
+                <Breadcrumb breadcrumb={breadcrumb} />
 
                 <CreateFolderDialog 
                     open={isCreateFolderOpen}

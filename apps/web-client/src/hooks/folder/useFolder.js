@@ -13,6 +13,7 @@ const useFolder = () => {
     const [childFiles, setChildFiles] = useState([]);
     const [childFolders, setChildFolders] = useState([]);
     const [folder, setFolder] = useState(null);
+    const [breadcrumb, setBreadcrumb] = useState([]);
 
     const createFolder = async (folderName, currentFolderId) => {
         setLoading(true);
@@ -36,6 +37,7 @@ const useFolder = () => {
             setChildFiles(data.child_files);
             setChildFolders(data.child_folders.map(folder => ({ ...folder, type: 'folder' })));
             setFolder(data.folder);
+            setBreadcrumb(data.breadcrumb || []);
             
         } catch(error) {
             handleError(setError, error, "Failed to load folder content. Please try again.");
@@ -57,6 +59,7 @@ const useFolder = () => {
         childFiles,
         childFolders,
         folder,
+        breadcrumb,
         refreshFolder,
         createFolder
     };

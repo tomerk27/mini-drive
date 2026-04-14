@@ -106,6 +106,25 @@ class ItemRepository:
         result = await self.collection.aggregate(pipeline).to_list(length=1)
         return result[0]["total"] if result else 0
 
+    async def get_ancestors(self, folder_id: str) -> List[dict]:
+        """Walks up parent chain and returns [{id, name}] from root-level down to folder_id."""
+        ancestors = []
+        current_id = folder_id
+
+
+        for _ in range(20):  # safety limit for depth
+            item = await self.get_by_id(current_id)
+            if not item:
+                break
+            if not item.parent_id or item.parent_id == '/':
+                # This is the root folder itself — stop without including it
+                break
+            ancestors.append({"id": item.id, "name": item.name})
+            current_id = item.parent_id
+
+        ancestors.reverse()
+        return ancestors
+
     async def search(self, user_id: str, query: str) -> list[ItemModel]:
         cursor = self.collection.find({
             "$or": [
