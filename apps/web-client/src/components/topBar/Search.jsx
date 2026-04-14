@@ -1,10 +1,12 @@
-import { Box, InputBase } from '@mui/material';
+import { Box, InputBase, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
-const Search = ({ searchTerm, onSearchTermChange, onKeyDown }) => {
+const Search = ({ searchTerm, onSearchTermChange, onKeyDown, onSearch }) => {
   return (
     <Box
       sx={{
+        display: 'flex',
+        alignItems: 'center',
         position: 'relative',
         borderRadius: 1,
         backgroundColor: 'rgba(0,0,0,0.04)',
@@ -25,20 +27,6 @@ const Search = ({ searchTerm, onSearchTermChange, onKeyDown }) => {
         transition: 'background-color 0.2s, border-color 0.2s, box-shadow 0.2s',
       }}
     >
-      <Box
-        sx={{
-          px: 2,
-          height: '100%',
-          position: 'absolute',
-          pointerEvents: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'text.secondary',
-        }}
-      >
-        <SearchIcon fontSize="small" />
-      </Box>
       <InputBase
         value={searchTerm}
         onChange={onSearchTermChange}
@@ -47,16 +35,17 @@ const Search = ({ searchTerm, onSearchTermChange, onKeyDown }) => {
         onKeyDown={onKeyDown}
         sx={{
           color: 'inherit',
-          width: '100%',
+          flexGrow: 1,
           '& .MuiInputBase-input': {
             py: 1.2,
-            pr: 1,
-            pl: 'calc(1em + 32px)',
+            pl: 2,
             fontSize: '0.95rem',
-            width: '100%',
           },
         }}
       />
+      <IconButton onClick={onSearch} size="small" sx={{ mr: 0.5, color: 'text.secondary' }}>
+        <SearchIcon fontSize="small" />
+      </IconButton>
     </Box>
   );
 };

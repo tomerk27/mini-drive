@@ -7,7 +7,7 @@ import useSearch from '../../hooks/search/useSearch';
 
 
 const TopBar = () => {
-    const { term, setTerm, handleKeyDown } = useSearch();
+    const { term, setTerm, handleKeyDown, handleSearch } = useSearch();
     return (
         <AppBar
             position="fixed"
@@ -28,6 +28,7 @@ const TopBar = () => {
                     searchTerm={term}
                     onSearchTermChange={(e) => setTerm(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    onSearch={handleSearch}
                 /> 
 
                 <ActionsAndProfile />

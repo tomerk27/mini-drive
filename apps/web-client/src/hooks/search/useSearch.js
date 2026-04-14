@@ -5,22 +5,23 @@ const useSearch = () => {
     const [term, setTerm] = useState('');
     const navigate = useNavigate();
 
+    const handleSearch = () => {
+        if (!term.trim()) {
+            navigate(`/dashboard`);
+            return;
+        }
+        navigate(`/search?q=${term}`);
+    };
+
     const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
-
-            if (!term.trim()) {
-                navigate(`/dashboard`);
-                return;
-            };
-
-            navigate(`/search?q=${term}`);
-        };
+        if (e.key === "Enter") handleSearch();
     };
 
     return {
         term,
         setTerm,
-        handleKeyDown
+        handleKeyDown,
+        handleSearch
     };
 };
 
