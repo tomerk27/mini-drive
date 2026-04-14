@@ -3,10 +3,8 @@ import {
   Typography,
   Container,
   Paper,
-  Alert,
-  Divider
+  Alert
 } from '@mui/material';
-//import GoogleConnectionButton from '../components/authentication/googleConnectionButton';
 import FormsBox from '../components/authentication/formsBox';
 import useSignup from '../hooks/auth/useSignup';
 
@@ -51,10 +49,6 @@ const SignupPage = () => {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Welcome user, please sign up to continue
           </Typography>
-
-          <Divider sx={{ width: '100%', mb: 3, color: 'text.secondary', '&::before, &::after': { borderColor: '#e0e0e0' } }}>
-            Or
-          </Divider>
 
           {error && (
             <Alert severity="error" sx={{ mb: 2, width: '100%' }} variant="standard">

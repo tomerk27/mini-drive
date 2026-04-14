@@ -12,8 +12,3 @@ export const loginUserApi = async (userData) => {
     return response.data;
 };
 
-export const googleConectionApi = async (userToken) => {
-    const response = await apiClient.post('/auth/googleConnection', userToken);
-
-    return response.data;
-};

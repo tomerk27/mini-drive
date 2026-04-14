@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
-import { loginUserApi, googleConectionApi } from "../../api/authApi";
+import { loginUserApi } from "../../api/authApi";
 import { useAuthContext } from "../../context/auth/authContext";
 import handleError from "../../utils/handleError";
 
@@ -16,14 +16,9 @@ const useLogin = () => {
     const emailRef = useRef();
     const passwordRef = useRef();
 
-    const handleSubmit = (event, credentialResponse = null) => {
-        event.preventDefault(); // Prevents page reload on form submission
-        credentialResponse ? handleGoogleLogin(credentialResponse) : handleLogin();
-    };
-
-
-    const handleLogin = async () => {
-        setError(null)
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setError(null);
         setIsLoading(true);
 
         const userData = {
@@ -33,35 +28,11 @@ const useLogin = () => {
 
         try {
             const data = await loginUserApi(userData);
-
             authenticate(data.access_token);
-
             navigate('/dashboard');
         }
         catch (error) {
             handleError(setError, error, "Invalid email or password");
-        }
-        finally {
-            setIsLoading(false)
-        }
-
-    }
-
-    const handleGoogleLogin = async (credentialResponse) => {
-        setError(null);
-        setIsLoading(true);
-
-        const jwtToken = credentialResponse.credential;
-
-        try {
-            const data = await googleConectionApi(jwtToken);
-
-            authenticate(data.access_token);
-
-            navigate('/dashboard');
-        }
-        catch (error) {
-            handleError(setError, error, "Google login failed. Please try again.");
         }
         finally {
             setIsLoading(false);
@@ -69,7 +40,6 @@ const useLogin = () => {
     };
 
     return {
-        handleGoogleLogin,
         handleSubmit,
         isLoading,
         error,
