@@ -5,6 +5,7 @@ import SignupPage from '../pages/signupPage';
 import StarredPage from '../pages/starredPage';
 import SharedPage from '../pages/sharedPage';
 import ProtectedRoute from '../components/protectedRoute';
+import SearchPage from '../pages/searchPage';
 
 const AppRouter = () => {
     return (
@@ -19,6 +20,7 @@ const AppRouter = () => {
                     <Route path="dashboard/:folderId" element={<Dashboard />} />
                     <Route path="starred" element={<StarredPage />} />
                     <Route path="shared" element={<SharedPage />} />
+                    <Route path="search" element={<SearchPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

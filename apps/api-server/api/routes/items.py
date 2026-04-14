@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, Depends, File, UploadFile, Path, Response
-from services.items_service import init_item, complete_item_upload, get_folder_service, remove_item_service, rename_item_service, get_file_preview_service, mark_item_as_starred_service
+from services.items_service import init_item, complete_item_upload, get_folder_service, remove_item_service, rename_item_service, get_file_preview_service, mark_item_as_starred_service, search_items_service
 from services.share_service import share_item_service
 from api.schemas.item import ItemResponse, FolderContentResponse, ItemRename, FolderCreate, ItemCreate
 from api.schemas.share import ShareRequest
@@ -58,6 +58,13 @@ async def get_folder(
     folder = await get_folder_service(folder_id, current_user.id)
 
     return folder
+
+@router.get('/search', status_code=status.HTTP_200_OK)
+async def search_items(
+    query: str, 
+    current_user: User = Depends(get_current_user)
+):
+    return await search_items_service(query, current_user.id)
 
 
 @router.delete("/remove/{item_id}", status_code=status.HTTP_204_NO_CONTENT)

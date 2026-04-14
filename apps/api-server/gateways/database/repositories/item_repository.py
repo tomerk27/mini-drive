@@ -97,5 +97,15 @@ class ItemRepository:
             array_filters=[{"chunk.physical_name": chunk_physical_name}]
         )
 
+    async def search(self, user_id: str, query: str) -> list[ItemModel]:
+        cursor = self.collection.find({
+            "$or": [
+                {"owner_id": user_id},
+                {"shared_with.id": user_id}
+            ],
+            "name": {"$regex": query, "$options": "i"}
+        })
 
+        raw_items = await cursor.to_list(length=100)
+        return [self._parse_to_model(raw) for raw in raw_items]
 item_repository = ItemRepository()

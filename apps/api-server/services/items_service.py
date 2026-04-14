@@ -245,3 +245,7 @@ async def mark_item_as_starred_service(item_id: str, current_user_id: str):
 
     is_starred = current_user_id in (item.starred_by or [])
     await item_repository.update_star(item_id, current_user_id, is_starred)
+
+async def search_items_service(query: str, current_user_id: str) -> list[ItemResponse]:
+    items = await item_repository.search(current_user_id, query)
+    return [map_item_to_response(item, current_user_id) for item in items]

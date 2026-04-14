@@ -7,6 +7,7 @@ import CreateFolderDialog from '../components/FolderView/createFolderDialog';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';
 import useFolder from '../hooks/folder/useFolder';
+import useSearch from '../hooks/search/useSearch';
 import useFilesUploader from '../hooks/files/useFilesUploader';
 import { useState } from 'react';
 
@@ -14,6 +15,7 @@ const Dashboard = () => {
     const { folder, refreshFolder, childFiles, childFolders, loading, error, createFolder } = useFolder();
     const { inputRef, uploadFiles } = useFilesUploader();
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+    const { searchTerm, searchResults, isSearching, searchError } = useSearch();
     
     const [anchorEl, setAnchorEl] = useState(null);
     const openMenu = Boolean(anchorEl);
@@ -100,6 +102,21 @@ const Dashboard = () => {
                     <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', letterSpacing: '-0.025em' }}>
                         My Files
                     </Typography>
+                    {/* Display search results or loading/error states */}
+                    {isSearching && <Typography>Searching...</Typography>}
+                    {searchError && <Typography color="error">{searchError}</Typography>}
+                    {searchTerm && searchResults.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="h6">Search Results for "{searchTerm}":</Typography>
+                            {searchResults.map((item) => (
+                                <Typography key={item.id}>
+                                    {item.name} ({item.item_type})
+                                </Typography>
+                            ))}
+                        </Box>
+                    )}
+                    {searchTerm && !isSearching && !searchError && searchResults.length === 0 && <Typography>No results found for "{searchTerm}".</Typography>}
+
                     <LogoutButton />
                 </Box>
 
@@ -118,11 +135,11 @@ const Dashboard = () => {
                     border: '1px solid #f1f5f9',
                     boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
                 }}>
-                    <FolderView 
-                        childFiles={childFiles} 
-                        childFolders={childFolders} 
-                        loading={loading} 
-                        error={error} 
+                    <FolderView
+                        childFiles={childFiles}
+                        childFolders={childFolders}
+                        loading={loading}
+                        error={error}
                         refreshFolder={() => folder && refreshFolder(folder.id)}
                     />
                 </Box>
