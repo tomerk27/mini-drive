@@ -15,7 +15,6 @@ from core.exceptions import AppException, handle_exception, validation_error_han
 from gateways.storage.servers.heartbeat_server import HeartbeatServer
 from gateways.storage.servers.data_server import DataServer
 from workers.node_monitor import run_node_monitor
-from workers.migration_worker import run_migration
 
 app = FastAPI()
 
@@ -25,7 +24,6 @@ async def startup_event():
     asyncio.create_task(HeartbeatServer().start())
     asyncio.create_task(DataServer().start())
     asyncio.create_task(run_node_monitor())
-    asyncio.create_task(run_migration())
 
 
 app.add_middleware(
