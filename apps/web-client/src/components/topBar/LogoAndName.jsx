@@ -30,7 +30,7 @@ const LogoAndName = () => {
           fontSize: '1.25rem'
         }}
       >
-        My Drive
+        Cyber Drive
       </Typography>
     </Box>
   );
