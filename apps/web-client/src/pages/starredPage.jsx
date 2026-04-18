@@ -4,7 +4,7 @@ import TopBar from '../components/topBar/topBar';
 import LogoutButton from '../components/authentication/logoutButton';
 import NewItemControls from '../components/newItemControls/NewItemControls';
 import useStarredItems from '../hooks/items/useStarredItems';
-import FolderBrowser from '../components/FolderBrowser/folderBrowser';
+import FolderBrowser from '../components/FolderBrowser/FolderBrowser';
 import useNewItemActions from '../hooks/items/useNewItemActions';
 import { useEffect } from 'react';
 
