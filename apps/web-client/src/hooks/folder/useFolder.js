@@ -10,8 +10,7 @@ const useFolder = () => {
     
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [childFiles, setChildFiles] = useState([]);
-    const [childFolders, setChildFolders] = useState([]);
+    const [items, setItems] = useState([]);
     const [folder, setFolder] = useState(null);
     const [breadcrumb, setBreadcrumb] = useState([]);
 
@@ -34,8 +33,7 @@ const useFolder = () => {
 
         try {
             const data = await folderApi.getFolder(id);
-            setChildFiles(data.child_files);
-            setChildFolders(data.child_folders.map(folder => ({ ...folder, type: 'folder' })));
+            setItems(data.children);
             setFolder(data.folder);
             setBreadcrumb(data.breadcrumb || []);
             
@@ -56,8 +54,7 @@ const useFolder = () => {
     return {
         loading,
         error,
-        childFiles,
-        childFolders,
+        items,
         folder,
         breadcrumb,
         refreshFolder,

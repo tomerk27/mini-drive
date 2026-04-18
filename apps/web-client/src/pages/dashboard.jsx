@@ -8,9 +8,11 @@ import TopBar from '../components/topBar/topBar';
 import useFolder from '../hooks/folder/useFolder';
 import useSearch from '../hooks/search/useSearch';
 import useNewItemActions from '../hooks/items/useNewItemActions';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-    const { folder, refreshFolder, childFiles, childFolders, loading, error, breadcrumb } = useFolder();
+    const navigate = useNavigate();
+    const { folder, refreshFolder, items, loading, error, breadcrumb } = useFolder();
     const { searchTerm, searchResults, isSearching, searchError } = useSearch();
     const newItemActions = useNewItemActions(
         folder?.id,
@@ -27,7 +29,12 @@ const Dashboard = () => {
 
             <Box component="main" sx={{ flexGrow: 1, pt: 12, px: 4, pb: 4, width: 'calc(100% - 256px)' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                    <Breadcrumb breadcrumb={breadcrumb} />
+                    <Breadcrumb
+                        rootLabel="My Files"
+                        onRootClick={() => navigate('/dashboard')}
+                        breadcrumb={breadcrumb}
+                        onItemClick={(crumb) => navigate(`/dashboard/${crumb.id}`)}
+                    />
 
                     {/* Display search results or loading/error states */}
                     {isSearching && <Typography>Searching...</Typography>}
@@ -56,11 +63,11 @@ const Dashboard = () => {
                     boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
                 }}>
                     <FolderView
-                        childFiles={childFiles}
-                        childFolders={childFolders}
+                        items={items}
                         loading={loading}
                         error={error}
                         refreshFolder={() => folder && refreshFolder(folder.id)}
+                        onFolderClick={(item) => navigate(`/dashboard/${item.id}`)}
                     />
                 </Box>
             </Box>

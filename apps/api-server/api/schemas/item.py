@@ -55,6 +55,5 @@ class BreadcrumbItem(BaseModel):
 
 class FolderContentResponse(BaseModel):
     folder: FolderResponse
-    child_files: List[FileResponse]
-    child_folders: List[FolderResponse]
+    children: List[ItemResponse]
     breadcrumb: List[BreadcrumbItem] = []

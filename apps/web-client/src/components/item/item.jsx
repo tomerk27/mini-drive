@@ -4,7 +4,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import FileIcon from './itemIcon';
 
 const Item = ({ item, onClick, onOpenMenu }) => {
-    const isFolder = item.item_type === 'folder' || item.type === 'folder';
+    const isFolder = item.item_type === 'folder';
     const type = isFolder ? 'folder' : item.file_type;
     const itemName = item.name;
 

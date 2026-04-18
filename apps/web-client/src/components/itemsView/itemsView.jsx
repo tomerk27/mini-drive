@@ -11,8 +11,7 @@ import useShareItem from '../../hooks/itemActions/useShareItem';
 import useRemoveItem from '../../hooks/itemActions/useRemoveItem';
 import useMarkAsStarred from '../../hooks/itemActions/useMarkAsStarred';
 import useFilePreview from '../../hooks/files/useFilePreview';
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const ItemsView = ({ 
     items, 
@@ -20,13 +19,12 @@ const ItemsView = ({
     error, 
     refreshFolder, 
     emptyMessage = "No items found",
-    emptySubMessage = ""
+    emptySubMessage = "",
+    onFolderClick
 }) => {
-    const navigate = useNavigate();
     const [selectedItem, setSelectedItem] = useState(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
 
     const { anchorEl, anchorPosition, isOpen, openMenu, closeMenu } = useItemActionMenu();
     const { getFileContent, clearPreview, isLoading: isPreviewLoading, error: previewError, imageUrl } = useFilePreview();
@@ -66,36 +64,13 @@ const ItemsView = ({
         clearError: clearStarError
     } = useMarkAsStarred();
 
-    useEffect(() => {
-        if (renameError) {
-            setSnackbar({ open: true, message: renameError, severity: 'error' });
-            clearRenameError();
-        }
-    }, [renameError, clearRenameError]);
-
-    useEffect(() => {
-        if (shareError) {
-            setSnackbar({ open: true, message: shareError, severity: 'error' });
-            clearShareError();
-        }
-    }, [shareError, clearShareError]);
-
-    useEffect(() => {
-        if (removeError) {
-            setSnackbar({ open: true, message: removeError, severity: 'error' });
-            clearRemoveError();
-        }
-    }, [removeError, clearRemoveError]);
-
-    useEffect(() => {
-        if (starError) {
-            setSnackbar({ open: true, message: starError, severity: 'error' });
-            clearStarError();
-        }
-    }, [starError, clearStarError]);
+    const activeError = renameError || shareError || removeError || starError;
 
     const handleSnackbarClose = () => {
-        setSnackbar({ ...snackbar, open: false });
+        clearRenameError();
+        clearShareError();
+        clearRemoveError();
+        clearStarError();
     };
 
     const handleOpenMenu = (event, item) => {
@@ -117,7 +92,7 @@ const ItemsView = ({
     const handleItemClick = async (item) => {
         const isFolder = item.item_type === 'folder' || item.type === 'folder';
         if (isFolder) {
-            navigate(`/dashboard/${item.id}`);
+            onFolderClick?.(item);
         } else {
             setSelectedItem(item);
             setIsPreviewOpen(true);
@@ -234,14 +209,14 @@ const ItemsView = ({
                 </>
             )}
 
-            <Snackbar 
-                open={snackbar.open} 
-                autoHideDuration={6000} 
+            <Snackbar
+                open={Boolean(activeError)}
+                autoHideDuration={6000}
                 onClose={handleSnackbarClose}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
-                <Alert onClose={handleSnackbarClose} severity={snackbar.severity} variant="filled">
-                    {snackbar.message}
+                <Alert onClose={handleSnackbarClose} severity="error" variant="filled">
+                    {activeError}
                 </Alert>
             </Snackbar>
         </Box>

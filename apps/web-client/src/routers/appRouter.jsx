@@ -18,8 +18,13 @@ const AppRouter = () => {
                 <Route element={<ProtectedRoute />}>
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="dashboard/:folderId" element={<Dashboard />} />
+                    
                     <Route path="starred" element={<StarredPage />} />
+                    <Route path="starred/:folderId" element={<Dashboard />} />
+
                     <Route path="shared" element={<SharedPage />} />
+                    <Route path="shared/:folderId" element={<Dashboard />} />
+
                     <Route path="search" element={<SearchPage />} />
                 </Route>
             </Routes>

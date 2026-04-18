@@ -175,22 +175,13 @@ async def get_folder_service(folder_id: str, current_user_id: str) -> FolderCont
     folder_model = await _get_item_or_404(folder_id)
     children = await item_repository.get_children(folder_id)
 
-    child_files = []
-    child_folders = []
-
-    for child in children:
-        child_response = map_item_to_response(child, current_user_id)
-        if child.item_type == ItemType.FILE:
-            child_files.append(child_response)
-        elif child.item_type == ItemType.FOLDER:
-            child_folders.append(child_response)
+    child_responses = [map_item_to_response(child, current_user_id) for child in children]
 
     breadcrumb = await item_repository.get_ancestors(folder_id)
 
     return FolderContentResponse(
         folder=map_item_to_response(folder_model, current_user_id),
-        child_files=child_files,
-        child_folders=child_folders,
+        children=child_responses,
         breadcrumb=breadcrumb
     )
 

@@ -1,10 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { useNavigate } from 'react-router-dom';
 
-const Breadcrumb = ({ breadcrumb }) => {
-    const navigate = useNavigate();
-
+const Breadcrumb = ({ breadcrumb, rootLabel, onRootClick, onItemClick }) => {
     return (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
             <Typography
@@ -16,9 +13,9 @@ const Breadcrumb = ({ breadcrumb }) => {
                     cursor: 'pointer',
                     '&:hover': { textDecoration: 'underline' }
                 }}
-                onClick={() => navigate('/dashboard')}
+                onClick={onRootClick}
             >
-                My Files
+                {rootLabel}
             </Typography>
 
             {breadcrumb?.map((crumb, index) => {
@@ -34,7 +31,7 @@ const Breadcrumb = ({ breadcrumb }) => {
                                 cursor: isLast ? 'default' : 'pointer',
                                 '&:hover': isLast ? {} : { textDecoration: 'underline' }
                             }}
-                            onClick={() => !isLast && navigate(`/dashboard/${crumb.id}`)}
+                            onClick={() => !isLast && onItemClick?.(crumb)}
                         >
                             {crumb.name}
                         </Typography>
