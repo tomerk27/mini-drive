@@ -2,7 +2,7 @@ from bson import ObjectId
 from api.schemas.share import ShareRequest
 from core.enums import SharePermission
 from core.permissions import verify_access
-from core.exceptions import UserNotFoundError, SelfShareError, ResourceNotFoundError
+from core.exceptions import SelfShareError, ResourceNotFoundError
 from gateways.database.database import get_collection
 from gateways.database.repositories.item_repository import item_repository
 from models.item import SharedUser
@@ -20,7 +20,7 @@ async def share_item_service(share_schema: ShareRequest, item_id: str, current_u
 
     user_to_share = await users.find_one({"email": share_schema.email})
     if not user_to_share:
-        raise UserNotFoundError()
+        raise ResourceNotFoundError("No user found with this email")
 
     user_id_str = str(user_to_share.get("_id"))
     if user_id_str == current_user_id:

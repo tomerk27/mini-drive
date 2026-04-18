@@ -17,6 +17,7 @@ class ItemResponse(BaseModel):
     item_type: ItemType
     created_at: datetime
     owner_id: str
+    owner_username: Optional[str] = None
     is_owner: bool = False
     starred_by: List[str] = []
     shared_with: List[SharedUserResponse] = []

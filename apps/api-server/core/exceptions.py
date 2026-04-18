@@ -15,7 +15,7 @@ class UserNotFoundError(AppException):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Wrong email or password",
-            headers={"WWW-Authenticate": settings.auth_scheme}
+            headers={"WWW-Authenticate": settings.AUTH_SCHEME}
         )
 
 class ExistingUserError(AppException):
@@ -105,7 +105,16 @@ async def handle_exception(request: Request, exc: AppException):
     )
         
 async def validation_error_handler(request: Request, exc: RequestValidationError):
+    error = exc.errors()[0]
+    field = error.get("loc", ["field"])[-1]
+    error_type = error.get("type", "")
+
+    if field == "username" and "min_length" in error_type:
+        detail = "Username is too short"
+    else:
+        detail = "Invalid input"
+
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-        content={"detail": "Invalid input"}
+        content={"detail": detail}
     )

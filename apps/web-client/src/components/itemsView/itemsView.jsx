@@ -190,6 +190,7 @@ const ItemsView = ({
                         onClose={closeShareModal}
                         onShare={onShareSubmit}
                         isSharing={isSharing}
+                        error={shareError}
                         currentSharedWith={selectedItem.shared_with || []}
                     />
                     <PreviewDialog

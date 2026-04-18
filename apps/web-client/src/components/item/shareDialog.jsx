@@ -18,14 +18,13 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 
-const ShareDialog = ({ open, onClose, onShare, isSharing, currentSharedWith = [] }) => {
+const ShareDialog = ({ open, onClose, onShare, isSharing, error, currentSharedWith = [] }) => {
     const [email, setEmail] = useState('');
     const [permission, setPermission] = useState('viewer');
 
     const handleShare = () => {
         if (email.trim()) {
             onShare(email, permission);
-            setEmail('');
         }
     };
 
@@ -53,6 +52,8 @@ const ShareDialog = ({ open, onClose, onShare, isSharing, currentSharedWith = []
                         variant="outlined"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        error={!!error}
+                        helperText={error || ''}
                     />
                     <FormControl fullWidth>
                         <InputLabel id="permission-label">Permission</InputLabel>

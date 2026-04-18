@@ -3,7 +3,7 @@ from core.enums import ItemType
 from api.schemas.item import FolderResponse, FileResponse, ItemResponse
 
 
-def map_item_to_response(item_db, current_user_id: str) -> Union[FileResponse, FolderResponse, ItemResponse]:
+def map_item_to_response(item_db, current_user_id: str, owner_username: str = None) -> Union[FileResponse, FolderResponse, ItemResponse]:
     """Converts a database model into the appropriate public response schema."""
     item_dict = item_db.model_dump(by_alias=True)
 
@@ -15,6 +15,7 @@ def map_item_to_response(item_db, current_user_id: str) -> Union[FileResponse, F
 
     is_owner = (item_db.owner_id == current_user_id)
     item_dict["is_owner"] = is_owner
+    item_dict["owner_username"] = owner_username
     item_dict["shared_with"] = item_dict.get("shared_with", []) if is_owner else []
 
     if item_db.item_type == ItemType.FILE:

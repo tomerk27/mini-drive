@@ -67,7 +67,7 @@ const DetailsDialog = ({ open, onClose, item }) => {
                             Owner
                         </Typography>
                         <Typography variant="body2">
-                            {item.is_owner ? 'Me' : 'Shared with me'}
+                            {item.is_owner ? 'Me' : (item.owner_username || 'Unknown')}
                         </Typography>
                     </Box>
                     
