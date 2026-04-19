@@ -28,7 +28,7 @@ async def startup_event():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://cyberdrive24.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
