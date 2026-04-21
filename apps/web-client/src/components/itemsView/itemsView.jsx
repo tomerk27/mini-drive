@@ -22,7 +22,6 @@ const ItemsView = ({
     emptySubMessage = "",
     onFolderClick
 }) => {
-    print(items)
     const [selectedItem, setSelectedItem] = useState(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
