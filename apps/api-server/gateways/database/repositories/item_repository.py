@@ -14,11 +14,12 @@ class ItemRepository:
             return None
 
         raw_dict["id"] = str(raw_dict["_id"])
-        item_type = raw_dict.get("item_type")
+        # Support both item_type and type for robustness
+        item_type_val = raw_dict.get("item_type") or raw_dict.get("type")
 
-        if item_type == ItemType.FILE:
+        if item_type_val == "file":
             return FileModel(**raw_dict)
-        elif item_type == ItemType.FOLDER:
+        elif item_type_val == "folder":
             return FolderModel(**raw_dict)
         else:
             return ItemModel(**raw_dict)
