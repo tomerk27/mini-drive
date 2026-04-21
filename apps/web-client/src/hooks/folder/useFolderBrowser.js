@@ -10,7 +10,16 @@ const useFolderBrowser = (rootItems, rootLabel, onRefresh) => {
     useEffect(() => {
         setViewStack(prev => {
             const updated = [...prev];
+            // Update root items in the first frame
             updated[0] = { ...updated[0], items: rootItems || [] };
+            
+            // If the stack only has the root frame, we return the updated stack.
+            // This ensures that when navigate back to the root of the page (e.g. Dashboard), 
+            // the root items are correctly reflected.
+            if (updated.length === 1) {
+                return updated;
+            }
+            
             return updated;
         });
     }, [rootItems]);
