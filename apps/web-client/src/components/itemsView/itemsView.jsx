@@ -200,8 +200,7 @@ const ItemsView = ({
                         imageUrl={imageUrl}
                         isLoading={isPreviewLoading}
                         error={previewError}
-                        fileName={selectedItem.name}
-                        fileType={selectedItem.file_type}
+                        item={selectedItem}
                     />
                     <DetailsDialog
                         open={isDetailsOpen}

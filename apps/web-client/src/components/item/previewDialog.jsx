@@ -6,7 +6,12 @@ import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { Button } from '@mui/material';
 
-const PreviewDialog = ({ open, onClose, imageUrl, isLoading, error, fileName, fileType }) => {
+const PreviewDialog = ({ open, onClose, imageUrl, isLoading, error, item }) => {
+    if (!item) return null;
+    
+    const fileName = item.name;
+    const fileType = item.file_type;
+    
     const isImage = fileType?.startsWith('image/');
     const isPdf = fileType === 'application/pdf';
     const isVideo = fileType?.startsWith('video/');
