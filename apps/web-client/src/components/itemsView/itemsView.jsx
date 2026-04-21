@@ -91,7 +91,7 @@ const ItemsView = ({
     };
 
     const handleItemClick = async (item) => {
-        const isFolder = item.item_type === 'folder' || item.type === 'folder';
+        const isFolder = (item.item_type || item.type) === 'folder';
         if (isFolder) {
             onFolderClick?.(item);
         } else {
