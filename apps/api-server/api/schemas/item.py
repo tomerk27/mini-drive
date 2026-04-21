@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 from core.enums import ItemType, SharePermission
 
@@ -56,5 +56,5 @@ class BreadcrumbItem(BaseModel):
 
 class FolderContentResponse(BaseModel):
     folder: FolderResponse
-    children: List[ItemResponse]
+    children: List[Union[FileResponse, FolderResponse]]
     breadcrumb: List[BreadcrumbItem] = []
