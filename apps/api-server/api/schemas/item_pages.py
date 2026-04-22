@@ -3,4 +3,4 @@ from pydantic import BaseModel
 from typing import List, Union
 
 class ItemPageResponse(BaseModel):
-    items: List[Union[FileResponse, FolderResponse, ItemResponse]]
+    items: List[Union[FileResponse, FolderResponse]]

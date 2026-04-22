@@ -219,20 +219,33 @@ async def get_file_preview_service(item_id: str, current_user_id: str):
 
     ordered_chunks = sorted(item.chunks, key=lambda c: c.chunk_index)
 
-    async def chunked_generator():
-        for chunk_info in ordered_chunks:
-            chunk_gen = await get_file_from_node(
-                chunk_info.node_ids[0],
-                chunk_info.physical_name,
-                chunk_info.chunk_hash,
-            )
-            if not chunk_gen:
-                raise StorageServerError(f"Chunk {chunk_info.chunk_index} unavailable")
-            async for data in chunk_gen:
-                yield data
+    # Eagerly fetch all chunk data BEFORE creating the StreamingResponse.
+    # A StreamingResponse sends HTTP 200 headers immediately, so any exception
+    # raised inside the generator after that point cannot be turned into an
+    # HTTP error response — causing "Caught handled exception, but response
+    # already started." By collecting all bytes first, errors propagate through
+    # FastAPI's normal exception handlers and return a proper 500 response.
+    file_parts: list[bytes] = []
+    for chunk_info in ordered_chunks:
+        chunk_gen = None
+        for node_id in chunk_info.node_ids:
+            try:
+                chunk_gen = await get_file_from_node(
+                    node_id,
+                    chunk_info.physical_name,
+                    chunk_info.chunk_hash,
+                )
+                if chunk_gen:
+                    break
+            except Exception:
+                continue
+        if not chunk_gen:
+            raise StorageServerError(f"Chunk {chunk_info.chunk_index} unavailable on all replicas")
+        async for data in chunk_gen:
+            file_parts.append(data)
 
     return StreamingResponse(
-        chunked_generator(),
+        io.BytesIO(b"".join(file_parts)),
         media_type=item.file_type,
         headers={"Content-Disposition": f"inline; filename*=UTF-8''{quote(item.name)}"}
     )

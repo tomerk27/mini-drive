@@ -54,7 +54,7 @@ async def upload_content(
 )
 async def get_folder(
     folder_id: str = Path(...), current_user: User = Depends(get_current_user)
-) -> FolderContentResponse:
+) -> ItemResponse:
     folder = await get_folder_service(folder_id, current_user.id)
 
     return folder

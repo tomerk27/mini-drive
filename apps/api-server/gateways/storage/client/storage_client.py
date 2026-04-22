@@ -3,6 +3,10 @@ from typing import Optional, Tuple, AsyncGenerator
 from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport, ProtocolError
 from gateways.storage.servers.connection_pool import connection_pool
 
+# Errors that mean the TCP connection itself is dead and the node must re-register.
+# Protocol-level or application-level errors should NOT evict a healthy connection.
+_FATAL_CONNECTION_ERRORS = (OSError, asyncio.IncompleteReadError, EOFError)
+
 
 class StorageClient:
     """
@@ -48,7 +52,8 @@ class StorageClient:
             return res.fields.get(Field.STATUS) == 0
         except Exception as e:
             print(f"[!] StorageClient Upload Error for {self.node_id}: {e}")
-            await connection_pool.remove_node(self.node_id)
+            if isinstance(e, _FATAL_CONNECTION_ERRORS):
+                await connection_pool.remove_node(self.node_id)
             return False
 
     async def download_generator(self, filename: str) -> Tuple[Optional[AsyncGenerator[bytes, None]], int]:
@@ -85,12 +90,14 @@ class StorageClient:
                     await transport.send_packet(res_packet)
                 except Exception as e:
                     print(f"[!] Download Stream Error for {self.node_id}: {e}")
-                    await connection_pool.remove_node(self.node_id)
+                    if isinstance(e, _FATAL_CONNECTION_ERRORS):
+                        await connection_pool.remove_node(self.node_id)
                     raise
 
             return chunk_generator(), file_size
-        except Exception:
-            await connection_pool.remove_node(self.node_id)
+        except Exception as e:
+            if isinstance(e, _FATAL_CONNECTION_ERRORS):
+                await connection_pool.remove_node(self.node_id)
             raise
 
     async def delete(self, filename: str) -> bool:

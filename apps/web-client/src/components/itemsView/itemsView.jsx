@@ -22,7 +22,6 @@ const ItemsView = ({
     emptySubMessage = "",
     onFolderClick
 }) => {
-    console.log(items)
     const [selectedItem, setSelectedItem] = useState(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -91,7 +90,7 @@ const ItemsView = ({
     };
 
     const handleItemClick = async (item) => {
-        const isFolder = (item.item_type || item.type) === 'folder';
+        const isFolder = item.item_type === 'folder' || item.type === 'folder';
         if (isFolder) {
             onFolderClick?.(item);
         } else {
@@ -200,7 +199,8 @@ const ItemsView = ({
                         imageUrl={imageUrl}
                         isLoading={isPreviewLoading}
                         error={previewError}
-                        item={selectedItem}
+                        fileName={selectedItem.name}
+                        fileType={selectedItem.file_type}
                     />
                     <DetailsDialog
                         open={isDetailsOpen}

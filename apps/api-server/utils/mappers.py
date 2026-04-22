@@ -18,11 +18,9 @@ def map_item_to_response(item_db, current_user_id: str, owner_username: str = No
     item_dict["owner_username"] = owner_username
     item_dict["shared_with"] = item_dict.get("shared_with", []) if is_owner else []
 
-    item_type_val = item_dict.get("item_type") or item_dict.get("type")
-
-    if item_type_val == "file":
+    if item_db.item_type == ItemType.FILE:
         return FileResponse(**item_dict)
-    elif item_type_val == "folder":
+    elif item_db.item_type == ItemType.FOLDER:
         return FolderResponse(**item_dict)
 
     return ItemResponse(**item_dict)

@@ -14,6 +14,19 @@ class DataServer:
         self.port = settings.STORAGE_SERVER_PORT
         self.key = settings.STORAGE_ENCRYPTION_KEY.encode()
 
+    async def _watch_node_connection(self, node_id: str, reader: asyncio.StreamReader):
+        """
+        Polls the reader until the node's TCP connection closes, then removes it
+        from the pool. Polling avoids consuming bytes that StorageClient needs.
+        Detects both graceful EOF and abrupt resets (reader.exception() set).
+        """
+        while True:
+            await asyncio.sleep(5)
+            if reader.at_eof() or reader.exception() is not None:
+                break
+        await connection_pool.remove_node(node_id)
+        print(f"[*] DataServer: Node {node_id} disconnected — removed from pool")
+
     async def handle_registration(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """Waits for the node to identify itself via a REGISTER packet."""
         address = writer.get_extra_info('peername')
@@ -31,6 +44,7 @@ class DataServer:
                 if node_id:
                     await connection_pool.register_node(node_id, reader, writer)
                     print(f"[*] DataServer: Node {node_id} reported for duty from {address[0]}")
+                    asyncio.create_task(self._watch_node_connection(node_id, reader))
                     return  # Keep the writer open — used for future commands
 
             writer.close()

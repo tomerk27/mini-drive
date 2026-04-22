@@ -53,8 +53,8 @@ async def connect_to_main_server():
                 await route_command(transport, packet)
                 
         except Exception as e:
-            print(f"[!] Connection failed: {e}. Retrying in 10 seconds...")
-            await asyncio.sleep(10)
+            print(f"[!] Connection failed: {e}. Retrying in 3 seconds...")
+            await asyncio.sleep(3)
         finally:
             try:
                 writer.close()

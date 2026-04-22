@@ -13,11 +13,8 @@ import PublicIcon from '@mui/icons-material/Public'; // For HTML, CSS, JS
 const FileIcon = ({ fileType }) => {
     const iconSize = 70;
     const commonColor = '#909090'; // Default color for most icons
-    
-    // Normalize file type input
-    const type = typeof fileType === 'string' ? fileType : (fileType?.file_type || fileType?.type);
 
-    switch (type) {
+    switch (fileType) {
         case 'folder':
             return <FolderIcon sx={{ fontSize: iconSize, color: '#FFD700' }} />;
 

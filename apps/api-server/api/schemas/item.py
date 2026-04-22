@@ -25,8 +25,8 @@ class ItemResponse(BaseModel):
 
 class FileResponse(ItemResponse):
     item_type: ItemType = ItemType.FILE
-    file_type: str
-    size: int
+    file_type: Optional[str] = None
+    size: Optional[int] = None
 
 
 class FolderResponse(ItemResponse):
@@ -56,5 +56,5 @@ class BreadcrumbItem(BaseModel):
 
 class FolderContentResponse(BaseModel):
     folder: FolderResponse
-    children: List[Union[FileResponse, FolderResponse, ItemResponse]]
+    children: List[Union[FileResponse, FolderResponse]]
     breadcrumb: List[BreadcrumbItem] = []
