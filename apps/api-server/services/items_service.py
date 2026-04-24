@@ -2,15 +2,18 @@ import asyncio
 import hashlib
 import io
 import uuid
+import filetype
 from fastapi import UploadFile
 from fastapi.responses import StreamingResponse
 from urllib.parse import quote
 from typing import List, Optional
+from pathlib import Path
+
 
 from api.schemas.item import ItemCreate, FolderContentResponse, ItemResponse, FileResponse as FileResponseSchema, FolderResponse
 from models.item import ItemModel, FileModel, FolderModel, ChunkInfo
 from core.enums import ItemStatus, ItemType, SharePermission
-from core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError, StorageServerError, StorageLimitExceededError
+from core.exceptions import ExistingItemError, ResourceNotFoundError, DataBaseError, ItemIsFolderError, StorageServerError, StorageLimitExceededError, FileTypeNotAllowedError
 from core.permissions import verify_access
 from core.config import settings
 from utils.mappers import map_item_to_response
@@ -121,8 +124,19 @@ async def complete_item_upload(
     if item.status != ItemStatus.PENDING:
         raise ResourceNotFoundError("Pending file not found")
 
-    file_content = await file.read()
+    file_content = await file.read(settings.MAX_FILE_SIZE_BYTES + 1)
+    if len(file_content) > settings.MAX_FILE_SIZE_BYTES:
+        raise StorageLimitExceededError
+    
     file_size = len(file_content)
+
+    ext = Path(file.filename or "").suffix.lower()
+    if ext in settings.BLOCKED_EXTENSIONS:
+        raise FileTypeNotAllowedError(ext)
+
+    kind = filetype.guess(file_content[:2048])
+    if kind and kind.mime in settings.BLOCKED_MIME_TYPES:
+        raise FileTypeNotAllowedError(kind.mime)
 
     used_bytes = await item_repository.get_used_storage(owner_id)
     if used_bytes + file_size > settings.MAX_STORAGE_BYTES:

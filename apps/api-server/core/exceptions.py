@@ -90,6 +90,13 @@ class StorageLimitExceededError(AppException):
             detail="Storage limit exceeded. You have used your 5 GB quota."
         )
 
+class FileTypeNotAllowedError(AppException):
+    def __init__(self, ext: str):
+        super().__init__(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"File type '{ext}' is not allowed"
+        )
+
 class SelfShareError(AppException):
     def __init__(self):
         super().__init__(

@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import { useEffect } from 'react';
 import Breadcrumb from '../FolderView/Breadcrumb';
 import ItemsView from '../itemsView/itemsView';
 import useFolderBrowser from '../../hooks/folder/useFolderBrowser';
@@ -7,18 +8,30 @@ const FolderBrowser = ({
     rootItems,
     rootLabel,
     onRefresh,
+    onFolderChange,
+    loading: rootLoading,
+    error: rootError,
     emptyMessage,
     emptySubMessage
 }) => {
     const {
         currentItems,
         breadcrumb,
-        loading,
-        error,
+        loading: navLoading,
+        error: navError,
         handleFolderClick,
         navigateTo,
         refreshCurrent,
+        currentFolderId,
     } = useFolderBrowser(rootItems, rootLabel, onRefresh);
+
+    const isAtRoot = breadcrumb.length === 0;
+    const loading = isAtRoot ? (rootLoading || navLoading) : navLoading;
+    const error = isAtRoot ? (rootError || navError) : navError;
+
+    useEffect(() => {
+        onFolderChange?.(currentFolderId, refreshCurrent);
+    }, [currentFolderId]);
 
     return (
         <Box>

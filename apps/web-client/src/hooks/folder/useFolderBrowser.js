@@ -63,6 +63,8 @@ const useFolderBrowser = (rootItems, rootLabel, onRefresh) => {
         index: i + 1,
     }));
 
+    const currentFolderId = viewStack[viewStack.length - 1].folderId;
+
     return {
         currentItems,
         breadcrumb,
@@ -71,6 +73,7 @@ const useFolderBrowser = (rootItems, rootLabel, onRefresh) => {
         handleFolderClick,
         navigateTo,
         refreshCurrent,
+        currentFolderId,
     };
 };
 

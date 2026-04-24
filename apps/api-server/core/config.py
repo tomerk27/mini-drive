@@ -21,9 +21,19 @@ class Settings(BaseSettings):
 
     # Per-user storage quota
     MAX_STORAGE_BYTES: int = 5 * 1024 ** 3  # 5 GB
+    MAX_FILE_SIZE_BYTES: int = 500 * 1024 * 1024  # 500 MB
     
+    BLOCKED_EXTENSIONS = {".exe", ".dll", ".bat", ".cmd", ".ps1", ".sh", ".vbs", ".msi", ".scr", ".jar"}
+    
+    BLOCKED_MIME_TYPES = {                                                                                                                                                             
+      "application/x-executable",    # Linux ELF binaries
+      "application/x-dosexec",       # Windows PE (.exe, .dll)                                                                                                                       
+      "application/x-sharedlib",     # .so shared libraries                                                                                                                          
+      "application/x-msi",           # Windows installer   
+  }       
+
     class Config:
-        env_file = ".env"
+        env_file = (".env", ".env.local")
         case_sensitive = False
 
 settings = Settings()

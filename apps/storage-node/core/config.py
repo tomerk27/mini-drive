@@ -5,8 +5,11 @@ from dotenv import load_dotenv
 # Path to the 'storage server' directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOTENV_PATH = os.path.join(BASE_DIR, ".env")
+DOTENV_LOCAL_PATH = os.path.join(BASE_DIR, ".env.local")
 
 load_dotenv(DOTENV_PATH)
+if os.getenv("NODE_ENV") != "production":
+    load_dotenv(DOTENV_LOCAL_PATH, override=True)
 
 class Settings:
     def __init__(self):
