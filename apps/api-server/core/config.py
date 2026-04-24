@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from typing import ClassVar
 
 class Settings(BaseSettings):
     # Taken from the .env file
@@ -23,8 +24,8 @@ class Settings(BaseSettings):
     MAX_STORAGE_BYTES: int = 5 * 1024 ** 3  # 5 GB
     MAX_FILE_SIZE_BYTES: int = 500 * 1024 * 1024  # 500 MB
     
-    BLOCKED_EXTENSIONS = {".exe", ".dll", ".bat", ".cmd", ".ps1", ".sh", ".vbs", ".msi", ".scr", ".jar"}
-    
+    BLOCKED_EXTENSIONS: ClassVar[set] = {'.jar', '.sh', '.ps1', '.cmd', '.exe', '.msi', '.scr', '.vbs', '.dll', '.bat'}
+
     BLOCKED_MIME_TYPES = {                                                                                                                                                             
       "application/x-executable",    # Linux ELF binaries
       "application/x-dosexec",       # Windows PE (.exe, .dll)                                                                                                                       
