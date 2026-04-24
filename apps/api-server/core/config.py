@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     
     BLOCKED_EXTENSIONS: ClassVar[set] = {'.jar', '.sh', '.ps1', '.cmd', '.exe', '.msi', '.scr', '.vbs', '.dll', '.bat'}
 
-    BLOCKED_MIME_TYPES = {                                                                                                                                                             
+    BLOCKED_MIME_TYPES: ClassVar[set] = {                                                                                                                                                             
       "application/x-executable",    # Linux ELF binaries
       "application/x-dosexec",       # Windows PE (.exe, .dll)                                                                                                                       
       "application/x-sharedlib",     # .so shared libraries                                                                                                                          
