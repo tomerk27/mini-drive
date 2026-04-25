@@ -1,120 +1,103 @@
-import asyncio
-from typing import Optional, Tuple, AsyncGenerator
-from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport, ProtocolError
+import socket
+import threading
+from typing import Optional, Tuple
+from shared.protocol import CommandType, Field, Packet, SecureTransport, ProtocolError
 from gateways.storage.servers.connection_pool import connection_pool
 
-# Errors that mean the TCP connection itself is dead and the node must re-register.
-# Protocol-level or application-level errors should NOT evict a healthy connection.
-_FATAL_CONNECTION_ERRORS = (OSError, asyncio.IncompleteReadError, EOFError)
+_FATAL_CONNECTION_ERRORS = (OSError, EOFError, ConnectionResetError, BrokenPipeError)
 
 
 class StorageClient:
     """
-    Low-level driver for communicating with a Storage Node over async TCP streams.
-    Fetches an active stream pair from the ConnectionPool.
+    Synchronous driver for communicating with a Storage Node over a persistent TCP socket.
+    Acquires a per-node lock before each operation to prevent concurrent stream corruption.
     """
     def __init__(self, node_id: str, encryption_key: bytes):
         self.node_id = node_id
         self.key = encryption_key
 
-    async def _get_streams(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
-        streams = await connection_pool.get_node_streams(self.node_id)
-        if not streams:
+    def _get_socket_and_lock(self) -> Tuple[socket.socket, threading.Lock]:
+        sock = connection_pool.get_node_socket(self.node_id)
+        lock = connection_pool.get_node_lock(self.node_id)
+        if not sock or not lock:
             raise ConnectionError(f"Node {self.node_id} is not connected to the main server.")
-        return streams
+        return sock, lock
 
-    async def upload(self, filename: str, file_size: int, file_stream) -> bool:
-        """Streams a file through the persistent node connection."""
-        reader, writer = await self._get_streams()
-        transport = AsyncSecureTransport(reader, writer, self.key)
+    def upload(self, filename: str, file_size: int, file_stream) -> bool:
+        sock, lock = self._get_socket_and_lock()
+        with lock:
+            transport = SecureTransport(sock, self.key)
+            try:
+                header = Packet(CommandType.UPLOAD, {
+                    Field.FILENAME: filename,
+                    Field.FILE_SIZE: file_size
+                })
+                transport.send_packet(header)
 
-        try:
-            header = Packet(CommandType.UPLOAD, {
-                Field.FILENAME: filename,
-                Field.FILE_SIZE: file_size
-            })
-            await transport.send_packet(header)
-
-            while True:
-                if asyncio.iscoroutinefunction(file_stream.read):
-                    chunk = await file_stream.read(4096)
-                else:
+                while True:
                     chunk = file_stream.read(4096)
+                    if not chunk:
+                        break
+                    transport.send_chunk(chunk)
 
-                if not chunk:
-                    break
-                await transport.send_chunk(chunk)
-
-            res = await transport.receive_packet()
-            if not res:
+                res = transport.receive_packet()
+                if not res:
+                    return False
+                return res.fields.get(Field.STATUS) == 0
+            except Exception as e:
+                print(f"[!] StorageClient Upload Error for {self.node_id}: {e}")
+                if isinstance(e, _FATAL_CONNECTION_ERRORS):
+                    connection_pool.remove_node(self.node_id)
                 return False
 
-            return res.fields.get(Field.STATUS) == 0
-        except Exception as e:
-            print(f"[!] StorageClient Upload Error for {self.node_id}: {e}")
-            if isinstance(e, _FATAL_CONNECTION_ERRORS):
-                await connection_pool.remove_node(self.node_id)
-            return False
+    def download(self, filename: str) -> Optional[bytes]:
+        sock, lock = self._get_socket_and_lock()
+        with lock:
+            transport = SecureTransport(sock, self.key)
+            try:
+                header = Packet(CommandType.DOWNLOAD, {Field.FILENAME: filename})
+                transport.send_packet(header)
 
-    async def download_generator(self, filename: str) -> Tuple[Optional[AsyncGenerator[bytes, None]], int]:
-        """Returns an async generator that yields binary chunks from the node."""
-        reader, writer = await self._get_streams()
-        transport = AsyncSecureTransport(reader, writer, self.key)
+                res_header = transport.receive_packet()
+                if not res_header:
+                    return None
 
-        try:
-            header = Packet(CommandType.DOWNLOAD, {Field.FILENAME: filename})
-            await transport.send_packet(header)
+                status = res_header.fields.get(Field.STATUS)
+                file_size = res_header.fields.get(Field.FILE_SIZE)
 
-            res_header = await transport.receive_packet()
-            if not res_header:
-                return None, 0
+                if status != 0:
+                    return None
 
-            status = res_header.fields.get(Field.STATUS)
-            file_size = res_header.fields.get(Field.FILE_SIZE)
+                data = b""
+                while len(data) < file_size:
+                    chunk = transport.receive_chunk()
+                    if not chunk:
+                        break
+                    data += chunk
 
-            if status != 0:
-                return None, 0
+                status_code = 0 if len(data) == file_size else 1
+                transport.send_packet(Packet(CommandType.DOWNLOAD, {Field.STATUS: status_code}))
 
-            async def chunk_generator():
-                try:
-                    bytes_read = 0
-                    while bytes_read < file_size:
-                        chunk = await transport.receive_chunk()
-                        if not chunk:
-                            break
-                        yield chunk
-                        bytes_read += len(chunk)
+                return data if len(data) == file_size else None
+            except Exception as e:
+                print(f"[!] StorageClient Download Error for {self.node_id}: {e}")
+                if isinstance(e, _FATAL_CONNECTION_ERRORS):
+                    connection_pool.remove_node(self.node_id)
+                return None
 
-                    status_code = 0 if bytes_read == file_size else 1
-                    res_packet = Packet(CommandType.DOWNLOAD, {Field.STATUS: status_code})
-                    await transport.send_packet(res_packet)
-                except Exception as e:
-                    print(f"[!] Download Stream Error for {self.node_id}: {e}")
-                    if isinstance(e, _FATAL_CONNECTION_ERRORS):
-                        await connection_pool.remove_node(self.node_id)
-                    raise
+    def delete(self, filename: str) -> bool:
+        sock, lock = self._get_socket_and_lock()
+        with lock:
+            transport = SecureTransport(sock, self.key)
+            try:
+                header = Packet(CommandType.DELETE, {Field.FILENAME: filename})
+                transport.send_packet(header)
 
-            return chunk_generator(), file_size
-        except Exception as e:
-            if isinstance(e, _FATAL_CONNECTION_ERRORS):
-                await connection_pool.remove_node(self.node_id)
-            raise
-
-    async def delete(self, filename: str) -> bool:
-        """Requests a file deletion through the persistent node connection."""
-        reader, writer = await self._get_streams()
-        transport = AsyncSecureTransport(reader, writer, self.key)
-
-        try:
-            header = Packet(CommandType.DELETE, {Field.FILENAME: filename})
-            await transport.send_packet(header)
-
-            res = await transport.receive_packet()
-            if not res:
+                res = transport.receive_packet()
+                if not res:
+                    return False
+                return res.fields.get(Field.STATUS) == 0
+            except Exception as e:
+                print(f"[!] StorageClient Delete Error for {self.node_id}: {e}")
+                connection_pool.remove_node(self.node_id)
                 return False
-
-            return res.fields.get(Field.STATUS) == 0
-        except Exception as e:
-            print(f"[!] StorageClient Delete Error for {self.node_id}: {e}")
-            await connection_pool.remove_node(self.node_id)
-            return False

@@ -1,67 +1,57 @@
-import asyncio
+import socket
+import threading
 from core.config import settings
-from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport, ProtocolError
+from shared.protocol import CommandType, Field, Packet, SecureTransport, ProtocolError
 from gateways.storage.servers.connection_pool import connection_pool
 
 
 class DataServer:
     """
-    Async TCP listener on the main server that waits for Storage Nodes to connect.
-    Maintains persistent connections used for UPLOAD/DOWNLOAD/DELETE operations.
+    TCP listener that waits for Storage Nodes to connect and register.
+    Maintains persistent socket connections used for UPLOAD/DOWNLOAD/DELETE operations.
+    Each incoming connection is handled in a dedicated daemon thread.
     """
     def __init__(self):
         self.host = "0.0.0.0"
         self.port = settings.STORAGE_SERVER_PORT
         self.key = settings.STORAGE_ENCRYPTION_KEY.encode()
 
-    async def _watch_node_connection(self, node_id: str, reader: asyncio.StreamReader):
-        """
-        Polls the reader until the node's TCP connection closes, then removes it
-        from the pool. Polling avoids consuming bytes that StorageClient needs.
-        Detects both graceful EOF and abrupt resets (reader.exception() set).
-        """
-        while True:
-            await asyncio.sleep(5)
-            if reader.at_eof() or reader.exception() is not None:
-                break
-        await connection_pool.remove_node(node_id)
-        print(f"[*] DataServer: Node {node_id} disconnected — removed from pool")
-
-    async def handle_registration(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        """Waits for the node to identify itself via a REGISTER packet."""
-        address = writer.get_extra_info('peername')
-        transport = AsyncSecureTransport(reader, writer, self.key)
-
+    def handle_connection(self, conn: socket.socket, address):
+        transport = SecureTransport(conn, self.key)
         try:
-            packet = await transport.receive_packet()
+            packet = transport.receive_packet()
             if not packet:
-                writer.close()
-                await writer.wait_closed()
+                conn.close()
                 return
 
             if packet.command == CommandType.REGISTER:
                 node_id = packet.fields.get(Field.NODE_ID)
                 if node_id:
-                    await connection_pool.register_node(node_id, reader, writer)
+                    connection_pool.register_node(node_id, conn)
                     print(f"[*] DataServer: Node {node_id} reported for duty from {address[0]}")
-                    asyncio.create_task(self._watch_node_connection(node_id, reader))
-                    return  # Keep the writer open — used for future commands
+                    # Keep conn open — StorageClient will use it for future commands.
+                    # When the socket dies, the next failed operation will remove it from the pool.
+                    return
 
-            writer.close()
-            await writer.wait_closed()
+            conn.close()
         except Exception as e:
             print(f"[!] DataServer Error during registration from {address[0]}: {e}")
-            writer.close()
+            conn.close()
+
+    def start(self):
+        server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_sock.bind((self.host, self.port))
+        server_sock.listen(10)
+        print(f"[*] DataServer is listening on {self.host}:{self.port} (waiting for nodes...)")
+
+        while True:
             try:
-                await writer.wait_closed()
-            except Exception:
-                pass
-
-    async def start(self):
-        """Starts the async listener loop."""
-        server = await asyncio.start_server(self.handle_registration, self.host, self.port)
-        addr = server.sockets[0].getsockname()
-        print(f"[*] DataServer is listening on {addr} (waiting for nodes...)")
-
-        async with server:
-            await server.serve_forever()
+                conn, address = server_sock.accept()
+                threading.Thread(
+                    target=self.handle_connection,
+                    args=(conn, address),
+                    daemon=True
+                ).start()
+            except Exception as e:
+                print(f"[!] DataServer accept error: {e}")

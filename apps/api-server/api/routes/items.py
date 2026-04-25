@@ -12,22 +12,19 @@ router = APIRouter(prefix="/items", tags=["Items"])
 @router.post(
     "/upload/init", response_model=ItemResponse, status_code=status.HTTP_201_CREATED
 )
-async def upload_file(
+def upload_file(
     item_data: ItemCreate, current_user: User = Depends(get_current_user)
 ) -> ItemResponse:
-    new_item = await init_item(item_data, current_user.id)
-    return new_item
+    return init_item(item_data, current_user.id)
 
 
 @router.post(
     "/upload/folder", response_model=ItemResponse, status_code=status.HTTP_201_CREATED
 )
-async def upload_folder(
+def upload_folder(
     folder_data: FolderCreate, current_user: User = Depends(get_current_user)
 ):
-    new_item = await init_item(folder_data, current_user.id)
-
-    return new_item
+    return init_item(folder_data, current_user.id)
 
 
 @router.post(
@@ -35,16 +32,12 @@ async def upload_folder(
     response_model=ItemResponse,
     status_code=status.HTTP_200_OK,
 )
-async def upload_content(
+def upload_content(
     item_id: str,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
 ) -> ItemResponse:
-    completed_item = await complete_item_upload(
-        item_id, current_user.id, file, current_user.id
-    )
-
-    return completed_item
+    return complete_item_upload(item_id, current_user.id, file, current_user.id)
 
 
 @router.get(
@@ -52,63 +45,56 @@ async def upload_content(
     response_model=FolderContentResponse,
     status_code=status.HTTP_200_OK,
 )
-async def get_folder(
+def get_folder(
     folder_id: str = Path(...), current_user: User = Depends(get_current_user)
 ) -> ItemResponse:
-    folder = await get_folder_service(folder_id, current_user.id)
+    return get_folder_service(folder_id, current_user.id)
 
-    return folder
 
 @router.get('/search', status_code=status.HTTP_200_OK)
-async def search_items(
-    query: str, 
+def search_items(
+    query: str,
     current_user: User = Depends(get_current_user)
 ):
-    return await search_items_service(query, current_user.id)
+    return search_items_service(query, current_user.id)
 
 
 @router.delete("/remove/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_item(item_id: str, current_user: User = Depends(get_current_user)):
-    await remove_item_service(item_id, current_user.id)
-
+def remove_item(item_id: str, current_user: User = Depends(get_current_user)):
+    remove_item_service(item_id, current_user.id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.patch("/rename/{item_id}", status_code=status.HTTP_200_OK)
-async def rename_item(
+def rename_item(
     item_id: str,
     rename_schema: ItemRename,
     current_user: User = Depends(get_current_user),
 ):
-    await rename_item_service(item_id, current_user.id, rename_schema.new_name)
-
+    rename_item_service(item_id, current_user.id, rename_schema.new_name)
     return Response(status_code=status.HTTP_200_OK)
 
 
 @router.get("/preview/{item_id}", status_code=status.HTTP_200_OK)
-async def get_file_preview(
+def get_file_preview(
     item_id: str, current_user: User = Depends(get_current_user)
 ):
-    file_preview = await get_file_preview_service(item_id, current_user.id)
-
-    return file_preview
+    return get_file_preview_service(item_id, current_user.id)
 
 
 @router.patch("/markAsStarred/{item_id}", status_code=status.HTTP_200_OK)
-async def mark_item_as_starred(
+def mark_item_as_starred(
     item_id: str, current_user: User = Depends(get_current_user)
 ):
-    await mark_item_as_starred_service(item_id, current_user.id)
-
+    mark_item_as_starred_service(item_id, current_user.id)
     return Response(status_code=status.HTTP_200_OK)
 
 
 @router.post("/{item_id}/share", status_code=status.HTTP_200_OK)
-async def share_item(
+def share_item(
     item_id: str,
     share_schema: ShareRequest,
     current_user: User = Depends(get_current_user),
 ):
-    await share_item_service(share_schema, item_id, current_user.id)
- 
+    share_item_service(share_schema, item_id, current_user.id)
     return Response(status_code=status.HTTP_200_OK)

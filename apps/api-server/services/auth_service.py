@@ -8,8 +8,8 @@ from core.exceptions import UserNotFoundError, ExistingUserError
 from services.items_service import init_item
 
 
-async def register_new_user(user_data: UserCreate):
-    existing_user = await user_repository.get_by_email(user_data.email)
+def register_new_user(user_data: UserCreate):
+    existing_user = user_repository.get_by_email(user_data.email)
     if existing_user:
         raise ExistingUserError()
 
@@ -21,12 +21,12 @@ async def register_new_user(user_data: UserCreate):
         hashed_password=hashed_password
     )
 
-    user_id = await user_repository.insert(user_in_db)
+    user_id = user_repository.insert(user_in_db)
     user_in_db.id = user_id
 
-    root_folder = await init_item(FolderCreate(name='root'), user_in_db.id)
+    root_folder = init_item(FolderCreate(name='root'), user_in_db.id)
 
-    await user_repository.update(user_id, {"root_id": root_folder.id})
+    user_repository.update(user_id, {"root_id": root_folder.id})
 
     return UserResponse(
         access_token=create_access_token(data={"sub": user_in_db.id, "root_folder_id": root_folder.id}),
@@ -34,8 +34,8 @@ async def register_new_user(user_data: UserCreate):
     )
 
 
-async def login_user(user_data: UserLogin):
-    user_doc = await user_repository.get_by_email(user_data.email)
+def login_user(user_data: UserLogin):
+    user_doc = user_repository.get_by_email(user_data.email)
     if not user_doc:
         raise UserNotFoundError()
 

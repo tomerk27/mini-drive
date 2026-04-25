@@ -8,9 +8,9 @@ router = APIRouter(
 )
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register(user: UserCreate):
-    return await register_new_user(user)
+def register(user: UserCreate):
+    return register_new_user(user)
 
 @router.post("/login", response_model=UserResponse, status_code=status.HTTP_200_OK)
-async def login(user: UserLogin):
-    return await login_user(user)
+def login(user: UserLogin):
+    return login_user(user)

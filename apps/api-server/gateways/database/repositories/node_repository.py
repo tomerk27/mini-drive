@@ -11,9 +11,8 @@ class NodeRepository:
     def __init__(self):
         self.collection = get_collection("nodes")
 
-    async def upsert_heartbeat(self, node_id: str, ip: str, port: int, capacity: int):
-        """Inserts or updates a node's heartbeat data."""
-        await self.collection.update_one(
+    def upsert_heartbeat(self, node_id: str, ip: str, port: int, capacity: int):
+        self.collection.update_one(
             {"node_id": node_id},
             {
                 "$set": {
@@ -27,8 +26,7 @@ class NodeRepository:
             upsert=True
         )
 
-    async def get_best_nodes(self, limit: int = 3, exclude_node_ids: list[str] = None) -> list[str]:
-        """Returns up to `limit` online node IDs sorted by available capacity."""
+    def get_best_nodes(self, limit: int = 3, exclude_node_ids: list[str] = None) -> list[str]:
         active_threshold = current_time() - timedelta(minutes=2)
 
         query = {
@@ -40,39 +38,35 @@ class NodeRepository:
             query["node_id"] = {"$nin": exclude_node_ids}
 
         cursor = self.collection.find(query).sort("available_capacity", -1).limit(limit)
-        nodes = await cursor.to_list(length=limit)
-        return [node["node_id"] for node in nodes]
+        return [node["node_id"] for node in cursor]
 
-    async def get_by_id(self, node_id: str) -> Optional[StorageNodeModel]:
-        raw = await self.collection.find_one({"node_id": node_id})
+    def get_by_id(self, node_id: str) -> Optional[StorageNodeModel]:
+        raw = self.collection.find_one({"node_id": node_id})
         if not raw:
             return None
         raw["id"] = str(raw["_id"])
         return StorageNodeModel(**raw)
 
-    async def mark_offline(self, node_id: str):
-        """Sets a node's status to OFFLINE."""
-        await self.collection.update_one(
+    def mark_offline(self, node_id: str):
+        self.collection.update_one(
             {"node_id": node_id},
             {"$set": {"status": NodeStatus.OFFLINE}}
         )
 
-    async def get_dead_nodes(self) -> list[str]:
-        """Returns IDs of online nodes that missed their heartbeat window, and marks them OFFLINE."""
+    def get_dead_nodes(self) -> list[str]:
         active_threshold = current_time() - timedelta(minutes=2)
 
-        cursor = self.collection.find({
+        dead_nodes = list(self.collection.find({
             "status": NodeStatus.ONLINE,
             "last_heartbeat": {"$lt": active_threshold}
-        })
+        }))
 
-        dead_nodes = await cursor.to_list(length=100)
         if not dead_nodes:
             return []
 
         dead_node_ids = [node["node_id"] for node in dead_nodes]
 
-        await self.collection.update_many(
+        self.collection.update_many(
             {"node_id": {"$in": dead_node_ids}},
             {"$set": {"status": NodeStatus.OFFLINE}}
         )

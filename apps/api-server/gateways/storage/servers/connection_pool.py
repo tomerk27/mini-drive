@@ -1,44 +1,53 @@
-import asyncio
-from typing import Dict, Tuple, Optional
+import socket
+import threading
+from typing import Dict, Optional
 
 
 class ConnectionPool:
     """
-    Async-safe registry that stores and manages active stream connections
-    from Storage Nodes. One persistent connection per node.
+    Thread-safe registry that stores active socket connections from Storage Nodes.
+    One persistent connection per node, with a per-node lock to serialize operations.
     """
     _instance = None
-    _lock = asyncio.Lock()
+    _instance_lock = threading.Lock()
+    _connections: Dict[str, socket.socket]
+    _node_locks: Dict[str, threading.Lock]
+    _pool_lock: threading.Lock
 
     def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(ConnectionPool, cls).__new__(cls)
-            cls._instance.connections: Dict[str, Tuple[asyncio.StreamReader, asyncio.StreamWriter]] = {}
+        with cls._instance_lock:
+            if cls._instance is None:
+                cls._instance = super(ConnectionPool, cls).__new__(cls)
+                cls._instance._connections = {}
+                cls._instance._node_locks = {}
+                cls._instance._pool_lock = threading.Lock()
         return cls._instance
 
-    async def register_node(self, node_id: str, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        async with self._lock:
-            if node_id in self.connections:
-                _, old_writer = self.connections[node_id]
+    def register_node(self, node_id: str, sock: socket.socket):
+        with self._pool_lock:
+            if node_id in self._connections:
                 try:
-                    old_writer.close()
-                    await old_writer.wait_closed()
+                    self._connections[node_id].close()
                 except Exception:
                     pass
-            self.connections[node_id] = (reader, writer)
+            self._connections[node_id] = sock
+            if node_id not in self._node_locks:
+                self._node_locks[node_id] = threading.Lock()
             print(f"[*] ConnectionPool: Registered node {node_id}")
 
-    async def get_node_streams(self, node_id: str) -> Optional[Tuple[asyncio.StreamReader, asyncio.StreamWriter]]:
-        async with self._lock:
-            return self.connections.get(node_id)
+    def get_node_socket(self, node_id: str) -> Optional[socket.socket]:
+        with self._pool_lock:
+            return self._connections.get(node_id)
 
-    async def remove_node(self, node_id: str):
-        async with self._lock:
-            if node_id in self.connections:
-                _, writer = self.connections.pop(node_id)
+    def get_node_lock(self, node_id: str) -> Optional[threading.Lock]:
+        with self._pool_lock:
+            return self._node_locks.get(node_id)
+
+    def remove_node(self, node_id: str):
+        with self._pool_lock:
+            if node_id in self._connections:
                 try:
-                    writer.close()
-                    await writer.wait_closed()
+                    self._connections.pop(node_id).close()
                 except Exception:
                     pass
                 print(f"[*] ConnectionPool: Removed node {node_id}")

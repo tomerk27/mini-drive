@@ -1,6 +1,6 @@
 import os
 import sys
-import asyncio
+import threading
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
@@ -20,10 +20,10 @@ app = FastAPI()
 
 
 @app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(HeartbeatServer().start())
-    asyncio.create_task(DataServer().start())
-    asyncio.create_task(run_node_monitor())
+def startup_event():
+    threading.Thread(target=HeartbeatServer().start, daemon=True).start()
+    threading.Thread(target=DataServer().start, daemon=True).start()
+    threading.Thread(target=run_node_monitor, daemon=True).start()
 
 
 app.add_middleware(

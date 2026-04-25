@@ -1,27 +1,26 @@
-import asyncio
+import socket
+import threading
 from core.config import settings
-from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport, ProtocolError
+from shared.protocol import CommandType, Field, Packet, SecureTransport, ProtocolError
 from gateways.storage.services.node_registry import NodeRegistry
 
 
 class HeartbeatServer:
     """
-    Async TCP server that listens for periodic heartbeat pulses from storage nodes.
-    Each heartbeat updates the node's status and available capacity in the database.
+    TCP server that listens for periodic heartbeat pulses from storage nodes.
+    Each heartbeat is handled in a short-lived daemon thread and updates the
+    node's status and available capacity in the database.
     """
     def __init__(self):
         self.host = "0.0.0.0"
         self.port = 9001
         self.key = settings.STORAGE_ENCRYPTION_KEY.encode()
 
-    async def handle_heartbeat(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        """Processes a single heartbeat pulse from a storage node."""
-        address = writer.get_extra_info('peername')
+    def handle_heartbeat(self, conn: socket.socket, address):
         node_ip = address[0]
-        transport = AsyncSecureTransport(reader, writer, self.key)
-
+        transport = SecureTransport(conn, self.key)
         try:
-            packet = await transport.receive_packet()
+            packet = transport.receive_packet()
             if not packet:
                 return
 
@@ -30,10 +29,10 @@ class HeartbeatServer:
                 node_port = packet.fields.get(Field.NODE_PORT)
                 capacity = packet.fields.get(Field.CAPACITY)
 
-                await NodeRegistry.update_node_status(node_id, node_ip, node_port, capacity)
+                NodeRegistry.update_node_status(node_id, node_ip, node_port, capacity)
 
                 ack = Packet(CommandType.HEARTBEAT, {Field.STATUS: 0})
-                await transport.send_packet(ack)
+                transport.send_packet(ack)
             else:
                 print(f"[!] HeartbeatServer: Unexpected command from {node_ip}: {packet.command}")
 
@@ -42,14 +41,22 @@ class HeartbeatServer:
         except Exception as e:
             print(f"[!] HeartbeatServer Error from {node_ip}: {e}")
         finally:
-            writer.close()
-            await writer.wait_closed()
+            conn.close()
 
-    async def start(self):
-        """Starts the async TCP listener for incoming heartbeats."""
-        server = await asyncio.start_server(self.handle_heartbeat, self.host, self.port)
-        addr = server.sockets[0].getsockname()
-        print(f"[*] HeartbeatServer is listening on {addr}")
+    def start(self):
+        server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_sock.bind((self.host, self.port))
+        server_sock.listen(50)
+        print(f"[*] HeartbeatServer is listening on {self.host}:{self.port}")
 
-        async with server:
-            await server.serve_forever()
+        while True:
+            try:
+                conn, address = server_sock.accept()
+                threading.Thread(
+                    target=self.handle_heartbeat,
+                    args=(conn, address),
+                    daemon=True
+                ).start()
+            except Exception as e:
+                print(f"[!] HeartbeatServer accept error: {e}")
