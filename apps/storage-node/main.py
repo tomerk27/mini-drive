@@ -24,16 +24,27 @@ async def heartbeat_loop():
             print(f"[!] Heartbeat Error: {e}")
         await asyncio.sleep(30)
 
+def _enable_keepalive(sock):
+    import socket as _socket
+    sock.setsockopt(_socket.SOL_SOCKET, _socket.SO_KEEPALIVE, 1)
+    if hasattr(_socket, "TCP_KEEPIDLE"):
+        sock.setsockopt(_socket.IPPROTO_TCP, _socket.TCP_KEEPIDLE, 60)
+    if hasattr(_socket, "TCP_KEEPINTVL"):
+        sock.setsockopt(_socket.IPPROTO_TCP, _socket.TCP_KEEPINTVL, 10)
+    if hasattr(_socket, "TCP_KEEPCNT"):
+        sock.setsockopt(_socket.IPPROTO_TCP, _socket.TCP_KEEPCNT, 5)
+
 async def connect_to_main_server():
     """
     Acts as a Worker: Connects to the Main Server and waits for commands.
     """
     key = settings.STORAGE_ENCRYPTION_KEY.encode()
-    
+
     while True:
         try:
             print(f"[*] Attempting to connect to Main Server at {settings.TRACKER_HOST}:9000...")
             reader, writer = await asyncio.open_connection(settings.TRACKER_HOST, 9000)
+            _enable_keepalive(writer.get_extra_info("socket"))
             transport = AsyncSecureTransport(reader, writer, key)
             
             # Registration

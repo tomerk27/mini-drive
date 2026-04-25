@@ -16,6 +16,15 @@ class DataServer:
         self.port = settings.STORAGE_SERVER_PORT
         self.key = settings.STORAGE_ENCRYPTION_KEY.encode()
 
+    def _enable_keepalive(self, conn: socket.socket):
+        conn.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        if hasattr(socket, "TCP_KEEPIDLE"):
+            conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60)
+        if hasattr(socket, "TCP_KEEPINTVL"):
+            conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 10)
+        if hasattr(socket, "TCP_KEEPCNT"):
+            conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
+
     def handle_connection(self, conn: socket.socket, address):
         transport = SecureTransport(conn, self.key)
         try:
@@ -27,6 +36,7 @@ class DataServer:
             if packet.command == CommandType.REGISTER:
                 node_id = packet.fields.get(Field.NODE_ID)
                 if node_id:
+                    self._enable_keepalive(conn)
                     connection_pool.register_node(node_id, conn)
                     print(f"[*] DataServer: Node {node_id} reported for duty from {address[0]}")
                     # Keep conn open — StorageClient will use it for future commands.
