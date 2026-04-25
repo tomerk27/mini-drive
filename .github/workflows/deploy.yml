@@ -1,0 +1,21 @@
+name: Deploy to Oracle Cloud
+
+on:
+  push:
+    branches:
+      - main  # change to your branch name
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /path/to/your/project   # ← change this
+            git pull origin main
+            sudo systemctl restart your-app  # ← or however you restart
