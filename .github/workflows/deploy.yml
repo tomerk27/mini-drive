@@ -16,6 +16,9 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /path/to/your/project   # ← change this
+            cd ~/mini-drive
             git pull origin main
-            sudo systemctl restart your-app  # ← or however you restart
+            cd apps/api-server
+            source venv/bin/activate
+            pip install -r requirements.txt
+            sudo systemctl restart fastapi
