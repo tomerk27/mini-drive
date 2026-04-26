@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Button, Typography } from '@mui/material';
+import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Button, Typography, Divider } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import HomeIcon from '@mui/icons-material/Home';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -7,6 +7,7 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import CloudQueueIcon from '@mui/icons-material/CloudQueue';
 import AddIcon from '@mui/icons-material/Add';
 import useStorage from '../../hooks/user/useStorage';
+import LogoutButton from '../authentication/logoutButton';
 
 const drawerWidth = 256;
 
@@ -114,6 +115,12 @@ const SideBar = ({ onNewClick }) => {
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
                     {storageLoading ? 'Loading...' : `${usedFormatted} of ${maxFormatted} used`}
                 </Typography>
+            </Box>
+
+            <Divider sx={{ mx: 1, mb: 2 }} />
+
+            <Box sx={{ mb: 2, px: 0.5 }}>
+                <LogoutButton />
             </Box>
         </Drawer>
     );

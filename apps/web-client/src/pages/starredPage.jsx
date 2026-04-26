@@ -1,7 +1,6 @@
 import { Box } from '@mui/material';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';
-import LogoutButton from '../components/authentication/logoutButton';
 import NewItemControls from '../components/newItemControls/NewItemControls';
 import useStarredItems from '../hooks/items/useStarredItems';
 import FolderBrowser from '../components/folderBrowser/FolderBrowser';
@@ -26,10 +25,6 @@ const StarredPage = () => {
             <NewItemControls actions={newItemActions} />
 
             <Box component="main" sx={{ flexGrow: 1, pt: 12, px: 4, pb: 4, width: 'calc(100% - 256px)' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 4 }}>
-                    <LogoutButton />
-                </Box>
-
                 <FolderBrowser
                     rootItems={starredItems?.items}
                     rootLabel="Starred"

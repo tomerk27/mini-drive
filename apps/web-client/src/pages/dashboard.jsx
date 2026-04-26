@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import FolderBrowser from '../components/folderBrowser/FolderBrowser';
-import LogoutButton from '../components/authentication/logoutButton';
 import NewItemControls from '../components/newItemControls/NewItemControls';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';
@@ -56,7 +55,6 @@ const Dashboard = () => {
                     {searchTerm && !isSearching && !searchError && searchResults.length === 0 && (
                         <Typography>No results found for "{searchTerm}".</Typography>
                     )}
-                    <LogoutButton />
                 </Box>
 
                 <FolderBrowser

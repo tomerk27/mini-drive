@@ -8,15 +8,20 @@ const LogoutButton = () => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <Button
-                variant="outlined"
+                variant="text"
                 color="error"
+                fullWidth
                 onClick={handleLogOut}
                 disabled={isLoading}
                 startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <LogoutIcon />}
                 sx={{
-                    borderRadius: 20,
+                    borderRadius: 3,
                     textTransform: 'none',
-                    fontWeight: 'bold',
+                    fontWeight: 500,
+                    justifyContent: 'flex-start',
+                    px: 2,
+                    py: 1,
+                    '&:hover': { bgcolor: 'error.50' },
                 }}
             >
                 {isLoading ? 'Logging out...' : 'Log out'}

@@ -1,7 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';
-import LogoutButton from '../components/authentication/logoutButton';
 import useSearchResults from '../hooks/search/useSearchResults';
 import ItemsView from '../components/itemsView/itemsView';
 
@@ -15,11 +14,10 @@ const SearchPage = () => {
             <SideBar />
 
             <Box component="main" sx={{ flexGrow: 1, pt: 12, px: 4, pb: 4, width: 'calc(100% - 256px)' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Box sx={{ mb: 4 }}>
                     <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', letterSpacing: '-0.025em' }}>
                         Results for "{query}"
                     </Typography>
-                    <LogoutButton />
                 </Box>
 
                 <Box sx={{ 
