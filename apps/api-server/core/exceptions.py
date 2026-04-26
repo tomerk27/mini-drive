@@ -32,13 +32,6 @@ class ExistingItemError(AppException):
             detail=f"A file named '{filename}' already exists in this destination."        
         )
 
-class ItemIsNotExistError(AppException):
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="The item is not exist"        
-        )
-
 class TokenCredentialsError(AppException):
     def __init__(self):
         super().__init__(

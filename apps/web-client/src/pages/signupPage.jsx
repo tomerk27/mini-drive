@@ -6,6 +6,7 @@ import {
   Alert
 } from '@mui/material';
 import FormsBox from '../components/authentication/formsBox';
+import CyberDriveMark from '../components/topBar/CyberDriveMark';
 import useSignup from '../hooks/auth/useSignup';
 
 const SignupPage = () => {
@@ -41,6 +42,10 @@ const SignupPage = () => {
             bgcolor: 'background.paper'
           }}
         >
+
+          <Box sx={{ mb: 1, filter: 'drop-shadow(0 8px 14px rgb(99 102 241 / 0.45))' }}>
+            <CyberDriveMark size={56} />
+          </Box>
 
           <Typography component="h1" variant="h5" sx={{ mb: 1, color: 'text.primary' }}>
             Sign up

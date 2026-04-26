@@ -1,8 +1,8 @@
 import { AppBar, Toolbar } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import Search from './Search'; // Import the new Search component
-import LogoAndName from './LogoAndName'; // Import the new LogoAndName component
-import ActionsAndProfile from './ActionsAndProfile'; // Import the new ActionsAndProfile component
+import Search from './Search';
+import LogoAndName from './LogoAndName';
+import ActionsAndProfile from './ActionsAndProfile';
 import useSearch from '../../hooks/search/useSearch';
 
 

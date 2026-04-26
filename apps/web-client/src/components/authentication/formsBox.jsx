@@ -1,6 +1,6 @@
 import { Box, Link as MuiLink } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { EmailField, UsernameField, PasswordField, RememberMeField } from './inputFields';
+import { EmailField, UsernameField, PasswordField } from './inputFields';
 import SubmitButton from './submitButton';
 
 const FormsBox = ({ handleSubmit, emailRef, usernameRef, passwordRef, isLoading, mode }) => {
@@ -19,8 +19,6 @@ const FormsBox = ({ handleSubmit, emailRef, usernameRef, passwordRef, isLoading,
             {isSignup && <UsernameField usernameRef={usernameRef} isLoading={isLoading} />}
 
             <PasswordField passwordRef={passwordRef} isLoading={isLoading} />
-
-            <RememberMeField />
 
             <SubmitButton isLoading={isLoading} mode={mode} />
 

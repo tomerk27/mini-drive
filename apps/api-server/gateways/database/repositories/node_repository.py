@@ -1,6 +1,5 @@
-from bson import ObjectId
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import timedelta
 from gateways.database.database import get_collection
 from models.node import StorageNodeModel
 from core.enums import NodeStatus

@@ -3,9 +3,7 @@ import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box
 import { alpha } from '@mui/material/styles';
 import HomeIcon from '@mui/icons-material/Home';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloudQueueIcon from '@mui/icons-material/CloudQueue';
 import AddIcon from '@mui/icons-material/Add';
 import useStorage from '../../hooks/user/useStorage';
@@ -63,8 +61,6 @@ const SideBar = ({ onNewClick }) => {
                     { text: 'My Files', icon: <HomeIcon fontSize="small" />, selected: location.pathname.startsWith('/dashboard'), onClick: () => navigate('/dashboard')},
                     { text: 'Shared', icon: <PeopleAltIcon fontSize="small" />, selected: location.pathname === '/shared', onClick: () => navigate('/shared') },
                     { text: 'Starred', icon: <StarBorderIcon fontSize="small" />, selected: location.pathname === '/starred', onClick: () => navigate('/starred') },
-                    { text: 'Recent', icon: <AccessTimeIcon fontSize="small" /> },
-                    { text: 'Trash', icon: <DeleteOutlineIcon fontSize="small" /> },
                 ].map((item) => (
                     <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
                         <ListItemButton 
