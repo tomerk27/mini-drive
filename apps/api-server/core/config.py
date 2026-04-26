@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     
 
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     AUTH_SCHEME: str = "Bearer"
     TOKEN_TYPE: str = "bearer"
 
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # Per-user storage quota
     MAX_STORAGE_BYTES: int = 5 * 1024 ** 3  # 5 GB
-    MAX_FILE_SIZE_BYTES: int = 500 * 1024 * 1024  # 500 MB
+    MAX_FILE_SIZE_BYTES: int = 3 * 1024 ** 3  # 3 GB (capped by per-user quota)
     
     BLOCKED_EXTENSIONS: ClassVar[set] = {'.jar', '.sh', '.ps1', '.cmd', '.exe', '.msi', '.scr', '.vbs', '.dll', '.bat'}
 

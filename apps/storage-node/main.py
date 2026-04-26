@@ -57,12 +57,13 @@ async def connect_to_main_server():
             while True:
                 packet = await transport.receive_packet()
                 if not packet:
-                    print("[!] Connection closed by Main Server.")
+                    print("[!] Connection closed by Main Server. Retrying in 3 seconds...")
+                    await asyncio.sleep(3)
                     break
-                
+
                 # Process the command
                 await route_command(transport, packet)
-                
+
         except Exception as e:
             print(f"[!] Connection failed: {e}. Retrying in 3 seconds...")
             await asyncio.sleep(3)

@@ -3,7 +3,6 @@ import io
 import uuid
 import filetype
 from concurrent.futures import ThreadPoolExecutor
-from fastapi import UploadFile
 from fastapi.responses import Response
 from urllib.parse import quote
 from pathlib import Path
@@ -50,19 +49,6 @@ def init_item(item_data: ItemCreate, current_user_id: str) -> ItemResponse:
     return map_item_to_response(item_in_db, current_user_id)
 
 
-def _select_nodes_for_chunks(num_chunks: int) -> list[list[str]]:
-    assignments = []
-    last_primary: list[str] = []
-    for _ in range(num_chunks):
-        node_ids = NodeRegistry.select_best_nodes(limit=3, exclude_node_ids=last_primary or None)
-        if not node_ids:
-            node_ids = NodeRegistry.select_best_nodes(limit=3)
-        if not node_ids:
-            return []
-        assignments.append(node_ids)
-        last_primary = [node_ids[0]]
-    return assignments
-
 
 def _upload_chunk_to_node(node_id: str, physical_name: str, chunk_size: int, chunk_data: bytes) -> bool:
     try:
@@ -103,7 +89,9 @@ def _upload_single_chunk(chunk_index: int, chunk_data: bytes, base_uuid: str, no
 def complete_item_upload(
     item_id: str,
     owner_id: str,
-    file: UploadFile,
+    file_obj,
+    filename: str,
+    content_type: str,
     current_user_id: str
 ) -> ItemResponse:
     item = _get_item_or_404(item_id)
@@ -112,50 +100,65 @@ def complete_item_upload(
     if item.status != ItemStatus.PENDING:
         raise ResourceNotFoundError("Pending file not found")
 
-    file_content = file.file.read(settings.MAX_FILE_SIZE_BYTES + 1)
-    if len(file_content) > settings.MAX_FILE_SIZE_BYTES:
-        raise StorageLimitExceededError
-
-    file_size = len(file_content)
-
-    ext = Path(file.filename or "").suffix.lower()
+    ext = Path(filename or "").suffix.lower()
     if ext in settings.BLOCKED_EXTENSIONS:
         raise FileTypeNotAllowedError(ext)
 
-    kind = filetype.guess(file_content[:2048])
-    if kind and kind.mime in settings.BLOCKED_MIME_TYPES:
-        raise FileTypeNotAllowedError(kind.mime)
-
-    used_bytes = item_repository.get_used_storage(owner_id)
-    if used_bytes + file_size > settings.MAX_STORAGE_BYTES:
-        raise StorageLimitExceededError()
-
-    detected = filetype.guess(file_content[:2048])
-    mime = detected.mime if detected else (file.content_type or "application/octet-stream")
-
-    base_uuid = str(uuid.uuid4()).replace("-", "")
-
-    raw_chunks = [
-        file_content[i:i + settings.CHUNK_SIZE_BYTES]
-        for i in range(0, file_size, settings.CHUNK_SIZE_BYTES)
-    ]
-    if not raw_chunks:
+    # Read header once for MIME detection, then stream the rest chunk by chunk
+    header = file_obj.read(2048)
+    if not header:
         raise StorageServerError("Empty file cannot be uploaded")
 
-    chunk_node_assignments = _select_nodes_for_chunks(len(raw_chunks))
-    if not chunk_node_assignments:
-        raise StorageServerError("No storage nodes available")
+    kind = filetype.guess(header)
+    if kind and kind.mime in settings.BLOCKED_MIME_TYPES:
+        raise FileTypeNotAllowedError(kind.mime)
+    mime = kind.mime if kind else (content_type or "application/octet-stream")
 
-    chunk_results = [
-        _upload_single_chunk(i, raw_chunks[i], base_uuid, chunk_node_assignments[i])
-        for i in range(len(raw_chunks))
-    ]
+    used_bytes = item_repository.get_used_storage(owner_id)
+    base_uuid = str(uuid.uuid4()).replace("-", "")
 
-    failed = [i for i, r in enumerate(chunk_results) if r is None]
-    if failed:
-        raise StorageServerError(f"Chunk upload failed for indices: {failed}")
+    chunks: list[ChunkInfo] = []
+    file_size = 0
+    last_primary: list[str] = []
 
-    chunks: list[ChunkInfo] = list(chunk_results)
+    # Prepend the header bytes back into the first chunk read
+    leftover = header
+    while True:
+        needed = settings.CHUNK_SIZE_BYTES - len(leftover)
+        new_data = file_obj.read(needed) if needed > 0 else b""
+        chunk_data = leftover + new_data
+        leftover = b""
+
+        if not chunk_data:
+            break
+
+        file_size += len(chunk_data)
+
+        if file_size > settings.MAX_FILE_SIZE_BYTES:
+            raise StorageLimitExceededError()
+        if used_bytes + file_size > settings.MAX_STORAGE_BYTES:
+            raise StorageLimitExceededError()
+
+        node_ids = NodeRegistry.select_best_nodes(limit=3, exclude_node_ids=last_primary or None)
+        if not node_ids:
+            node_ids = NodeRegistry.select_best_nodes(limit=3)
+        if not node_ids:
+            raise StorageServerError("No storage nodes available")
+
+        chunk_index = len(chunks)
+        result = _upload_single_chunk(chunk_index, chunk_data, base_uuid, node_ids)
+        if result is None:
+            raise StorageServerError(f"Chunk {chunk_index} upload failed")
+
+        chunks.append(result)
+        last_primary = [node_ids[0]]
+
+        # If the read returned less than a full chunk, we've reached EOF
+        if len(chunk_data) < settings.CHUNK_SIZE_BYTES:
+            break
+
+    if not chunks:
+        raise StorageServerError("Empty file cannot be uploaded")
 
     combined = "".join(c.chunk_hash for c in chunks)
     file_hash = hashlib.sha256(combined.encode()).hexdigest()

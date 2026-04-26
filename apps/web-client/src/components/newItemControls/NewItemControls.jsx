@@ -1,19 +1,15 @@
-import { Box, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, Menu, MenuItem, ListItemIcon, ListItemText, Paper, Typography, LinearProgress } from '@mui/material';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CreateFolderDialog from '../FolderView/createFolderDialog';
 
-/**
- * Renders the "Create New" dropdown menu, folder creation dialog, and hidden file input.
- * Receives all state and handlers from useNewItemActions.
- */
 const NewItemControls = ({ actions }) => {
     const {
         anchorEl, openMenu, handleCloseMenu,
         handleNewFolderClick, handleFileUploadClick,
         handleFileChange, handleCreateFolder,
         isCreateFolderOpen, setIsCreateFolderOpen,
-        inputRef,
+        inputRef, uploadProgress,
     } = actions;
 
     return (
@@ -57,6 +53,32 @@ const NewItemControls = ({ actions }) => {
                 onClose={() => setIsCreateFolderOpen(false)}
                 onCreate={handleCreateFolder}
             />
+
+            {uploadProgress && (
+                <Paper elevation={4} sx={{
+                    position: 'fixed',
+                    bottom: 24,
+                    right: 24,
+                    width: 320,
+                    p: 2,
+                    borderRadius: 3,
+                    zIndex: 2000,
+                }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2" noWrap sx={{ maxWidth: 200, fontWeight: 500 }}>
+                            {uploadProgress.fileName}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {uploadProgress.processing ? 'Processing...' : `${uploadProgress.percent}%`}
+                        </Typography>
+                    </Box>
+                    <LinearProgress
+                        variant={uploadProgress.processing ? 'indeterminate' : 'determinate'}
+                        value={uploadProgress.percent}
+                        sx={{ borderRadius: 1 }}
+                    />
+                </Paper>
+            )}
         </>
     );
 };

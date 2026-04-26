@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import folderApi from "../../api/folderApi";
 import handleError from "../../utils/handleError";
 
@@ -6,6 +6,11 @@ const useFolderBrowser = (rootItems, rootLabel, onRefresh) => {
     const [viewStack, setViewStack] = useState([{ label: rootLabel, folderId: null, items: [] }]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    const onRefreshRef = useRef(onRefresh);
+    useEffect(() => {
+        onRefreshRef.current = onRefresh;
+    }, [onRefresh]);
 
     useEffect(() => {
         setViewStack(prev => {
@@ -52,7 +57,7 @@ const useFolderBrowser = (rootItems, rootLabel, onRefresh) => {
                 setLoading(false);
             }
         } else {
-            onRefresh?.();
+            onRefreshRef.current?.();
         }
     };
 

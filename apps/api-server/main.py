@@ -28,7 +28,7 @@ def startup_event():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://cyberdrive24.com", "http://localhost:5173"],
+    allow_origins=["https://cyberdrive24.com", "http://localhost:5173", "http://192.168.1.200:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

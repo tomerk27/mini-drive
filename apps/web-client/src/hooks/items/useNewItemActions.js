@@ -7,7 +7,7 @@ import folderApi from '../../api/folderApi';
 const useNewItemActions = (folderId, onRefresh) => {
     const { user } = useAuthContext();
     const navigate = useNavigate();
-    const { inputRef, uploadFiles } = useFilesUploader();
+    const { inputRef, uploadFiles, uploadProgress } = useFilesUploader();
 
     const [anchorEl, setAnchorEl] = useState(null);
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
@@ -60,6 +60,7 @@ const useNewItemActions = (folderId, onRefresh) => {
         isCreateFolderOpen,
         setIsCreateFolderOpen,
         inputRef,
+        uploadProgress,
     };
 };
 

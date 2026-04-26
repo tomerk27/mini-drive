@@ -37,7 +37,7 @@ def upload_content(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
 ) -> ItemResponse:
-    return complete_item_upload(item_id, current_user.id, file, current_user.id)
+    return complete_item_upload(item_id, current_user.id, file.file, file.filename or "", file.content_type or "", current_user.id)
 
 
 @router.get(
