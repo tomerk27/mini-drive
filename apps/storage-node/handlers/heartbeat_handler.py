@@ -2,16 +2,16 @@
 Handles outgoing heartbeat packets from the storage node to the API server's Tracker.
 """
 
-import asyncio
+import socket
 from core.config import settings
-from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport
+from shared.protocol import CommandType, Field, Packet, SecureTransport
 
 
 class HeartbeatHandler:
     """Sends a single heartbeat to the Tracker each time it is called."""
 
     @staticmethod
-    async def send_heartbeat(capacity: int):
+    def send_heartbeat(capacity: int):
         """
         Opens a short-lived connection to the Tracker and sends one HEARTBEAT packet.
 
@@ -31,18 +31,17 @@ class HeartbeatHandler:
         })
 
         try:
-            reader, writer = await asyncio.open_connection(settings.TRACKER_HOST, settings.TRACKER_PORT)
-            transport = AsyncSecureTransport(reader, writer, key)
+            sock = socket.create_connection((settings.TRACKER_HOST, settings.TRACKER_PORT))
+            transport = SecureTransport(sock, key)
 
-            await transport.send_packet(packet)
+            transport.send_packet(packet)
 
             # Wait for the Tracker's ACK before closing.
-            res = await transport.receive_packet()
+            res = transport.receive_packet()
             if res:
                 if res.fields.get(Field.STATUS) == 0:
                     print(f"[*] Heartbeat confirmed by Tracker")
 
-            writer.close()
-            await writer.wait_closed()
+            sock.close()
         except Exception as e:
             print(f"[!] Tracker unreachable: {e}")

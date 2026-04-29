@@ -33,7 +33,7 @@ const useSharedItems = () => {
             // The API wraps the array in an { items: [] } envelope; fall back to empty array
             setSharedItems(items.items || []);
         } catch (error) {
-            handleError(setError, error, "Shared files couldn't load");
+            handleError(setError, error, "Couldn't load shared files. Please refresh the page.");
         } finally {
             setIsLoading(false);
         }

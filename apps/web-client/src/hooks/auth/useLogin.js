@@ -55,7 +55,7 @@ const useLogin = () => {
             navigate('/dashboard');
         }
         catch (error) {
-            handleError(setError, error, "Invalid email or password");
+            handleError(setError, error, "Incorrect email or password. Please try again.");
         }
         finally {
             setIsLoading(false);

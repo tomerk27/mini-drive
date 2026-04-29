@@ -30,7 +30,7 @@ const useSearchResults = () => {
                 const results = await searchApi(query);
                 setSearchResults(results);
             } catch (error) {
-                handleError(setError, error, "Failed to fetch search results");
+                handleError(setError, error, "Search failed. Please try again.");
                 setSearchResults([]);
             } finally {
                 setIsSearching(false);

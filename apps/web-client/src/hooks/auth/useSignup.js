@@ -59,7 +59,7 @@ const useSignup = () => {
             navigate('/dashboard');
         }
         catch (error) {
-            handleError(setError, error, "Sign up failed. Please check your inputs.");
+            handleError(setError, error, "Couldn't create your account. The email may already be in use.");
         }
         finally{
             setIsLoading(false);

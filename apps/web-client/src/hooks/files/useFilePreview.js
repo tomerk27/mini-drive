@@ -30,7 +30,7 @@ const useFilePreview = () => {
             const objectUrl = URL.createObjectURL(blob);
             setImageUrl(objectUrl);
         } catch (error) {
-            handleError(setError, error, "Failed to show content");
+            handleError(setError, error, "Couldn't load the file preview. The file may be unavailable.");
         } finally {
             setIsLoading(false);
         }

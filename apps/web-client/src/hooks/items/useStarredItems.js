@@ -33,7 +33,7 @@ const useStarredItems = () => {
 
             setStarredItems(items);
         } catch (error) {
-            handleError(setError, error, "Starred files couldn't load");
+            handleError(setError, error, "Couldn't load starred files. Please refresh the page.");
         } finally {
             setIsLoading(false);
         }

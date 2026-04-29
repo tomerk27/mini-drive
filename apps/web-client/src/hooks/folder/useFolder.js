@@ -29,7 +29,7 @@ const useFolder = () => {
         try {
             await folderApi.uploadFolder(folderName, currentFolderId);
         } catch (err) {
-            handleError(setError, err, "There was a problem with folder creation");
+            handleError(setError, err, "Couldn't create the folder. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -49,7 +49,7 @@ const useFolder = () => {
             setFolder(data.folder);
             setBreadcrumb(data.breadcrumb || []);
         } catch (error) {
-            handleError(setError, error, "Failed to load folder content. Please try again.");
+            handleError(setError, error, "Couldn't load this folder. Please check your connection and try again.");
         } finally {
             setLoading(false);
         }

@@ -3,13 +3,15 @@ CyberDrive Storage Node entry point.
 
 This process connects to the API server's DataServer (port 9000) and waits
 for UPLOAD / DOWNLOAD / DELETE commands over an encrypted persistent TCP
-connection. A separate background task fires heartbeats to the Tracker
-(port 9001) every 30 seconds so the API server knows this node is alive.
+connection. A background thread fires heartbeats to the Tracker (port 9001)
+every 30 seconds so the API server knows this node is alive.
 """
 
-import asyncio
 import os
+import socket
 import sys
+import threading
+import time
 
 # Add project root and libs to sys.path so shared protocol can be imported.
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -17,22 +19,22 @@ sys.path.append(root_dir)
 sys.path.append(os.path.join(root_dir, "libs"))
 
 from core.config import settings
-from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport
+from shared.protocol import CommandType, Field, Packet, SecureTransport
 from handlers.heartbeat_handler import HeartbeatHandler
 from services.system_metrics_service import SystemMetricsService
 from handlers.command_router import route_command
 
 
-async def heartbeat_loop():
-    """Background task: reports free disk space to the Tracker every 30 seconds."""
+def heartbeat_loop():
+    """Background thread: reports free disk space to the Tracker every 30 seconds."""
     print(f"[*] Starting Heartbeat loop for {settings.NODE_ID}...")
     while True:
         try:
             free_space = SystemMetricsService.get_free_space()
-            await HeartbeatHandler.send_heartbeat(free_space)
+            HeartbeatHandler.send_heartbeat(free_space)
         except Exception as e:
             print(f"[!] Heartbeat Error: {e}")
-        await asyncio.sleep(30)
+        time.sleep(30)
 
 
 def _enable_keepalive(sock):
@@ -55,7 +57,7 @@ def _enable_keepalive(sock):
         sock.setsockopt(_socket.IPPROTO_TCP, _socket.TCP_KEEPCNT, 5)
 
 
-async def connect_to_main_server():
+def connect_to_main_server():
     """
     Main worker loop: connects to the API server DataServer and processes commands.
 
@@ -66,49 +68,49 @@ async def connect_to_main_server():
     key = settings.STORAGE_ENCRYPTION_KEY.encode()
 
     while True:
+        sock = None
         try:
             print(f"[*] Attempting to connect to Main Server at {settings.TRACKER_HOST}:9000...")
-            reader, writer = await asyncio.open_connection(settings.TRACKER_HOST, 9000)
-            _enable_keepalive(writer.get_extra_info("socket"))
-            transport = AsyncSecureTransport(reader, writer, key)
+            sock = socket.create_connection((settings.TRACKER_HOST, 9000))
+            _enable_keepalive(sock)
+            transport = SecureTransport(sock, key)
 
             # Identify this node to the DataServer immediately after connecting.
             reg_packet = Packet(CommandType.REGISTER, {Field.NODE_ID: settings.NODE_ID})
-            await transport.send_packet(reg_packet)
+            transport.send_packet(reg_packet)
 
             print(f"[+] Successfully connected and registered as {settings.NODE_ID}")
 
             # Block here, handling one command at a time until the connection drops.
             while True:
-                packet = await transport.receive_packet()
+                packet = transport.receive_packet()
                 if not packet:
                     print("[!] Connection closed by Main Server. Retrying in 3 seconds...")
-                    await asyncio.sleep(3)
+                    time.sleep(3)
                     break
 
-                await route_command(transport, packet)
+                route_command(transport, packet)
 
         except Exception as e:
             print(f"[!] Connection failed: {e}. Retrying in 3 seconds...")
-            await asyncio.sleep(3)
+            time.sleep(3)
         finally:
-            # Always try to close the writer cleanly to free the OS socket.
-            try:
-                writer.close()
-                await writer.wait_closed()
-            except:
-                pass
+            if sock:
+                try:
+                    sock.close()
+                except Exception:
+                    pass
 
 
-async def main():
-    """Entry point: starts heartbeat loop then enters the command worker loop."""
-    # Run heartbeat as a background task alongside the main connection loop.
-    asyncio.create_task(heartbeat_loop())
-    await connect_to_main_server()
+def main():
+    """Entry point: starts heartbeat thread then enters the command worker loop."""
+    t = threading.Thread(target=heartbeat_loop, daemon=True)
+    t.start()
+    connect_to_main_server()
 
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        main()
     except KeyboardInterrupt:
         pass

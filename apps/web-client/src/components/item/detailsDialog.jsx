@@ -2,7 +2,7 @@
  * detailsDialog.jsx
  *
  * Read-only dialog showing metadata for a selected file or folder: name, type,
- * size (files only), creation date, owner, and item ID.  Size is converted from
+ * size (files only), creation date, and owner.  Size is converted from
  * raw bytes to a human-readable string (KB, MB, etc.).
  */
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, Divider } from '@mui/material';
@@ -82,14 +82,6 @@ const DetailsDialog = ({ open, onClose, item }) => {
                         </Typography>
                     </Box>
                     
-                    <Box>
-                        <Typography variant="caption" color="text.secondary" display="block">
-                            Item ID
-                        </Typography>
-                        <Typography variant="body2">
-                            {item.id}
-                        </Typography>
-                    </Box>
                 </Box>
             </DialogContent>
             <DialogActions>

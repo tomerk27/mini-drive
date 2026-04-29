@@ -2,7 +2,7 @@
 Shared binary communication protocol for CyberDrive.
 
 Defines the TLV (Type-Length-Value) message format, command/field enums,
-and both sync and async encrypted transport classes used by the API server
+and the encrypted transport class used by the API server
 and storage nodes to talk to each other.
 
 TLV packet layout:
@@ -12,7 +12,6 @@ All data is encrypted with Fernet (AES-128-CBC + HMAC) before being sent
 over the wire, and prefixed with a 4-byte big-endian length header.
 """
 
-import asyncio
 import enum
 import struct
 from cryptography.fernet import Fernet
@@ -193,66 +192,6 @@ class SecureTransport:
     def receive_chunk(self) -> Optional[bytes]:
         """Receives a raw encrypted chunk without TLV framing (used for file streaming)."""
         encrypted = self._receive_raw()
-        if not encrypted:
-            return None
-        return self.fernet.decrypt(encrypted)
-
-
-class AsyncSecureTransport:
-    """
-    Handles Fernet-encrypted packet transmission over an asyncio stream.
-
-    Drop-in async equivalent of SecureTransport. Used everywhere in the
-    storage node (which is fully async) and in the DataServer's async paths.
-
-    Args:
-        reader: asyncio.StreamReader for the connection.
-        writer: asyncio.StreamWriter for the connection.
-        key: The Fernet encryption key as raw bytes.
-    """
-    def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter, key: bytes):
-        self.reader = reader
-        self.writer = writer
-        self.fernet = Fernet(key)
-
-    async def _send_raw(self, data: bytes):
-        """Prepends a 4-byte length header and writes all bytes to the stream."""
-        length = len(data)
-        self.writer.write(length.to_bytes(4, byteorder=BYTE_ORDER) + data)
-        await self.writer.drain()
-
-    async def _receive_raw(self) -> Optional[bytes]:
-        """Reads the 4-byte length header then reads exactly that many bytes."""
-        try:
-            raw_length = await self.reader.readexactly(4)
-            length = int.from_bytes(raw_length, byteorder=BYTE_ORDER)
-            return await self.reader.readexactly(length)
-        except (asyncio.IncompleteReadError, ConnectionResetError):
-            # Connection closed cleanly or reset — caller should treat this as EOF.
-            return None
-
-    async def send_packet(self, packet: Packet):
-        """Encrypts and sends a TLV Packet over the async stream."""
-        data = packet.pack()
-        encrypted = self.fernet.encrypt(data)
-        await self._send_raw(encrypted)
-
-    async def receive_packet(self) -> Optional[Packet]:
-        """Receives, decrypts, and parses a TLV Packet from the async stream."""
-        encrypted = await self._receive_raw()
-        if not encrypted:
-            return None
-        decrypted = self.fernet.decrypt(encrypted)
-        return Packet.unpack(decrypted)
-
-    async def send_chunk(self, chunk: bytes):
-        """Sends a raw encrypted chunk without TLV framing (used for file streaming)."""
-        encrypted = self.fernet.encrypt(chunk)
-        await self._send_raw(encrypted)
-
-    async def receive_chunk(self) -> Optional[bytes]:
-        """Receives a raw encrypted chunk without TLV framing (used for file streaming)."""
-        encrypted = await self._receive_raw()
         if not encrypted:
             return None
         return self.fernet.decrypt(encrypted)

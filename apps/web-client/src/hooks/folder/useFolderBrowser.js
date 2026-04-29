@@ -46,7 +46,7 @@ const useFolderBrowser = (rootItems, rootLabel, onRefresh) => {
             const data = await folderApi.getFolder(item.id);
             setViewStack(prev => [...prev, { label: item.name, folderId: item.id, items: data.children }]);
         } catch (err) {
-            handleError(setError, err, "Failed to open folder");
+            handleError(setError, err, "Couldn't open this folder. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -75,7 +75,7 @@ const useFolderBrowser = (rootItems, rootLabel, onRefresh) => {
                     return updated;
                 });
             } catch (err) {
-                handleError(setError, err, "Failed to refresh folder");
+                handleError(setError, err, "Couldn't refresh the folder contents. Please try again.");
             } finally {
                 setLoading(false);
             }

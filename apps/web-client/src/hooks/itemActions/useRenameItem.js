@@ -52,10 +52,11 @@ const useRenameItem = (itemId, onSuccessCallback) => {
                 onSuccessCallback();
             }
         } catch (err) {
-            handleError(setError, err, "Failed to rename item");
-            // Close the modal on 403 — user lacks permission and retrying won't help
             if (err.response?.status === 403) {
+                handleError(setError, err, "You don't have permission to rename this item.");
                 closeRenameModal();
+            } else {
+                handleError(setError, err, "Couldn't rename this item. Please try again.");
             }
         } finally {
             setIsRenaming(false);

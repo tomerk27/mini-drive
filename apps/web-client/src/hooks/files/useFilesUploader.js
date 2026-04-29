@@ -61,7 +61,7 @@ const useFilesUploader = () => {
             }
             return results;
         } catch (error) {
-            handleError(setError, error, "Failed to upload files. Please try again.");
+            handleError(setError, error, "Upload failed. Please check your connection and try again.");
             return Promise.reject(error);
         } finally {
             setIsLoading(false);

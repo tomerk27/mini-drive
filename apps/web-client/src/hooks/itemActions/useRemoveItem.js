@@ -45,7 +45,7 @@ const useRemoveItem = () => {
                 onSuccess();
             }
         } catch (err) {
-            handleError(setError, err, "Failed to remove item");
+            handleError(setError, err, "Couldn't delete this item. Please try again.");
         } finally {
             setIsRemoving(false);
         }

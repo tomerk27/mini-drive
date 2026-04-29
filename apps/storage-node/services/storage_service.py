@@ -6,16 +6,15 @@ data/ directory, and send back a STATUS response packet when done.
 """
 
 import os
-import asyncio
 from core.config import settings
-from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport
+from shared.protocol import CommandType, Field, Packet, SecureTransport
 
 
 class StorageService:
     """Handles the three file operations a storage node can perform."""
 
     @staticmethod
-    async def handle_upload(transport: AsyncSecureTransport, fields: dict):
+    def handle_upload(transport: SecureTransport, fields: dict):
         """
         Receives a file in Fernet-encrypted chunks and writes it to disk.
 
@@ -24,7 +23,7 @@ class StorageService:
         Sends STATUS=0 on success or STATUS=1 on any error.
 
         Args:
-            transport: Encrypted async transport for reading chunks and sending ACK.
+            transport: Encrypted transport for reading chunks and sending ACK.
             fields: TLV fields from the UPLOAD command header (FILENAME, FILE_SIZE).
         """
         filename = fields.get(Field.FILENAME)
@@ -39,27 +38,25 @@ class StorageService:
 
         bytes_received = 0
         try:
-            # Note: using synchronous open() here — acceptable for the current scale.
-            # For high throughput, replace with aiofiles to avoid blocking the event loop.
             with open(save_path, 'wb') as f:
                 while bytes_received < file_size:
-                    chunk = await transport.receive_chunk()
+                    chunk = transport.receive_chunk()
                     if not chunk:
                         raise Exception("Stream closed during upload")
                     f.write(chunk)
                     bytes_received += len(chunk)
 
             res_packet = Packet(CommandType.UPLOAD, {Field.STATUS: 0})
-            await transport.send_packet(res_packet)
+            transport.send_packet(res_packet)
             print(f"[+] Saved: {safe_filename} ({file_size} bytes)")
 
         except Exception as e:
             print(f"[!] Upload Error: {e}")
             res_packet = Packet(CommandType.UPLOAD, {Field.STATUS: 1})
-            await transport.send_packet(res_packet)
+            transport.send_packet(res_packet)
 
     @staticmethod
-    async def handle_download(transport: AsyncSecureTransport, fields: dict):
+    def handle_download(transport: SecureTransport, fields: dict):
         """
         Reads a file from disk and streams it back in Fernet-encrypted 4 KB chunks.
 
@@ -67,7 +64,7 @@ class StorageService:
         then waits for a final confirmation packet from the client.
 
         Args:
-            transport: Encrypted async transport for sending the file and receiving ACK.
+            transport: Encrypted transport for sending the file and receiving ACK.
             fields: TLV fields from the DOWNLOAD command (FILENAME).
         """
         filename = fields.get(Field.FILENAME)
@@ -77,14 +74,14 @@ class StorageService:
         if not os.path.exists(file_path):
             print(f"[!] Download Failed: {safe_filename} not found.")
             res_packet = Packet(CommandType.DOWNLOAD, {Field.STATUS: 1, Field.FILE_SIZE: 0})
-            await transport.send_packet(res_packet)
+            transport.send_packet(res_packet)
             return
 
         file_size = os.path.getsize(file_path)
 
         # Send the header so the client knows how many bytes to expect.
         res_packet = Packet(CommandType.DOWNLOAD, {Field.STATUS: 0, Field.FILE_SIZE: file_size})
-        await transport.send_packet(res_packet)
+        transport.send_packet(res_packet)
 
         try:
             with open(file_path, 'rb') as f:
@@ -92,10 +89,10 @@ class StorageService:
                     chunk = f.read(4096)
                     if not chunk:
                         break
-                    await transport.send_chunk(chunk)
+                    transport.send_chunk(chunk)
 
             # Wait for the client's ACK confirming it received all bytes.
-            res = await transport.receive_packet()
+            res = transport.receive_packet()
             if res:
                 status_code = res.fields.get(Field.STATUS)
                 if status_code == 0:
@@ -109,14 +106,14 @@ class StorageService:
             print(f"[!] Download Error: {e}")
 
     @staticmethod
-    async def handle_delete(transport: AsyncSecureTransport, fields: dict):
+    def handle_delete(transport: SecureTransport, fields: dict):
         """
         Removes a file from local storage and sends a STATUS response.
 
         Sends STATUS=0 if the file was deleted, STATUS=1 if not found or on error.
 
         Args:
-            transport: Encrypted async transport for sending the result.
+            transport: Encrypted transport for sending the result.
             fields: TLV fields from the DELETE command (FILENAME).
         """
         filename = fields.get(Field.FILENAME)
@@ -127,13 +124,13 @@ class StorageService:
             if os.path.exists(file_path):
                 os.remove(file_path)
                 res_packet = Packet(CommandType.DELETE, {Field.STATUS: 0})
-                await transport.send_packet(res_packet)
+                transport.send_packet(res_packet)
                 print(f"[+] Deleted: {safe_filename}")
             else:
                 print(f"[!] Delete Failed: {safe_filename} not found.")
                 res_packet = Packet(CommandType.DELETE, {Field.STATUS: 1})
-                await transport.send_packet(res_packet)
+                transport.send_packet(res_packet)
         except Exception as e:
             print(f"[!] Delete Error: {e}")
             res_packet = Packet(CommandType.DELETE, {Field.STATUS: 1})
-            await transport.send_packet(res_packet)
+            transport.send_packet(res_packet)

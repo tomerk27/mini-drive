@@ -36,7 +36,7 @@ const useLogout = () => {
             logout();
             navigate('/login');
         } catch (error) {
-            handleError(setError, error, "Logout failed. Please try again.");
+            handleError(setError, error, "Sign out failed. Please refresh the page and try again.");
         } finally {
             setIsLoading(false);
         }

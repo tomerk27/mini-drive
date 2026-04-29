@@ -11,9 +11,6 @@ import * as XLSX from 'xlsx';
 const PreviewDialog = ({ open, onClose, imageUrl, isLoading, error, fileName, fileType }) => {
     // { url, html } — html: null=pending, string=success, false=error
     const [officeResult, setOfficeResult] = useState({ url: null, html: false });
-    const officeHtml = (isDoc || isExcel)
-        ? (officeResult.url === imageUrl ? officeResult.html : null)
-        : false;
 
     const isImage = fileType?.startsWith('image/');
     const isPdf = fileType === 'application/pdf';
@@ -37,6 +34,10 @@ const PreviewDialog = ({ open, onClose, imageUrl, isLoading, error, fileName, fi
         'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
         'application/vnd.ms-word.document.macroEnabled.12',
     ].includes(fileType);
+
+    const officeHtml = (isDoc || isExcel)
+        ? (officeResult.url === imageUrl ? officeResult.html : null)
+        : false;
 
     const isPresentation = [
         'application/vnd.openxmlformats-officedocument.presentationml.presentation',

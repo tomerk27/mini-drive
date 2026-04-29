@@ -7,11 +7,11 @@
  *
  * @param {Function} setError - State setter to display the error in the UI.
  * @param {Error} error - The Axios error object caught in a try/catch.
- * @param {string} defaultMassage - Fallback message if no API detail is available.
+ * @param {string} defaultMessage - Fallback message if no API detail is available.
  */
-const handleError = (setError, error, defaultMassage) => {
+const handleError = (setError, error, defaultMessage) => {
     const detail = error.response?.data?.detail;
-    setError(typeof detail === 'string' ? detail : defaultMassage);
+    setError(typeof detail === 'string' ? detail : defaultMessage);
 };
 
 export default handleError;

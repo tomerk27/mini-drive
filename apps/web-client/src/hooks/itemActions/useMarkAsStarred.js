@@ -40,7 +40,7 @@ const useMarkAsStarred = () => {
         try {
             await markAsStarredApi(itemId);
         } catch (error) {
-            handleError(setError, error, "The item couldn't be starred");
+            handleError(setError, error, "Couldn't update the star. Please try again.");
         } finally {
             setIsLoading(false);
         }

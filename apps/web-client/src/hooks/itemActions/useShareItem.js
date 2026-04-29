@@ -52,10 +52,13 @@ const useShareItem = (itemId, onSuccessCallback) => {
                 onSuccessCallback();
             }
         } catch (err) {
-            handleError(setError, err, "Failed to share item");
-            // Close the modal on 403 — the user isn't the owner and can't share this item
             if (err.response?.status === 403) {
+                handleError(setError, err, "You don't have permission to share this item. Only the owner can share it.");
                 closeShareModal();
+            } else if (err.response?.status === 404) {
+                handleError(setError, err, "The user you're trying to share with doesn't exist.");
+            } else {
+                handleError(setError, err, "Couldn't share this item. Check the email address and try again.");
             }
         } finally {
             setIsSharing(false);
