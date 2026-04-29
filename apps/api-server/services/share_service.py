@@ -1,3 +1,7 @@
+"""
+Business logic for sharing items with other users.
+"""
+
 from bson import ObjectId
 from api.schemas.share import ShareRequest
 from core.enums import SharePermission
@@ -9,6 +13,19 @@ from models.item import SharedUser
 
 
 def share_item_service(share_schema: ShareRequest, item_id: str, current_user_id: str):
+    """
+    Grants another user access to an item by appending them to shared_with.
+
+    Args:
+        share_schema: Contains the target user's email and the desired permission level.
+        item_id: The item being shared.
+        current_user_id: Must be the owner or an editor of the item.
+
+    Raises:
+        ResourceNotFoundError: If the item or target user email doesn't exist.
+        SelfShareError: If the user tries to share an item with themselves.
+        PermissionError: If the requesting user doesn't have editor access.
+    """
     users = get_collection("users")
     items = get_collection("items")
 
@@ -32,6 +49,7 @@ def share_item_service(share_schema: ShareRequest, item_id: str, current_user_id
         email=user_to_share.get("email")
     )
 
+    # $push appends the new share entry without removing existing shares.
     items.update_one(
         {"_id": ObjectId(item_id)},
         {"$push": {"shared_with": new_share.model_dump()}}

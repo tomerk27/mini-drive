@@ -1,3 +1,10 @@
+/**
+ * sharedPage.jsx
+ *
+ * Protected page rendered at /shared.  Shows all items that other users have
+ * shared with the current user.  Supports folder navigation (clicking a shared
+ * folder opens it in Dashboard via the router) and new item creation.
+ */
 import { Box } from '@mui/material';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';

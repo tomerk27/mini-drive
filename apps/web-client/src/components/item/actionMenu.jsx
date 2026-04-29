@@ -1,3 +1,13 @@
+/**
+ * actionMenu.jsx
+ *
+ * Context menu shown when a user right-clicks an item or clicks its three-dot
+ * button.  Can be anchored to a DOM element or a fixed screen position
+ * (anchorPosition) to support both click and right-click triggers.
+ *
+ * Star state is derived from the item's starred_by list so the icon reflects
+ * the current user's starred status without an extra API call.
+ */
 import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShareIcon from '@mui/icons-material/Share';
@@ -26,6 +36,7 @@ const ActionMenu = ({
 }) => {
     const { user } = useAuthContext();
 
+    // user.sub is the JWT subject claim — the unique user ID stored in MongoDB
     const isStarred = item.starred_by?.includes(user?.sub);
 
     const handleRemoveClick = async (event) => {

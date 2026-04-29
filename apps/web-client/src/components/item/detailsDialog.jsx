@@ -1,3 +1,10 @@
+/**
+ * detailsDialog.jsx
+ *
+ * Read-only dialog showing metadata for a selected file or folder: name, type,
+ * size (files only), creation date, owner, and item ID.  Size is converted from
+ * raw bytes to a human-readable string (KB, MB, etc.).
+ */
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, Divider } from '@mui/material';
 import FileIcon from './itemIcon';
 
@@ -13,6 +20,10 @@ const DetailsDialog = ({ open, onClose, item }) => {
         return date.toLocaleString();
     };
 
+    /**
+     * Converts a raw byte count to the largest readable unit (e.g. 1536 → "1.5 KB").
+     * Uses logarithms to find the right unit tier without a chain of if-statements.
+     */
     const formatSize = (bytes) => {
         if (bytes === 0 || !bytes) return '0 Bytes';
         const k = 1024;

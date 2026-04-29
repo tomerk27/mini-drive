@@ -1,6 +1,22 @@
+/**
+ * @file Search.jsx
+ * Controlled search input displayed in the top bar. The parent (TopBar) owns
+ * all state and handlers — this component is purely presentational.
+ */
+
 import { Box, InputBase, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
+/**
+ * Search bar with a text field and a clickable search icon button.
+ *
+ * @param {object} props
+ * @param {string}   props.searchTerm          - Current value of the search input.
+ * @param {function} props.onSearchTermChange  - Called on every keystroke to update the term.
+ * @param {function} props.onKeyDown           - Called on keydown; the hook triggers search on Enter.
+ * @param {function} props.onSearch            - Called when the search icon button is clicked.
+ * @returns {JSX.Element} A styled input box with an icon button that submits the query.
+ */
 const Search = ({ searchTerm, onSearchTermChange, onKeyDown, onSearch }) => {
   return (
     <Box

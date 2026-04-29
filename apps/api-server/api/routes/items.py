@@ -1,3 +1,12 @@
+"""
+Item routes: file/folder CRUD, upload, preview, starring, sharing, and search.
+
+All routes require a valid JWT (enforced by get_current_user dependency).
+File upload is a two-step process:
+  1. POST /upload/init  — creates a PENDING record and returns its ID.
+  2. POST /upload/{id}/content — streams the actual bytes and triggers replication.
+"""
+
 from fastapi import APIRouter, status, Depends, File, UploadFile, Path, Response
 from services.items_service import init_item, complete_item_upload, get_folder_service, remove_item_service, rename_item_service, get_file_preview_service, mark_item_as_starred_service, search_items_service
 from services.share_service import share_item_service

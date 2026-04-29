@@ -1,6 +1,20 @@
+/**
+ * Hook that fetches the current user's storage usage and quota from the API.
+ *
+ * Returns both raw byte counts and pre-formatted strings (e.g. "1.2 GB")
+ * for easy display in the sidebar. Failures are swallowed silently because
+ * the storage bar is decorative and should not break the main UI.
+ */
+
 import { useState, useEffect } from 'react';
 import { getStorageUsageApi } from '../../api/userApi';
 
+/**
+ * Converts a raw byte count into a human-readable string.
+ *
+ * @param {number} bytes - Size in bytes.
+ * @returns {string} Formatted string like "1.2 GB", "500 MB", etc.
+ */
 const formatBytes = (bytes) => {
     if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
     if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
@@ -20,7 +34,7 @@ const useStorage = () => {
                 setUsedBytes(data.used_bytes);
                 setMaxBytes(data.max_bytes);
             } catch {
-                // silently fail — sidebar is non-critical
+                // Silently fail — the storage bar in the sidebar is non-critical.
             } finally {
                 setLoading(false);
             }
@@ -28,6 +42,7 @@ const useStorage = () => {
         fetchStorage();
     }, []);
 
+    // usedPercent drives the progress bar width (0–100).
     const usedPercent = maxBytes > 0 ? (usedBytes / maxBytes) * 100 : 0;
 
     return {

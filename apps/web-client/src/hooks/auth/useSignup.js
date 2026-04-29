@@ -1,9 +1,28 @@
+/**
+ * useSignup.js
+ *
+ * Hook that manages the signup form.  Reads email, username, and password via
+ * refs, calls the registration API, stores the returned JWT via AuthContext,
+ * then navigates to the dashboard.
+ */
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { signupUserApi } from "../../api/authApi";
 import { useAuthContext } from "../../context/auth/authContext";
 import handleError from "../../utils/handleError";
 
+/**
+ * Hook for handling the signup form submission.
+ *
+ * @returns {{
+ *   handleSubmit: Function,
+ *   isLoading: boolean,
+ *   error: string|null,
+ *   emailRef: React.RefObject,
+ *   usernameRef: React.RefObject,
+ *   passwordRef: React.RefObject
+ * }}
+ */
 const useSignup = () => {
     const navigate = useNavigate();
 
@@ -12,6 +31,7 @@ const useSignup = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // Refs avoid re-renders on each keystroke while still capturing final values
     const emailRef = useRef();
     const usernameRef = useRef();
     const passwordRef = useRef();

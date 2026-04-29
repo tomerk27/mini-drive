@@ -1,8 +1,23 @@
+/**
+ * item.jsx
+ *
+ * Card component representing a single file or folder in the grid view.
+ * The three-dot action button is hidden by CSS until the user hovers the
+ * card, keeping the grid clean while still being accessible.
+ * Right-clicking the card also opens the action menu (via onContextMenu).
+ */
 import { Card, CardActionArea, CardContent, Typography, Box, IconButton } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import FileIcon from './itemIcon';
 
+/**
+ * Grid card for a single file or folder.
+ *
+ * @param {Object}   item       - Item document from the API (name, item_type, file_type, etc.).
+ * @param {Function} onClick    - Called when the card body is clicked (opens folder or preview).
+ * @param {Function} onOpenMenu - Called when the three-dot button or right-click is triggered.
+ */
 const Item = ({ item, onClick, onOpenMenu }) => {
     const isFolder = item.item_type === 'folder';
     const type = isFolder ? 'folder' : item.file_type;

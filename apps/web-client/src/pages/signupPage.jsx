@@ -1,3 +1,10 @@
+/**
+ * signupPage.jsx
+ *
+ * Public page rendered at /signup.  Mirrors loginPage but uses the signup
+ * form variant (adds the username field).  All form logic is handled by
+ * the useSignup hook.
+ */
 import {
   Box,
   Typography,

@@ -1,3 +1,14 @@
+/**
+ * appRouter.jsx
+ *
+ * Defines all client-side routes.  Public routes (/login, /signup) are
+ * accessible to anyone.  All other routes are wrapped in ProtectedRoute,
+ * which redirects unauthenticated users to /login.
+ *
+ * Folder drill-down is handled by the optional :folderId parameter on
+ * dashboard, starred, and shared routes — they all render the Dashboard
+ * component which reads the param to load the correct subfolder.
+ */
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 import LoginPage from '../pages/loginPage';
 import Dashboard from '../pages/dashboard';

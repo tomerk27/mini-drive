@@ -1,9 +1,21 @@
-import {  
-  TextField, 
-  Typography, 
+/**
+ * inputFields.jsx
+ *
+ * Small, reusable input components for the auth forms.  Each component is a
+ * thin wrapper around MUI TextField with the correct name, type, and
+ * autocomplete attributes pre-configured.  Refs are forwarded from the parent
+ * hook so values can be read on form submission without controlled state.
+ */
+import {
+  TextField,
+  Typography,
   Checkbox,
   FormControlLabel
 } from '@mui/material';
+/**
+ * Email input field for login and signup forms.
+ * @param {React.RefObject} emailRef - Ref attached to the underlying input.
+ */
 export const EmailField = ({ emailRef }) => {
     return (
         <TextField
@@ -21,6 +33,10 @@ export const EmailField = ({ emailRef }) => {
     );
 };
 
+/**
+ * Password input field.  Uses type="password" so the browser masks the value.
+ * @param {React.RefObject} passwordRef - Ref attached to the underlying input.
+ */
 export const PasswordField = ({ passwordRef }) => {
     return (
         <TextField
@@ -38,6 +54,10 @@ export const PasswordField = ({ passwordRef }) => {
     );
 };
 
+/**
+ * Username input field (signup only).
+ * @param {React.RefObject} usernameRef - Ref attached to the underlying input.
+ */
 export const UsernameField = ({ usernameRef }) => {
     return (
         <TextField

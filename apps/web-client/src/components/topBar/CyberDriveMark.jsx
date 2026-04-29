@@ -1,3 +1,16 @@
+/**
+ * @file CyberDriveMark.jsx
+ * SVG logo mark for CyberDrive: an indigo rounded square containing a cloud
+ * outline with a shield inside and a small amber security dot as an accent.
+ */
+
+/**
+ * Renders the CyberDrive SVG logo mark at a configurable size.
+ *
+ * @param {object} props
+ * @param {number} [props.size=40] - Width and height of the SVG in pixels.
+ * @returns {JSX.Element} An inline SVG element scaled to the requested size.
+ */
 const CyberDriveMark = ({ size = 40 }) => (
   <svg
     width={size}

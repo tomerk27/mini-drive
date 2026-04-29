@@ -1,3 +1,9 @@
+"""
+User-centric routes: starred items, items shared with the user, and storage quota.
+
+All routes require a valid JWT (enforced by get_current_user dependency).
+"""
+
 from fastapi import APIRouter, status, Depends
 from models.user import User
 from api.dependencies import get_current_user

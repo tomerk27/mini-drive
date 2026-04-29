@@ -1,3 +1,11 @@
+/**
+ * itemIcon.jsx
+ *
+ * Maps a file's MIME type (or generic type string) to a coloured MUI icon.
+ * Used in item cards, the details dialog, and the preview dialog.
+ * Each MIME type group has a distinct colour to make file types easy to
+ * identify at a glance without reading the name.
+ */
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ImageIcon from '@mui/icons-material/Image';

@@ -1,3 +1,15 @@
+/**
+ * main.jsx
+ *
+ * Application entry point. Mounts the React app into the #root DOM element and
+ * wraps it with:
+ *   - AuthProvider   — supplies JWT-based auth state to all components
+ *   - ThemeProvider  — applies the custom MUI theme (indigo palette, soft corners)
+ *   - CssBaseline    — normalises browser default styles
+ *
+ * The MUI theme defined here is the single source of truth for colors,
+ * typography, border radii, and component overrides across the whole client.
+ */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@fontsource/roboto/300.css';

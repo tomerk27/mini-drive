@@ -1,3 +1,10 @@
+/**
+ * searchPage.jsx
+ *
+ * Protected page rendered at /search.  Reads the current search query from
+ * useSearchResults (which pulls it from the URL query string) and displays
+ * matching items in a flat ItemsView — no folder navigation needed here.
+ */
 import { Box, Typography } from '@mui/material';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';

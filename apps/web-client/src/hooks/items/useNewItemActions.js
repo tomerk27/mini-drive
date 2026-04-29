@@ -1,3 +1,14 @@
+/**
+ * Hook for the "New" button that lets users upload files or create folders.
+ *
+ * Determines the effective destination folder: uses the current URL folder if
+ * present, otherwise falls back to the user's root folder. After a successful
+ * action, either calls onRefresh (inside a subfolder) or navigates to /dashboard.
+ *
+ * @param {string|null} folderId - Current folder from URL params, or null at root.
+ * @param {Function} onRefresh - Callback to reload the current folder's contents.
+ */
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../context/auth/authContext';
@@ -13,8 +24,11 @@ const useNewItemActions = (folderId, onRefresh) => {
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
 
     const openMenu = Boolean(anchorEl);
+
+    // Use the URL folder ID if available, otherwise upload to the root folder.
     const effectiveFolderId = folderId || user?.root_folder_id;
 
+    // After uploading or creating a folder: refresh if inside a subfolder, else go to dashboard.
     const afterAction = folderId ? onRefresh : () => navigate('/dashboard');
 
     const handleNewClick = (event) => setAnchorEl(event.currentTarget);
@@ -25,11 +39,13 @@ const useNewItemActions = (folderId, onRefresh) => {
         setIsCreateFolderOpen(true);
     };
 
+    /** Closes the menu and programmatically triggers the hidden file input. */
     const handleFileUploadClick = () => {
         handleCloseMenu();
         inputRef.current?.click();
     };
 
+    /** Triggered when the user picks files — delegates to useFilesUploader. */
     const handleFileChange = async (event) => {
         if (effectiveFolderId) {
             try {

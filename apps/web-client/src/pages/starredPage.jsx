@@ -1,3 +1,10 @@
+/**
+ * starredPage.jsx
+ *
+ * Protected page rendered at /starred.  Displays all items the current user
+ * has starred.  Loads data on mount and refreshes after new item actions via
+ * the loadStarredItems callback passed to useNewItemActions.
+ */
 import { Box } from '@mui/material';
 import SideBar from '../components/sideBar/sideBar';
 import TopBar from '../components/topBar/topBar';

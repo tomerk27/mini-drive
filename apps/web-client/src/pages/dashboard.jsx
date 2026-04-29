@@ -1,3 +1,15 @@
+/**
+ * dashboard.jsx
+ *
+ * Main page of the app.  Displays the current folder's contents inside a
+ * FolderBrowser with breadcrumb navigation.  Also handles:
+ *   - Creating new folders and uploading files via NewItemControls
+ *   - Legacy inline search results (search now lives on SearchPage)
+ *
+ * The `refreshFnRef` pattern lets child components (FolderBrowser) register
+ * their own refresh function so the Dashboard can trigger a re-fetch after
+ * an upload or folder creation without knowing the current folder ID directly.
+ */
 import { useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import FolderBrowser from '../components/folderBrowser/FolderBrowser';
@@ -15,9 +27,11 @@ const Dashboard = () => {
     const [currentFolderId, setCurrentFolderId] = useState(null);
     const refreshFnRef = useRef(null);
 
+    // Use the folder navigated to inside FolderBrowser; fall back to the root folder
     const effectiveFolderId = currentFolderId || folder?.id;
 
     const handleRefresh = () => {
+        // Prefer the child-registered refresh so subfolder contents update correctly
         if (refreshFnRef.current) {
             refreshFnRef.current();
         } else if (folder?.id) {
@@ -27,6 +41,7 @@ const Dashboard = () => {
 
     const newItemActions = useNewItemActions(effectiveFolderId, handleRefresh);
 
+    // FolderBrowser calls this whenever the user navigates into a subfolder
     const handleFolderChange = (folderId, refresh) => {
         setCurrentFolderId(folderId);
         refreshFnRef.current = refresh;

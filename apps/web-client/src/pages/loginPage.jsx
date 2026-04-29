@@ -1,3 +1,10 @@
+/**
+ * loginPage.jsx
+ *
+ * Public page rendered at /login.  Displays the CyberDrive logo, a short
+ * welcome message, and the login form.  All form logic (API call, JWT storage,
+ * navigation) is handled by the useLogin hook.
+ */
 import {
   Box,
   Typography,

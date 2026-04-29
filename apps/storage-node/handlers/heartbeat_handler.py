@@ -1,11 +1,28 @@
+"""
+Handles outgoing heartbeat packets from the storage node to the API server's Tracker.
+"""
+
 import asyncio
 from core.config import settings
 from shared.protocol import CommandType, Field, Packet, AsyncSecureTransport
 
+
 class HeartbeatHandler:
+    """Sends a single heartbeat to the Tracker each time it is called."""
+
     @staticmethod
     async def send_heartbeat(capacity: int):
-        """Sends a heartbeat packet to the Tracker with the provided capacity."""
+        """
+        Opens a short-lived connection to the Tracker and sends one HEARTBEAT packet.
+
+        The heartbeat carries the node's ID, port, and current free disk space
+        so the Tracker can update the node's record and select it for file placement.
+        A new connection is opened each time (not reused) because the Tracker
+        closes the connection after handling each heartbeat.
+
+        Args:
+            capacity: Free disk space in bytes, reported to the API server.
+        """
         key = settings.STORAGE_ENCRYPTION_KEY.encode()
         packet = Packet(CommandType.HEARTBEAT, {
             Field.NODE_ID: settings.NODE_ID,
@@ -19,7 +36,7 @@ class HeartbeatHandler:
 
             await transport.send_packet(packet)
 
-            # Wait for acknowledgment
+            # Wait for the Tracker's ACK before closing.
             res = await transport.receive_packet()
             if res:
                 if res.fields.get(Field.STATUS) == 0:

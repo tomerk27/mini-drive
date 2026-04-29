@@ -1,3 +1,10 @@
+/**
+ * @file sideBar.jsx
+ * Persistent left-side navigation drawer. Contains the "Create New" action,
+ * page navigation links (My Files, Shared, Starred), a live storage usage bar,
+ * and the logout button.
+ */
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Button, Typography, Divider } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -11,9 +18,18 @@ import LogoutButton from '../authentication/logoutButton';
 
 const drawerWidth = 256;
 
+/**
+ * Sidebar navigation drawer rendered on every authenticated page.
+ *
+ * @param {{ onNewClick: function }} props
+ * @param {function} props.onNewClick - Called when the user clicks "Create New".
+ *   The parent (Dashboard) is responsible for opening the upload/folder dialog.
+ * @returns {JSX.Element} A permanent MUI Drawer with nav links, storage meter, and logout.
+ */
 const SideBar = ({ onNewClick }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    // Pull live storage stats so the usage bar stays current without a page reload.
     const { usedFormatted, maxFormatted, usedPercent, loading: storageLoading } = useStorage();
 
     return (
@@ -110,7 +126,8 @@ const SideBar = ({ onNewClick }) => {
                     </Typography>
                 </Box>
                 <Box sx={{ width: '100%', height: 6, bgcolor: '#f1f5f9', borderRadius: 3, mb: 1 }}>
-                    <Box sx={{ width: storageLoading ? '0%' : `${Math.min(usedPercent, 100)}%`, height: '100%', bgcolor: usedPercent >= 90 ? 'error.main' : 'primary.main', borderRadius: 3, transition: 'width 0.4s ease' }} />
+                    {/* Cap at 100% visually; turn the bar red when usage exceeds 90%. */}
+                <Box sx={{ width: storageLoading ? '0%' : `${Math.min(usedPercent, 100)}%`, height: '100%', bgcolor: usedPercent >= 90 ? 'error.main' : 'primary.main', borderRadius: 3, transition: 'width 0.4s ease' }} />
                 </Box>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
                     {storageLoading ? 'Loading...' : `${usedFormatted} of ${maxFormatted} used`}

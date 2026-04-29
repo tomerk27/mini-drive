@@ -1,3 +1,10 @@
+/**
+ * logoutButton.jsx
+ *
+ * A self-contained logout button placed at the bottom of the sidebar.
+ * Manages its own loading and error state via the useLogout hook and
+ * shows an error Alert inline below the button if the logout fails.
+ */
 import { Button, CircularProgress, Alert, Box } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import useLogout from '../../hooks/auth/useLogout';
